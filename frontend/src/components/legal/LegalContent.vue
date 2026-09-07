@@ -49,7 +49,12 @@ async function onAccept() {
       </template>
     </LegalSection>
     <LegalIllustration :src="undraws[page.illustration]" :alt="page.title" />
-    <div v-if="authStore.isAuthenticated && page.consentField" class="flex gap-4 mt-6">
+    <div
+      v-if="
+        page.consentField && authStore.isAuthenticated && !authStore.user.consent[page.consentField]
+      "
+      class="flex gap-4 mt-6"
+    >
       <button type="button" class="btn flex-1 shadow-none" @click="onCancel">Abbrechen</button>
       <button
         type="button"
