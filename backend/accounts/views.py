@@ -5,7 +5,15 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import LoginSerializer, SignupSerializer, UserSerializer
+from .models import UserConsent
+from .serializers import (
+    ConsentSerializer,
+    LoginSerializer,
+    SignupSerializer,
+    UserSerializer,
+)
+
+CONSENT_FIELDS = {"privacy", "terms", "disclaimer"}
 
 
 class SignupView(APIView):
@@ -47,6 +55,18 @@ class LogoutView(APIView):
     def post(self, request):
         logout(request)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ConsentAcceptView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, field):
+        if field not in CONSENT_FIELDS:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        consent, _ = UserConsent.objects.get_or_create(user=request.user)
+        setattr(consent, field, True)
+        consent.save(update_fields=[field])
+        return Response(ConsentSerializer(consent).data)
 
 
 class MeView(APIView):
