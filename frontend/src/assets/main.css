@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@plugin "daisyui/theme" {
+  name: "wintersehn";
+  default: true;
+
+  --color-primary: #b42b5f;
+  --color-primary-content: #ffffff;
+}
+
+
+.color-gray {
+  color: #a8b3bf
+}
+
+.color-dark-gray {
+  color: #6C829C
+}
+
+.title {
+  font-size: 2.5rem;
+}
+
+.border-wntrs-gray {
+  border-color: #e3e5e8;
+}
+
+
+.disabled {
+  color: #a8b3bf;
+}
