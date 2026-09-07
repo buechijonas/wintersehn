@@ -26,7 +26,6 @@ const breadcrumbs = computed(() => [{ label: props.breadcrumbLabel ?? props.titl
           </div>
         </div>
       </div>
-      <Footer class="my-4" />
     </div>
   </Page>
 </template>

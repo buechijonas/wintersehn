@@ -77,5 +77,14 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
-  return { user, ready, isAuthenticated, fetchMe, login, signup, logout }
+  async function acceptConsent(field) {
+    const response = await apiFetch(`/api/auth/consent/${field}/`, { method: 'POST' })
+    const data = await response.json().catch(() => null)
+    if (!response.ok) {
+      throw new Error(extractErrorMessage(data, 'Zustimmung fehlgeschlagen.'))
+    }
+    user.value = { ...user.value, consent: data }
+  }
+
+  return { user, ready, isAuthenticated, fetchMe, login, signup, logout, acceptConsent }
 })

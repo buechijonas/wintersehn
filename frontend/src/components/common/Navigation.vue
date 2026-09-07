@@ -52,10 +52,10 @@ defineProps({
           to="/login"
           class="btn btn-primary w-full shadow-none"
         >
-          <img :src="icons.enter" alt="" class="nav-icon mr-2 invert" />Login
+          <img :src="icons.enter" alt="" class="nav-icon mr-2 invert" />Anmelden
         </RouterLink>
         <RouterLink v-else to="/logout" class="btn btn-primary w-full shadow-none">
-          <img :src="icons.exit" alt="" class="nav-icon mr-2 invert" />Logout
+          <img :src="icons.exit" alt="" class="nav-icon mr-2 invert" />Abmelden
         </RouterLink>
       </div>
     </div>

@@ -22,6 +22,7 @@ export const legalPages = {
     title: 'Datenschutzerklärung',
     breadcrumbLabel: 'Datenschutzerklärung',
     illustration: 'privacy',
+    consentField: 'privacy',
     sections: [
       { title: '1. Verantwortliche Stelle', address: true },
       {
@@ -75,6 +76,7 @@ export const legalPages = {
     title: 'Nutzungsrichtlinien',
     breadcrumbLabel: 'Nutzungsrichtlinien',
     illustration: 'terms',
+    consentField: 'terms',
     sections: [
       {
         title: '1. Allgemeine Grundsätze',
@@ -294,6 +296,7 @@ export const legalPages = {
     title: 'Haftungsausschluss',
     breadcrumbLabel: 'Haftungsausschluss',
     illustration: 'disclaimer',
+    consentField: 'disclaimer',
     sections: [
       {
         title: '1. Inhalt des Onlineangebots',

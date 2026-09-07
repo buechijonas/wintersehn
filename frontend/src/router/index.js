@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import { useAuthStore } from '@/stores/auth.js'
 import HomeView from '@/views/HomeView.vue'
 import MediaView from '@/views/MediaView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
@@ -60,6 +61,32 @@ const router = createRouter({
       component: LogoutView,
     },
   ],
+})
+
+const CONSENT_GATES = [
+  { field: 'privacy', path: '/privacy' },
+  { field: 'terms', path: '/terms' },
+  { field: 'disclaimer', path: '/disclaimer' },
+]
+
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore()
+  if (!authStore.ready) {
+    await authStore.fetchMe()
+  }
+
+  if (!authStore.isAuthenticated || to.name === 'logout') {
+    return true
+  }
+
+  const consent = authStore.user.consent
+  for (const gate of CONSENT_GATES) {
+    if (!consent[gate.field]) {
+      return to.path === gate.path ? true : gate.path
+    }
+  }
+
+  return true
 })
 
 export default router
