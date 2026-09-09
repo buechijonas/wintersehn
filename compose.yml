@@ -26,6 +26,7 @@ services:
     command: >
       sh -c "
       python manage.py migrate &&
+      python manage.py bootstrap_admin &&
       python manage.py runserver 0.0.0.0:8000
       "
 
@@ -41,6 +42,9 @@ services:
       DB_PASSWORD: wintersehn
       DB_HOST: db
       DB_PORT: 5432
+      ADMIN_USERNAME: admin
+      ADMIN_EMAIL: admin@wintersehn.ch
+      ADMIN_PASSWORD: admin
 
     depends_on:
       db:
