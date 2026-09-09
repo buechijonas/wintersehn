@@ -89,7 +89,7 @@ async function onSubmit() {
     </form>
     <p class="text-sm mt-4 text-center color-gray">
       Bereits ein Konto?
-      <RouterLink to="/login" class="link">Anmelden</RouterLink>
+      <RouterLink to="/login" class="link link-primary">Anmelden</RouterLink>
     </p>
   </AuthPage>
 </template>

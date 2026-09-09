@@ -3,13 +3,28 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import HomeView from '@/views/HomeView.vue'
 import MediaView from '@/views/MediaView.vue'
+import AboutView from '@/views/AboutView.vue'
+import EthosView from '@/views/EthosView.vue'
+import CvView from '@/views/CvView.vue'
+import CvSectionView from '@/views/CvSectionView.vue'
+import CountriesView from '@/views/CountriesView.vue'
+import ProjectsView from '@/views/ProjectsView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
 import PrivacyView from '@/views/legal/PrivacyView.vue'
 import TermsView from '@/views/legal/TermsView.vue'
 import DisclaimerView from '@/views/legal/DisclaimerView.vue'
+import CookieView from '@/views/legal/CookieView.vue'
 import LoginView from '@/views/auth/LoginView.vue'
 import SignupView from '@/views/auth/SignupView.vue'
 import LogoutView from '@/views/auth/LogoutView.vue'
+import VerifyPendingView from '@/views/auth/VerifyPendingView.vue'
+import SettingsView from '@/views/SettingsView.vue'
+import AccountEditView from '@/views/AccountEditView.vue'
+import PasswordEditView from '@/views/PasswordEditView.vue'
+import AdminView from '@/views/AdminView.vue'
+import AdminContentView from '@/views/AdminContentView.vue'
+import AdminRolesView from '@/views/AdminRolesView.vue'
+import AdminUsersView from '@/views/AdminUsersView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +39,42 @@ const router = createRouter({
       path: '/media',
       name: 'media',
       component: MediaView,
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: AboutView,
+      meta: { requiresAuth: true, permission: 'can_view_about' },
+    },
+    {
+      path: '/ethos',
+      name: 'ethos',
+      component: EthosView,
+      meta: { requiresAuth: true, permission: 'can_view_ethos' },
+    },
+    {
+      path: '/cv',
+      name: 'cv',
+      component: CvView,
+      meta: { requiresAuth: true, permission: 'can_view_cv' },
+    },
+    {
+      path: '/cv/:key',
+      name: 'cv-section',
+      component: CvSectionView,
+      meta: { requiresAuth: true, permission: 'can_view_cv' },
+    },
+    {
+      path: '/countries',
+      name: 'countries',
+      component: CountriesView,
+      meta: { requiresAuth: true, permission: 'can_view_countries' },
+    },
+    {
+      path: '/projects',
+      name: 'projects',
+      component: ProjectsView,
+      meta: { requiresAuth: true },
     },
     {
       path: '/impressum',
@@ -46,6 +97,11 @@ const router = createRouter({
       component: DisclaimerView,
     },
     {
+      path: '/cookies',
+      name: 'cookies',
+      component: CookieView,
+    },
+    {
       path: '/login',
       name: 'login',
       component: LoginView,
@@ -59,6 +115,54 @@ const router = createRouter({
       path: '/logout',
       name: 'logout',
       component: LogoutView,
+    },
+    {
+      path: '/verify-pending',
+      name: 'verify-pending',
+      component: VerifyPendingView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/settings/account',
+      name: 'settings-account',
+      component: AccountEditView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/settings/password',
+      name: 'settings-password',
+      component: PasswordEditView,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/roles',
+      name: 'admin-roles',
+      component: AdminRolesView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: AdminUsersView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/:key',
+      name: 'admin-content',
+      component: AdminContentView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
     },
   ],
 })
@@ -75,6 +179,10 @@ router.beforeEach(async (to) => {
     await authStore.fetchMe()
   }
 
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    return '/login'
+  }
+
   if (!authStore.isAuthenticated || to.name === 'logout') {
     return true
   }
@@ -84,6 +192,18 @@ router.beforeEach(async (to) => {
     if (!consent[gate.field]) {
       return to.path === gate.path ? true : gate.path
     }
+  }
+
+  if (to.name === 'verify-pending') {
+    return authStore.user.verified ? '/' : true
+  }
+
+  if (!authStore.user.verified) {
+    return '/verify-pending'
+  }
+
+  if (to.meta.permission && !authStore.user[to.meta.permission]) {
+    return '/'
   }
 
   return true

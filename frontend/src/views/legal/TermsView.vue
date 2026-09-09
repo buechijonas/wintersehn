@@ -1,8 +1,7 @@
 <script setup>
-import LegalContent from '@/components/legal/LegalContent.vue'
-import { legalPages } from '@/data/legal.js'
+import LegalContentLoader from '@/components/legal/LegalContentLoader.vue'
 </script>
 
 <template>
-  <LegalContent :page="legalPages.terms" />
+  <LegalContentLoader content-key="terms" />
 </template>

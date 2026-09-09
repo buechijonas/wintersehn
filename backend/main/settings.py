@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "accounts",
+    "content",
 ]
 
 REST_FRAMEWORK = {
@@ -90,13 +91,13 @@ WSGI_APPLICATION = "main.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'wintersehn'),
-        'USER': os.getenv('DB_USER', 'wintersehn'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'wintersehn'),
-        'HOST': os.getenv('DB_HOST', 'db'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DB_NAME", "wintersehn"),
+        "USER": os.getenv("DB_USER", "wintersehn"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "wintersehn"),
+        "HOST": os.getenv("DB_HOST", "db"),
+        "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
 
