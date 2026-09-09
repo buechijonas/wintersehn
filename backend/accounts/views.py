@@ -1,19 +1,25 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
+from django.contrib.auth.models import Group
 from django.middleware.csrf import get_token
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import UserConsent
+from .models import UserConsent, get_or_create_profile
 from .serializers import (
     ConsentSerializer,
     LoginSerializer,
+    PasswordChangeSerializer,
+    ProfileUpdateSerializer,
     SignupSerializer,
+    UserRoleSerializer,
     UserSerializer,
 )
 
 CONSENT_FIELDS = {"privacy", "terms", "disclaimer"}
+User = get_user_model()
 
 
 class SignupView(APIView):
@@ -69,6 +75,65 @@ class ConsentAcceptView(APIView):
         return Response(ConsentSerializer(consent).data)
 
 
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.has_perm("content.manage_roles"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        users = User.objects.all().order_by("username")
+        return Response(UserRoleSerializer(users, many=True).data)
+
+
+class UserRoleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        if not request.user.has_perm("content.manage_roles"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        user = get_object_or_404(User, pk=pk)
+        role_id = request.data.get("role")
+        if role_id:
+            group = get_object_or_404(Group, pk=role_id)
+            user.groups.set([group])
+        else:
+            user.groups.clear()
+        return Response(UserRoleSerializer(user).data)
+
+
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk):
+        if not request.user.has_perm("content.manage_roles"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        if int(pk) == request.user.pk:
+            return Response(
+                {"detail": "Du kannst dich nicht selbst löschen."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = get_object_or_404(User, pk=pk)
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserVerifyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        if not request.user.has_perm("content.manage_roles"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        user = get_object_or_404(User, pk=pk)
+        profile = get_or_create_profile(user)
+        profile.verified = bool(request.data.get("verified"))
+        profile.save(update_fields=["verified"])
+        return Response(UserRoleSerializer(user).data)
+
+
 class MeView(APIView):
     permission_classes = [AllowAny]
 
@@ -77,3 +142,24 @@ class MeView(APIView):
         if request.user.is_authenticated:
             return Response({"user": UserSerializer(request.user).data})
         return Response({"user": None})
+
+    def patch(self, request):
+        if not request.user.is_authenticated:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        serializer = ProfileUpdateSerializer(
+            request.user, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(UserSerializer(user).data)
+
+
+class PasswordChangeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = PasswordChangeSerializer(request.user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        update_session_auth_hash(request, user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
