@@ -14,7 +14,7 @@ const breadcrumbs = computed(() => [{ label: props.breadcrumbLabel ?? props.titl
 <template>
   <Page active-navigation="dashboard">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-8 pb-8 max-h-[calc(100vh-101px)] overflow-y-auto">
       <div class="mx-auto w-150">
         <h2 class="text-xl font-light my-4">{{ title }}</h2>
         <div
