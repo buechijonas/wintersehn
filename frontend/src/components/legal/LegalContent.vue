@@ -48,7 +48,7 @@ async function onAccept() {
         <LegalAddress />
       </template>
     </LegalSection>
-    <LegalIllustration :src="undraws[page.illustration]" :alt="page.title" />
+    <LegalIllustration v-if="page.illustration" :src="undraws[page.illustration]" :alt="page.title" />
     <div
       v-if="
         page.consentField && authStore.isAuthenticated && !authStore.user.consent[page.consentField]
