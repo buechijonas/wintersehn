@@ -23,7 +23,6 @@ media/
 # Environment variables / secrets
 .env
 .env.*
-!.env.example
 
 # Python packaging
 build/
