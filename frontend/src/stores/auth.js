@@ -1,31 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-
-function getCookie(name) {
-  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'))
-  return match ? decodeURIComponent(match[1]) : null
-}
-
-async function apiFetch(url, options = {}) {
-  const isUnsafe = options.method && options.method !== 'GET'
-  return fetch(url, {
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(isUnsafe ? { 'X-CSRFToken': getCookie('csrftoken') } : {}),
-      ...options.headers,
-    },
-    ...options,
-  })
-}
-
-function extractErrorMessage(data, fallback) {
-  if (!data) return fallback
-  if (data.detail) return data.detail
-  const firstField = Object.values(data)[0]
-  if (Array.isArray(firstField)) return firstField[0]
-  return fallback
-}
+import { apiFetch, extractErrorMessage } from '@/lib/api.js'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -86,5 +61,40 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = { ...user.value, consent: data }
   }
 
-  return { user, ready, isAuthenticated, fetchMe, login, signup, logout, acceptConsent }
+  async function updateProfile(fields) {
+    const response = await apiFetch('/api/auth/me/', {
+      method: 'PATCH',
+      body: JSON.stringify(fields),
+    })
+    const data = await response.json().catch(() => null)
+    if (!response.ok) {
+      throw new Error(extractErrorMessage(data, 'Speichern fehlgeschlagen.'))
+    }
+    user.value = data
+    return data
+  }
+
+  async function changePassword(currentPassword, newPassword) {
+    const response = await apiFetch('/api/auth/password/', {
+      method: 'POST',
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+    })
+    if (!response.ok) {
+      const data = await response.json().catch(() => null)
+      throw new Error(extractErrorMessage(data, 'Passwort ändern fehlgeschlagen.'))
+    }
+  }
+
+  return {
+    user,
+    ready,
+    isAuthenticated,
+    fetchMe,
+    login,
+    signup,
+    logout,
+    acceptConsent,
+    updateProfile,
+    changePassword,
+  }
 })
