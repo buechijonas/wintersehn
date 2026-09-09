@@ -1,22 +1,31 @@
 <script setup>
+import { computed, onMounted } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import Card from '@/components/common/Card.vue'
 import { icons } from '@/assets/icons.js'
-import { mediaGroups } from '@/data/media.js'
+import { useAuthStore } from '@/stores/auth.js'
+import { useContentStore } from '@/stores/content.js'
 
+const authStore = useAuthStore()
+const contentStore = useContentStore()
 const breadcrumbs = [{ label: 'Medien', to: '/' }]
+
+onMounted(() => contentStore.fetchContent('media'))
+
+const visibleGroups = computed(() =>
+  (contentStore.items.media?.data ?? []).filter(
+    (group) => !group.requiresAuth || authStore.user?.can_view_media,
+  ),
+)
 </script>
 
 <template>
   <Page active-navigation="media">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex">
+    <div class="flex flex-col pt-8 pb-8 max-h-[calc(100vh-101px)] overflow-y-auto">
       <div class="mx-auto w-150">
-        <ul
-          v-for="group in mediaGroups"
-          :key="group.title"
-          class="list bg-base-100 rounded-box shadow-none border-wntrs-gray border-solid border-1 mt-16"
-        >
+        <Card v-for="group in visibleGroups" :key="group.title" tag="ul" class="list mt-4">
           <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">{{ group.title }}</li>
           <li v-for="item in group.items" :key="item.url" class="list-row">
             <div>
@@ -29,7 +38,7 @@ const breadcrumbs = [{ label: 'Medien', to: '/' }]
               <img class="size-[1.2em]" alt="open" :src="icons['share-square']" />
             </a>
           </li>
-        </ul>
+        </Card>
       </div>
     </div>
   </Page>
