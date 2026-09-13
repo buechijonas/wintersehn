@@ -16,7 +16,7 @@ const cvCategories = computed(() => contentStore.items.cv?.data ?? [])
 <template>
   <Page active-navigation="cv">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col gap-4 mt-12">
+    <div class="flex flex-col gap-4 mt-12 px-6">
       <CardCategory
         v-for="category in cvCategories"
         :key="category.title"

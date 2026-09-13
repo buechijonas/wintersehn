@@ -26,8 +26,8 @@ const breadcrumbs = computed(() => [
 <template>
   <Page active-navigation="cv">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 max-h-[calc(100vh-101px)] overflow-y-auto">
-      <div class="mx-auto w-200">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+      <div class="mx-auto w-full max-w-200">
         <h2 class="title-category my-4">{{ section?.label }}</h2>
 
         <p v-if="!section?.timeline?.length" class="color-gray font-light">
@@ -45,7 +45,7 @@ const breadcrumbs = computed(() => [
               :class="
                 entry.side === 'start'
                   ? 'timeline-start mb-10 flex justify-end'
-                  : 'timeline-end md:mb-10 flex justify-start'
+                  : 'timeline-end mb-10 flex justify-start'
               "
             >
               <div class="flex flex-col items-center gap-1">

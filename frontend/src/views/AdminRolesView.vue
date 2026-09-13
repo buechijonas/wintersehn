@@ -77,8 +77,8 @@ async function renameRole(role, event) {
 <template>
   <Page active-navigation="admin">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 max-h-[calc(100vh-101px)] overflow-y-auto">
-      <div class="mx-auto w-200">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+      <div class="mx-auto w-full max-w-200">
         <h2 class="title-category my-4">Rollen &amp; Rechte</h2>
 
         <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>

@@ -39,7 +39,7 @@ const categories = [
 <template>
   <Page active-navigation="admin">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
       <div class="flex flex-col gap-4">
         <CardCategory
           v-for="category in categories"

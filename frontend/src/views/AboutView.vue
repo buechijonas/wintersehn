@@ -17,8 +17,8 @@ const aboutRows = computed(() => contentStore.items.about?.data ?? [])
 <template>
   <Page active-navigation="about">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-12 pb-12 max-h-[calc(100vh-101px)] overflow-y-auto">
-      <div class="mx-auto w-150">
+    <div class="flex flex-col pt-12 pb-12 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+      <div class="mx-auto w-full max-w-150">
         <h2 class="title-category my-4">Über mich</h2>
         <Card class="overflow-x-auto">
           <table class="table">

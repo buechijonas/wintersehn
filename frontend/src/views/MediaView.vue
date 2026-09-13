@@ -23,8 +23,8 @@ const visibleGroups = computed(() =>
 <template>
   <Page active-navigation="media">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 max-h-[calc(100vh-101px)] overflow-y-auto">
-      <div class="mx-auto w-150">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+      <div class="mx-auto w-full max-w-150">
         <Card v-for="group in visibleGroups" :key="group.title" tag="ul" class="list mt-4">
           <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">{{ group.title }}</li>
           <li v-for="item in group.items" :key="item.url" class="list-row">

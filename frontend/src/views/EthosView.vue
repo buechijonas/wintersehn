@@ -16,7 +16,7 @@ const ethosCategories = computed(() => contentStore.items.ethos?.data ?? [])
 <template>
   <Page active-navigation="ethos">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col gap-4 pt-12 pb-12 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col gap-4 pt-12 pb-12 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
       <CardCategory
         v-for="category in ethosCategories"
         :key="category.title"
