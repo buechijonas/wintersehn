@@ -61,7 +61,7 @@ async function onDeleteUser(user) {
     <Breadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col pt-8 pb-8 px-8 max-h-[calc(100vh-101px)] overflow-y-auto">
       <div class="w-full">
-        <h2 class="title-category my-4">Nutzer</h2>
+        <h2 class="text-xl my-4">Nutzer</h2>
 
         <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
@@ -82,7 +82,7 @@ async function onDeleteUser(user) {
                   <img class="size-6" :src="avatarSrc(user.avatar)" alt="" />
                   {{ user.username }}
                 </td>
-                <td class="color-gray">{{ user.email }}</td>
+                <td class="text-wntrs-muted">{{ user.email }}</td>
                 <td>
                   <select
                     class="select select-sm"

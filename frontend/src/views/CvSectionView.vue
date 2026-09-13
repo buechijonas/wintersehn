@@ -26,26 +26,26 @@ const breadcrumbs = computed(() => [
 <template>
   <Page active-navigation="cv">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 max-h-[calc(100vh-101px)] overflow-y-auto">
-      <div class="mx-auto w-200">
-        <h2 class="title-category my-4">{{ section?.label }}</h2>
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+      <div class="mx-auto w-full max-w-200">
+        <h2 class="text-xl my-4">{{ section?.label }}</h2>
 
-        <p v-if="!section?.timeline?.length" class="color-gray font-light">
+        <p v-if="!section?.timeline?.length" class="text-wntrs-muted font-light">
           Inhalt folgt in Kürze.
         </p>
 
-        <ul
-          v-else
-          class="cv-timeline timeline timeline-snap-icon max-md:timeline-compact timeline-vertical"
-        >
-          <li v-for="entry in section.timeline" :key="`${entry.year}-${entry.title}`">
-            <hr />
-            <div class="timeline-middle font-mono italic color-gray">{{ entry.year }}</div>
+        <ul v-else class="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
+          <li
+            v-for="(entry, index) in section.timeline"
+            :key="`${entry.year}-${entry.title}`"
+          >
+            <hr :class="{ invisible: index === 0 }" />
+            <div class="timeline-middle font-mono italic text-wntrs-muted">{{ entry.year }}</div>
             <div
               :class="
                 entry.side === 'start'
                   ? 'timeline-start mb-10 flex justify-end'
-                  : 'timeline-end md:mb-10 flex justify-start'
+                  : 'timeline-end mb-10 flex justify-start'
               "
             >
               <div class="flex flex-col items-center gap-1">
@@ -58,8 +58,8 @@ const breadcrumbs = computed(() => [
                     :src="flats[entry.icon ?? section.icon]"
                   />
                   <div>
-                    <div class="color-dark-gray text-xs font-bold">{{ entry.title }}</div>
-                    <p class="color-dark-gray font-light text-xs">{{ entry.description }}</p>
+                    <div class="text-wntrs-slate text-xs font-bold">{{ entry.title }}</div>
+                    <p class="text-wntrs-slate font-light text-xs">{{ entry.description }}</p>
                   </div>
                 </Card>
                 <a
@@ -74,17 +74,10 @@ const breadcrumbs = computed(() => [
                 </a>
               </div>
             </div>
-            <hr />
+            <hr :class="{ invisible: index === section.timeline.length - 1 }" />
           </li>
         </ul>
       </div>
     </div>
   </Page>
 </template>
-
-<style scoped>
-.cv-timeline li:first-child hr:first-of-type,
-.cv-timeline li:last-child hr:last-of-type {
-  visibility: hidden;
-}
-</style>

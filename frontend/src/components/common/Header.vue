@@ -22,7 +22,7 @@ function closeMenu() {
 </script>
 
 <template>
-  <div class="header relative w-full flex items-center">
+  <div class="relative z-20 h-12 w-full flex items-center bg-primary">
     <div
       class="lg:hidden flex items-center justify-center size-12 shrink-0 bg-white text-base-content text-[1.2rem] font-normal"
     >
@@ -69,11 +69,3 @@ function closeMenu() {
     </div>
   </div>
 </template>
-
-<style>
-.header {
-  z-index: 20;
-  height: 48px;
-  background-color: #b42b5f;
-}
-</style>

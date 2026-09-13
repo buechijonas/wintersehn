@@ -112,10 +112,10 @@ async function save() {
 </script>
 
 <template>
-  <Page active-navigation="dashboard">
+  <Page>
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 max-h-[calc(100vh-101px)] overflow-y-auto">
-      <div class="mx-auto w-150">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+      <div class="mx-auto w-full max-w-150">
         <h2 class="text-xl font-light my-4">Konto bearbeiten</h2>
 
         <Card class="p-6">

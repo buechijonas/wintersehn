@@ -5,7 +5,7 @@ defineProps({
 </script>
 
 <template>
-  <component :is="tag" class="bg-base-100 shadow-none border-wntrs-gray border-solid border-1">
+  <component :is="tag" class="bg-base-100 shadow-none border-wntrs-border border-solid border-1">
     <slot />
   </component>
 </template>

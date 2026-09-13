@@ -21,7 +21,7 @@ const sources = { flats, icons, countries }
   >
     <div class="flex flex-col items-center text-center gap-4">
       <img class="size-16" :alt="label" :src="sources[props.iconSet][icon]" />
-      <p class="color-dark-gray text-sm">{{ label }}</p>
+      <p class="text-wntrs-slate text-sm">{{ label }}</p>
     </div>
   </Card>
 </template>

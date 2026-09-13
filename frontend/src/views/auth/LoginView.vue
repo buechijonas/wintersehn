@@ -55,7 +55,7 @@ async function onSubmit() {
         Anmelden
       </button>
     </form>
-    <p class="text-sm mt-4 text-center color-gray">
+    <p class="text-sm mt-4 text-center text-wntrs-muted">
       Noch kein Konto?
       <RouterLink to="/signup" class="link link-primary">Registrieren</RouterLink>
     </p>

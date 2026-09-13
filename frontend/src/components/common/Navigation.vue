@@ -29,13 +29,15 @@ function isLocked(item) {
 </script>
 
 <template>
-  <div class="appinfo hidden lg:flex items-center pl-8">
-    <h1>{{ displayName }}</h1>
+  <div class="hidden h-12 w-[330px] items-center pl-8 lg:flex">
+    <h1 class="text-[1.2rem]">{{ displayName }}</h1>
   </div>
-  <div class="drawer drawer-end lg:drawer-open">
+  <div class="drawer drawer-end lg:drawer-open lg:top-16 lg:h-[calc(100vh-64px)]">
     <input id="my-drawer-3" v-model="isNavDrawerOpen" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content"></div>
-    <div class="drawer-side flex flex-col bg-base-100">
+    <div
+      class="drawer-side flex flex-col bg-base-100 max-lg:top-12 max-lg:h-[calc(100vh-48px)] lg:top-16 lg:h-[calc(100vh-64px)]"
+    >
       <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
       <ul class="menu w-full lg:w-80 p-4 gap-2">
         <li v-for="item in navigationItems" :key="item.key">
@@ -43,29 +45,32 @@ function isLocked(item) {
             :is="isLocked(item) ? 'span' : RouterLink"
             v-bind="isLocked(item) ? { 'aria-disabled': 'true' } : { to: item.to }"
             class="nav-item flex items-center gap-3 p-4"
-            :class="{ active: activeNavigation === item.key, disabled: isLocked(item) }"
+            :class="{
+              'active bg-wntrs-highlight text-primary': activeNavigation === item.key,
+              'disabled cursor-not-allowed': isLocked(item),
+            }"
           >
-            <img :src="icons[item.icon]" alt="" class="nav-icon" />
+            <img :src="icons[item.icon]" alt="" class="nav-icon size-5 shrink-0" />
             <span>{{ item.label }}</span>
-            <img v-if="isLocked(item)" :src="icons.lock" alt="" class="lock-icon" />
+            <img v-if="isLocked(item)" :src="icons.lock" alt="" class="lock-icon size-3 shrink-0" />
           </component>
         </li>
         <template v-if="authStore.user?.can_view_admin">
-          <li><hr class="my-2 border-wntrs-gray" /></li>
+          <li><hr class="my-2 border-wntrs-border" /></li>
           <li>
             <RouterLink
               to="/admin"
               class="nav-item flex items-center gap-3 p-4"
-              :class="{ active: activeNavigation === 'admin' }"
+              :class="{ 'active bg-wntrs-highlight text-primary': activeNavigation === 'admin' }"
             >
-              <img :src="icons.crown" alt="" class="nav-icon" />
+              <img :src="icons.crown" alt="" class="nav-icon size-5 shrink-0" />
               <span>Admin</span>
             </RouterLink>
           </li>
         </template>
       </ul>
       <div class="mt-auto p-4 w-full">
-        <div class="mb-4 text-xs color-gray font-light">
+        <div class="mb-4 text-xs text-wntrs-muted font-light">
           <div>Version {{ version }}</div>
           <div>Created by Wintersehn</div>
         </div>
@@ -74,10 +79,10 @@ function isLocked(item) {
           to="/login"
           class="btn btn-primary w-full shadow-none"
         >
-          <img :src="icons.enter" alt="" class="nav-icon mr-2 invert" />Anmelden
+          <img :src="icons.enter" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Anmelden
         </RouterLink>
         <RouterLink v-else to="/logout" class="btn btn-primary w-full shadow-none">
-          <img :src="icons.exit" alt="" class="nav-icon mr-2 invert" />Abmelden
+          <img :src="icons.exit" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Abmelden
         </RouterLink>
       </div>
     </div>
@@ -85,48 +90,10 @@ function isLocked(item) {
 </template>
 
 <style>
-.appinfo {
-  height: 48px;
-  width: 330px;
-  h1 {
-    font-size: 1.2rem;
-  }
-}
-.drawer-side {
-  top: 48px;
-  height: calc(100vh - 48px);
-}
-@media (min-width: 1024px) {
-  .drawer {
-    top: 64px;
-    height: calc(100vh - 64px);
-  }
-  .drawer-side {
-    top: 64px;
-    height: calc(100vh - 64px);
-  }
-}
-.lock-icon {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-.nav-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-.nav-item.disabled {
-  cursor: not-allowed;
-}
 .nav-item.disabled .nav-icon,
 .nav-item.disabled .lock-icon {
   filter: brightness(0) saturate(100%) invert(76%) sepia(15%) saturate(228%) hue-rotate(171deg)
     brightness(91%) contrast(90%);
-}
-.nav-item.active {
-  background: #f0dbe3;
-  color: #b42b5f;
 }
 .nav-item.active .nav-icon {
   filter: brightness(0) saturate(100%) invert(24%) sepia(55%) saturate(2090%) hue-rotate(303deg)

@@ -8,10 +8,10 @@ defineProps({
 </script>
 
 <template>
-  <div class="cpnt-breadcrumbs py-2 px-6">
+  <div class="border-b border-wntrs-border py-2 px-6">
     <div class="breadcrumbs text-sm">
       <ul>
-        <li class="item" v-for="(item, index) in items" :key="index">
+        <li class="text-wntrs-muted" v-for="(item, index) in items" :key="index">
           <RouterLink v-if="item.to" :to="item.to">
             {{ item.label }}
           </RouterLink>
@@ -24,14 +24,3 @@ defineProps({
     </div>
   </div>
 </template>
-<style>
-.cpnt-breadcrumbs {
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  border-bottom-color: #e3e5e8;
-}
-
-.cpnt-breadcrumbs .item {
-  color: #a8b3bf;
-}
-</style>
