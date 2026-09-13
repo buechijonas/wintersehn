@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import Card from '@/components/common/Card.vue'
+import Footer from '@/components/common/Footer.vue'
 import { countries } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
 
@@ -17,7 +18,7 @@ const aboutRows = computed(() => contentStore.items.about?.data ?? [])
 <template>
   <Page active-navigation="about">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-12 pb-12 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-12 pb-12 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-150">
         <h2 class="text-xl my-4">Über mich</h2>
         <Card class="overflow-x-auto">
@@ -37,5 +38,6 @@ const aboutRows = computed(() => contentStore.items.about?.data ?? [])
         </Card>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

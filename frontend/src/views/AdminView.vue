@@ -2,6 +2,7 @@
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import CardCategory from '@/components/common/CardCategory.vue'
+import Footer from '@/components/common/Footer.vue'
 
 const breadcrumbs = [{ label: 'Admin', to: '/' }]
 
@@ -39,7 +40,7 @@ const categories = [
 <template>
   <Page active-navigation="admin">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="flex flex-col gap-4">
         <CardCategory
           v-for="category in categories"
@@ -49,5 +50,6 @@ const categories = [
         />
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

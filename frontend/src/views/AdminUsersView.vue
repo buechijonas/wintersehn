@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import Footer from '@/components/common/Footer.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -59,7 +60,7 @@ async function onDeleteUser(user) {
 <template>
   <Page active-navigation="admin">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 px-8 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-8 pb-8 px-8 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="w-full">
         <h2 class="text-xl my-4">Nutzer</h2>
 
@@ -122,6 +123,7 @@ async function onDeleteUser(user) {
         </div>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>
 

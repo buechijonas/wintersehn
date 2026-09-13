@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import Footer from '@/components/common/Footer.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 
@@ -105,7 +106,7 @@ async function save() {
 <template>
   <Page active-navigation="admin">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-200">
         <h2 class="text-xl my-4">{{ label }}</h2>
 
@@ -143,5 +144,6 @@ async function save() {
         </div>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

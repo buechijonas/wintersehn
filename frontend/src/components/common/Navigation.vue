@@ -32,11 +32,11 @@ function isLocked(item) {
   <div class="hidden h-12 w-[330px] items-center pl-8 lg:flex">
     <h1 class="text-[1.2rem]">{{ displayName }}</h1>
   </div>
-  <div class="drawer drawer-end lg:drawer-open lg:top-16 lg:h-[calc(100vh-64px)]">
+  <div class="drawer drawer-end lg:drawer-open lg:top-16 lg:h-[calc(100dvh-64px)]">
     <input id="my-drawer-3" v-model="isNavDrawerOpen" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content"></div>
     <div
-      class="drawer-side flex flex-col bg-base-100 max-lg:top-12 max-lg:h-[calc(100vh-48px)] lg:top-16 lg:h-[calc(100vh-64px)]"
+      class="drawer-side flex flex-col overflow-y-auto bg-base-100 max-lg:top-12 max-lg:h-[calc(100dvh-48px)] lg:top-16 lg:h-[calc(100dvh-64px)]"
     >
       <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
       <ul class="menu w-full lg:w-80 p-4 gap-2">
@@ -49,6 +49,7 @@ function isLocked(item) {
               'active bg-wntrs-highlight text-primary': activeNavigation === item.key,
               'disabled cursor-not-allowed': isLocked(item),
             }"
+            @click="isNavDrawerOpen = false"
           >
             <img :src="icons[item.icon]" alt="" class="nav-icon size-5 shrink-0" />
             <span>{{ item.label }}</span>
@@ -62,6 +63,7 @@ function isLocked(item) {
               to="/admin"
               class="nav-item flex items-center gap-3 p-4"
               :class="{ 'active bg-wntrs-highlight text-primary': activeNavigation === 'admin' }"
+              @click="isNavDrawerOpen = false"
             >
               <img :src="icons.crown" alt="" class="nav-icon size-5 shrink-0" />
               <span>Admin</span>
@@ -78,10 +80,16 @@ function isLocked(item) {
           v-if="!authStore.isAuthenticated"
           to="/login"
           class="btn btn-primary w-full shadow-none"
+          @click="isNavDrawerOpen = false"
         >
           <img :src="icons.enter" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Anmelden
         </RouterLink>
-        <RouterLink v-else to="/logout" class="btn btn-primary w-full shadow-none">
+        <RouterLink
+          v-else
+          to="/logout"
+          class="btn btn-primary w-full shadow-none"
+          @click="isNavDrawerOpen = false"
+        >
           <img :src="icons.exit" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Abmelden
         </RouterLink>
       </div>

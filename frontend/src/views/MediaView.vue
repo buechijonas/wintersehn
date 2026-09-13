@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import Card from '@/components/common/Card.vue'
+import Footer from '@/components/common/Footer.vue'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
@@ -23,7 +24,7 @@ const visibleGroups = computed(() =>
 <template>
   <Page active-navigation="media">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-150">
         <Card v-for="group in visibleGroups" :key="group.title" tag="ul" class="list mt-4">
           <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">{{ group.title }}</li>
@@ -41,5 +42,6 @@ const visibleGroups = computed(() =>
         </Card>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

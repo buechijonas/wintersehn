@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import Card from '@/components/common/Card.vue'
+import Footer from '@/components/common/Footer.vue'
 import { flats } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
 
@@ -26,7 +27,7 @@ const breadcrumbs = computed(() => [
 <template>
   <Page active-navigation="cv">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-200">
         <h2 class="text-xl my-4">{{ section?.label }}</h2>
 
@@ -79,5 +80,6 @@ const breadcrumbs = computed(() => [
         </ul>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

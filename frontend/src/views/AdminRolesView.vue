@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import Footer from '@/components/common/Footer.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useRbacStore } from '@/stores/rbac.js'
 
@@ -77,7 +78,7 @@ async function renameRole(role, event) {
 <template>
   <Page active-navigation="admin">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
+    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-200">
         <h2 class="text-xl my-4">Rollen &amp; Rechte</h2>
 
@@ -140,5 +141,6 @@ async function renameRole(role, event) {
         </div>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>
