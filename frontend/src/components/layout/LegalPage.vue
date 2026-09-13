@@ -15,7 +15,7 @@ const breadcrumbs = computed(() => [{ label: props.breadcrumbLabel ?? props.titl
   <Page>
     <Breadcrumbs :items="breadcrumbs" />
     <div
-      class="flex flex-col pt-8 lg:pb-8 lg:gap-8 overflow-y-auto max-lg:h-[calc(100vh-101px)] lg:max-h-[calc(100vh-101px)]"
+      class="flex flex-col pt-8 lg:pb-8 lg:gap-8 overflow-y-auto max-lg:h-[calc(100dvh-101px)] lg:max-h-[calc(100dvh-101px)]"
     >
       <div class="mx-auto w-full max-w-150 px-6">
         <h2 class="text-xl font-light my-4">{{ title }}</h2>

@@ -22,7 +22,7 @@ const avatarSrc = computed(() => profiles[authStore.user?.avatar] ?? icons.user)
 <template>
   <Page active-navigation="dashboard">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex h-[calc(100vh-192px)]">
+    <div class="flex h-[calc(100dvh-192px)]">
       <div class="flex flex-col mx-auto my-32">
         <h1 class="text-title my-8 font-light">Herzlich Willkommen</h1>
         <div v-if="authStore.isAuthenticated" class="flex items-center gap-4 mx-auto mb-8">
