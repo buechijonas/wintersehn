@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { icons } from '@/assets/icons.js'
 import { navigationItems } from '@/data/navigation.js'
+import { isNavDrawerOpen } from '@/lib/navDrawer.js'
 import { useAuthStore } from '@/stores/auth.js'
 import packageJson from '../../../package.json'
 
@@ -28,17 +29,15 @@ function isLocked(item) {
 </script>
 
 <template>
-  <div class="appinfo flex items-center pl-8">
+  <div class="appinfo hidden lg:flex items-center pl-8">
     <h1>{{ displayName }}</h1>
   </div>
-  <div class="drawer lg:drawer-open">
-    <input id="my-drawer-3" type="checkbox" class="drawer-toggle" />
-    <div class="drawer-content flex flex-col items-center justify-center">
-      <label for="my-drawer-3" class="btn drawer-button lg:hidden"> Open drawer </label>
-    </div>
-    <div class="drawer-side flex flex-col">
+  <div class="drawer drawer-end lg:drawer-open">
+    <input id="my-drawer-3" v-model="isNavDrawerOpen" type="checkbox" class="drawer-toggle" />
+    <div class="drawer-content"></div>
+    <div class="drawer-side flex flex-col bg-base-100">
       <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
-      <ul class="menu w-80 p-4 gap-2">
+      <ul class="menu w-full lg:w-80 p-4 gap-2">
         <li v-for="item in navigationItems" :key="item.key">
           <component
             :is="isLocked(item) ? 'span' : RouterLink"
@@ -93,13 +92,19 @@ function isLocked(item) {
     font-size: 1.2rem;
   }
 }
-.drawer {
-  top: 64px;
-  height: calc(100vh - 64px);
-}
 .drawer-side {
-  top: 64px;
-  height: calc(100vh - 64px);
+  top: 48px;
+  height: calc(100vh - 48px);
+}
+@media (min-width: 1024px) {
+  .drawer {
+    top: 64px;
+    height: calc(100vh - 64px);
+  }
+  .drawer-side {
+    top: 64px;
+    height: calc(100vh - 64px);
+  }
 }
 .lock-icon {
   width: 12px;

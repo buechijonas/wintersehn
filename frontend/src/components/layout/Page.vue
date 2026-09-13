@@ -11,8 +11,8 @@ defineProps({
 </script>
 
 <template>
-  <div class="page">
-    <div class="border" />
+  <div class="page relative">
+    <div class="border absolute left-0 top-0" />
     <Navigation class="navigation" :active-navigation="activeNavigation" />
     <div class="content bg-base-200">
       <Header />
@@ -24,10 +24,9 @@ defineProps({
 <style lang="scss">
 .page {
   display: grid;
-  grid-template-columns: 10px auto 1fr;
+  grid-template-columns: 8px auto 1fr;
   grid-template-rows: auto;
   grid-template-areas: '. navigation content';
-  position: relative;
   min-height: 100vh;
 }
 
@@ -37,13 +36,11 @@ defineProps({
 
 .content {
   grid-area: content;
+  min-width: 0;
 }
 
 .border {
-  position: absolute;
   z-index: 20;
-  left: 0;
-  top: 0;
   width: 8px;
   height: 100%;
   background: #b42b5f;
