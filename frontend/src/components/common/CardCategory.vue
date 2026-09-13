@@ -9,7 +9,7 @@ defineProps({
 
 <template>
   <div class="mx-auto w-full max-w-200">
-    <h2 class="title-category my-4 text-center lg:text-left">{{ title }}</h2>
+    <h2 class="text-xl my-4 text-center lg:text-left">{{ title }}</h2>
     <div class="flex flex-wrap justify-center lg:justify-start gap-2">
       <IconLabelCard
         v-for="item in items"

@@ -22,9 +22,9 @@ const avatarSrc = computed(() => profiles[authStore.user?.avatar] ?? icons.user)
 <template>
   <Page active-navigation="dashboard">
     <Breadcrumbs :items="breadcrumbs" />
-    <div class="flex" style="height: calc(100vh - 192px)">
+    <div class="flex h-[calc(100vh-192px)]">
       <div class="flex flex-col mx-auto my-32">
-        <h1 class="title my-8 font-light">Herzlich Willkommen</h1>
+        <h1 class="text-title my-8 font-light">Herzlich Willkommen</h1>
         <div v-if="authStore.isAuthenticated" class="flex items-center gap-4 mx-auto mb-8">
           <img class="size-16" :src="avatarSrc" alt="" />
           <div class="flex flex-col gap-1 items-start">
@@ -32,7 +32,7 @@ const avatarSrc = computed(() => profiles[authStore.user?.avatar] ?? icons.user)
             <span class="font-medium">{{ authStore.user.username }}</span>
           </div>
         </div>
-        <p class="subtitle mx-auto color-gray font-light">wintersehn.ch</p>
+        <p class="subtitle mx-auto text-wntrs-muted font-light">wintersehn.ch</p>
       </div>
     </div>
     <Footer />

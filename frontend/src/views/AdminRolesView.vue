@@ -79,7 +79,7 @@ async function renameRole(role, event) {
     <Breadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-200">
-        <h2 class="title-category my-4">Rollen &amp; Rechte</h2>
+        <h2 class="text-xl my-4">Rollen &amp; Rechte</h2>
 
         <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
@@ -111,7 +111,7 @@ async function renameRole(role, event) {
             </thead>
             <tbody>
               <tr v-for="permission in rbacStore.permissions" :key="permission.codename">
-                <td class="color-dark-gray">{{ permission.name }}</td>
+                <td class="text-wntrs-slate">{{ permission.name }}</td>
                 <td v-for="role in rbacStore.roles" :key="role.id" class="text-center">
                   <input
                     type="checkbox"

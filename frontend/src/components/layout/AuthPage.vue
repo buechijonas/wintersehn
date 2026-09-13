@@ -18,10 +18,10 @@ const breadcrumbs = computed(() => [{ label: props.breadcrumbLabel ?? props.titl
     <div class="flex flex-col pb-16 px-6 max-h-[calc(100vh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-100">
         <div
-          class="list bg-base-100 rounded-box shadow-none border-wntrs-gray border-solid border-1 mt-16 p-8"
+          class="list bg-base-100 rounded-box shadow-none border-wntrs-border border-solid border-1 mt-16 p-8"
         >
           <h2 class="text-xl font-light mb-6">{{ title }}</h2>
-          <div class="color-dark-gray">
+          <div class="text-wntrs-slate">
             <slot />
           </div>
         </div>

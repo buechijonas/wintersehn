@@ -20,9 +20,9 @@ const breadcrumbs = computed(() => [{ label: props.breadcrumbLabel ?? props.titl
       <div class="mx-auto w-full max-w-150 px-6">
         <h2 class="text-xl font-light my-4">{{ title }}</h2>
         <div
-          class="list bg-base-100 rounded-box shadow-none border-wntrs-gray border-solid border-1 p-8"
+          class="list bg-base-100 rounded-box shadow-none border-wntrs-border border-solid border-1 p-8"
         >
-          <div class="color-dark-gray">
+          <div class="text-wntrs-slate">
             <slot />
           </div>
         </div>

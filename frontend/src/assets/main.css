@@ -9,28 +9,10 @@
   --color-primary-content: #ffffff;
 }
 
-
-.color-gray {
-  color: #a8b3bf
-}
-
-.color-dark-gray {
-  color: #6C829C
-}
-
-.title {
-  font-size: 2.5rem;
-}
-
-.title-category {
-  font-size: 1.25rem;
-}
-
-.border-wntrs-gray {
-  border-color: #e3e5e8;
-}
-
-
-.disabled {
-  color: #a8b3bf;
+@theme {
+  --color-wntrs-muted: #a8b3bf;
+  --color-wntrs-slate: #6c829c;
+  --color-wntrs-border: #e3e5e8;
+  --color-wntrs-highlight: #f0dbe3;
+  --text-title: 2.5rem;
 }
