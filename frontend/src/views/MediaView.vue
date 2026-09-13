@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import Card from '@/components/common/Card.vue'
+import Footer from '@/components/common/Footer.vue'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
@@ -41,5 +42,6 @@ const visibleGroups = computed(() =>
         </Card>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

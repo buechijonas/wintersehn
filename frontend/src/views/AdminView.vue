@@ -2,6 +2,7 @@
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import CardCategory from '@/components/common/CardCategory.vue'
+import Footer from '@/components/common/Footer.vue'
 
 const breadcrumbs = [{ label: 'Admin', to: '/' }]
 
@@ -49,5 +50,6 @@ const categories = [
         />
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

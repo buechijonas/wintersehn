@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import Card from '@/components/common/Card.vue'
+import Footer from '@/components/common/Footer.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -56,5 +57,6 @@ const avatarSrc = computed(() => profiles[authStore.user.avatar] ?? icons.user)
         </div>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

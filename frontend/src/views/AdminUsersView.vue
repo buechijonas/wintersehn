@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import Footer from '@/components/common/Footer.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -122,6 +123,7 @@ async function onDeleteUser(user) {
         </div>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>
 

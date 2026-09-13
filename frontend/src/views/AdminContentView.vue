@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import Footer from '@/components/common/Footer.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 
@@ -143,5 +144,6 @@ async function save() {
         </div>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

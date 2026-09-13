@@ -49,6 +49,7 @@ function isLocked(item) {
               'active bg-wntrs-highlight text-primary': activeNavigation === item.key,
               'disabled cursor-not-allowed': isLocked(item),
             }"
+            @click="isNavDrawerOpen = false"
           >
             <img :src="icons[item.icon]" alt="" class="nav-icon size-5 shrink-0" />
             <span>{{ item.label }}</span>
@@ -62,6 +63,7 @@ function isLocked(item) {
               to="/admin"
               class="nav-item flex items-center gap-3 p-4"
               :class="{ 'active bg-wntrs-highlight text-primary': activeNavigation === 'admin' }"
+              @click="isNavDrawerOpen = false"
             >
               <img :src="icons.crown" alt="" class="nav-icon size-5 shrink-0" />
               <span>Admin</span>
@@ -78,10 +80,16 @@ function isLocked(item) {
           v-if="!authStore.isAuthenticated"
           to="/login"
           class="btn btn-primary w-full shadow-none"
+          @click="isNavDrawerOpen = false"
         >
           <img :src="icons.enter" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Anmelden
         </RouterLink>
-        <RouterLink v-else to="/logout" class="btn btn-primary w-full shadow-none">
+        <RouterLink
+          v-else
+          to="/logout"
+          class="btn btn-primary w-full shadow-none"
+          @click="isNavDrawerOpen = false"
+        >
           <img :src="icons.exit" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Abmelden
         </RouterLink>
       </div>

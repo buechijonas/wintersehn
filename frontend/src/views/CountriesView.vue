@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import CardCategory from '@/components/common/CardCategory.vue'
+import Footer from '@/components/common/Footer.vue'
 import { useContentStore } from '@/stores/content.js'
 
 const contentStore = useContentStore()
@@ -24,5 +25,6 @@ const countryCategories = computed(() => contentStore.items.countries?.data ?? [
         :items="category.items"
       />
     </div>
+    <Footer />
   </Page>
 </template>

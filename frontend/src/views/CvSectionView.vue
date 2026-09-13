@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
 import Card from '@/components/common/Card.vue'
+import Footer from '@/components/common/Footer.vue'
 import { flats } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
 
@@ -79,5 +80,6 @@ const breadcrumbs = computed(() => [
         </ul>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>

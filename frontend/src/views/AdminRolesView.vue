@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import Page from '@/components/layout/Page.vue'
 import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
+import Footer from '@/components/common/Footer.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useRbacStore } from '@/stores/rbac.js'
 
@@ -140,5 +141,6 @@ async function renameRole(role, event) {
         </div>
       </div>
     </div>
+    <Footer />
   </Page>
 </template>
