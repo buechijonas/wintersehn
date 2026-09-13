@@ -37,6 +37,8 @@ defineProps({
 .content {
   grid-area: content;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .border {
