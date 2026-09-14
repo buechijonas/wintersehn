@@ -1,22 +1,6 @@
-<script setup>
-import { computed, onMounted } from 'vue'
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import CardCategory from '@/components/common/CardCategory.vue'
-import Footer from '@/components/common/Footer.vue'
-import { useContentStore } from '@/stores/content.js'
-
-const contentStore = useContentStore()
-const breadcrumbs = [{ label: 'Lebenslauf', to: '/' }]
-
-onMounted(() => contentStore.fetchContent('cv'))
-
-const cvCategories = computed(() => contentStore.items.cv?.data ?? [])
-</script>
-
 <template>
-  <Page active-navigation="cv">
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage active-navigation="cv">
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col gap-4 mt-12 px-6">
       <CardCategory
         v-for="category in cvCategories"
@@ -25,6 +9,35 @@ const cvCategories = computed(() => contentStore.items.cv?.data ?? [])
         :items="category.items"
       />
     </div>
-    <Footer />
-  </Page>
+    <BaseFooter />
+  </BasePage>
 </template>
+
+<script>
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import CardCategory from '@/components/common/CardCategory.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+import { useContentStore } from '@/stores/content.js'
+
+export default {
+  name: 'CvView',
+  components: { BasePage, BaseBreadcrumbs, CardCategory, BaseFooter },
+  data() {
+    return {
+      breadcrumbs: [{ label: 'Lebenslauf', to: '/' }],
+    }
+  },
+  computed: {
+    contentStore() {
+      return useContentStore()
+    },
+    cvCategories() {
+      return this.contentStore.items.cv?.data ?? []
+    },
+  },
+  mounted() {
+    this.contentStore.fetchContent('cv')
+  },
+}
+</script>

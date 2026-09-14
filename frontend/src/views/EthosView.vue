@@ -1,22 +1,6 @@
-<script setup>
-import { computed, onMounted } from 'vue'
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import CardCategory from '@/components/common/CardCategory.vue'
-import Footer from '@/components/common/Footer.vue'
-import { useContentStore } from '@/stores/content.js'
-
-const contentStore = useContentStore()
-const breadcrumbs = [{ label: 'Ethos', to: '/' }]
-
-onMounted(() => contentStore.fetchContent('ethos'))
-
-const ethosCategories = computed(() => contentStore.items.ethos?.data ?? [])
-</script>
-
 <template>
-  <Page active-navigation="ethos">
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage active-navigation="ethos">
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col gap-4 pt-12 pb-12 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <CardCategory
         v-for="category in ethosCategories"
@@ -25,6 +9,35 @@ const ethosCategories = computed(() => contentStore.items.ethos?.data ?? [])
         :items="category.items"
       />
     </div>
-    <Footer />
-  </Page>
+    <BaseFooter />
+  </BasePage>
 </template>
+
+<script>
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import CardCategory from '@/components/common/CardCategory.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+import { useContentStore } from '@/stores/content.js'
+
+export default {
+  name: 'EthosView',
+  components: { BasePage, BaseBreadcrumbs, CardCategory, BaseFooter },
+  data() {
+    return {
+      breadcrumbs: [{ label: 'Ethos', to: '/' }],
+    }
+  },
+  computed: {
+    contentStore() {
+      return useContentStore()
+    },
+    ethosCategories() {
+      return this.contentStore.items.ethos?.data ?? []
+    },
+  },
+  mounted() {
+    this.contentStore.fetchContent('ethos')
+  },
+}
+</script>

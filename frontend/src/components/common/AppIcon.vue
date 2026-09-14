@@ -1,12 +1,18 @@
-<script setup>
-import { icons } from '@/assets/icons'
-
-defineProps({
-  name: { type: String, required: true },
-  alt: { type: String, default: '' },
-})
-</script>
-
 <template>
   <img :src="icons[name]" :alt="alt" />
 </template>
+
+<script>
+import { icons } from '@/assets/icons'
+
+export default {
+  name: 'AppIcon',
+  props: {
+    name: { type: String, required: true },
+    alt: { type: String, default: '' },
+  },
+  data() {
+    return { icons }
+  },
+}
+</script>

@@ -1,11 +1,11 @@
 <template>
-  <Page active-navigation="admin">
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage active-navigation="admin">
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-150">
         <h2 class="text-xl font-light my-4">Neuer Eintrag</h2>
 
-        <Card v-if="section" class="p-6">
+        <BaseCard v-if="section" class="p-6">
           <form class="fieldset" @submit.prevent="save">
             <label class="label" for="ethos-item-title">Titel</label>
             <input
@@ -18,9 +18,9 @@
 
             <label class="label mt-4">Icon</label>
             <div class="flex items-center gap-4">
-              <Card class="size-16 shrink-0 flex items-center justify-center p-2">
+              <BaseCard class="size-16 shrink-0 flex items-center justify-center p-2">
                 <img v-if="selectedIcon" class="size-11" :src="flatIcons[selectedIcon]" alt="" />
-              </Card>
+              </BaseCard>
 
               <div class="w-full">
                 <button
@@ -59,25 +59,25 @@
               </button>
             </div>
           </form>
-        </Card>
+        </BaseCard>
       </div>
     </div>
-    <Footer />
-  </Page>
+    <BaseFooter />
+  </BasePage>
 </template>
 
 <script>
 import { RouterLink } from 'vue-router'
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import Card from '@/components/common/Card.vue'
-import Footer from '@/components/common/Footer.vue'
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
 import { flats } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
 
 export default {
   name: 'AdminEthosItemCreateView',
-  components: { RouterLink, Page, Breadcrumbs, Card, Footer },
+  components: { RouterLink, BasePage, BaseBreadcrumbs, BaseCard, BaseFooter },
   data() {
     return {
       title: '',

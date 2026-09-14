@@ -1,33 +1,3 @@
-<script setup>
-import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
-import { icons } from '@/assets/icons.js'
-import { navigationItems } from '@/data/navigation.js'
-import { isNavDrawerOpen } from '@/lib/navDrawer.js'
-import { useAuthStore } from '@/stores/auth.js'
-import packageJson from '../../../package.json'
-
-const version = packageJson.version
-const authStore = useAuthStore()
-const displayName = computed(() =>
-  authStore.user?.verified ? 'Jonas S. Büchi' : packageJson.name,
-)
-
-defineProps({
-  activeNavigation: {
-    type: String,
-    default: null,
-  },
-})
-
-function isLocked(item) {
-  if (!item.disabled) return false
-  if (!authStore.isAuthenticated) return true
-  if (item.permission) return !authStore.user?.[item.permission]
-  return false
-}
-</script>
-
 <template>
   <div class="hidden h-12 w-[330px] items-center pl-8 lg:flex">
     <h1 class="text-[1.2rem]">{{ displayName }}</h1>
@@ -96,6 +66,58 @@ function isLocked(item) {
     </div>
   </div>
 </template>
+
+<script>
+import { RouterLink } from 'vue-router'
+import { icons } from '@/assets/icons.js'
+import { navigationItems } from '@/data/navigation.js'
+import { isNavDrawerOpen } from '@/lib/navDrawer.js'
+import { useAuthStore } from '@/stores/auth.js'
+import packageJson from '../../../package.json'
+
+export default {
+  name: 'BaseNavigation',
+  components: { RouterLink },
+  props: {
+    activeNavigation: {
+      type: String,
+      default: null,
+    },
+  },
+  data() {
+    return {
+      icons,
+      navigationItems,
+      version: packageJson.version,
+      RouterLink,
+    }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    displayName() {
+      return this.authStore.user?.verified ? 'Jonas S. Büchi' : packageJson.name
+    },
+    isNavDrawerOpen: {
+      get() {
+        return isNavDrawerOpen.value
+      },
+      set(value) {
+        isNavDrawerOpen.value = value
+      },
+    },
+  },
+  methods: {
+    isLocked(item) {
+      if (!item.disabled) return false
+      if (!this.authStore.isAuthenticated) return true
+      if (item.permission) return !this.authStore.user?.[item.permission]
+      return false
+    },
+  },
+}
+</script>
 
 <style>
 .nav-item.disabled .nav-icon,

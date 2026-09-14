@@ -1,6 +1,6 @@
 <template>
-  <Page active-navigation="admin">
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage active-navigation="admin">
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-200">
         <h2 class="text-xl my-4">Ethos</h2>
@@ -8,7 +8,7 @@
         <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
         <div class="flex flex-col gap-4">
-          <Card v-for="(section, sectionIndex) in sections" :key="sectionIndex" class="p-6">
+          <BaseCard v-for="(section, sectionIndex) in sections" :key="sectionIndex" class="p-6">
             <div class="flex items-center justify-between gap-4 mb-4">
               <input
                 type="text"
@@ -35,12 +35,12 @@
                 :key="itemIndex"
                 class="relative shrink-0"
               >
-                <Card class="size-40 flex items-center justify-center p-4">
+                <BaseCard class="size-40 flex items-center justify-center p-4">
                   <div class="flex flex-col items-center text-center gap-4">
                     <img class="size-16" :src="flatIcons[item.icon]" :alt="item.label" />
                     <p class="text-wntrs-slate text-sm">{{ item.label }}</p>
                   </div>
-                </Card>
+                </BaseCard>
                 <button
                   v-if="canEdit"
                   type="button"
@@ -52,16 +52,16 @@
                 </button>
               </div>
 
-              <Card
+              <BaseCard
                 v-if="canEdit"
                 tag="router-link"
                 :to="`/admin/ethos/${sectionIndex}/create`"
                 class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
               >
                 <span class="text-4xl text-wntrs-muted leading-none">+</span>
-              </Card>
+              </BaseCard>
             </div>
-          </Card>
+          </BaseCard>
         </div>
 
         <div v-if="canEdit" class="flex gap-4 mt-6">
@@ -86,24 +86,24 @@
       @confirm="onConfirmDelete"
     />
 
-    <Footer />
-  </Page>
+    <BaseFooter />
+  </BasePage>
 </template>
 
 <script>
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import Card from '@/components/common/Card.vue'
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
-import Footer from '@/components/common/Footer.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
 import { flats } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 
 export default {
   name: 'AdminEthosView',
-  components: { Page, Breadcrumbs, Card, AppIcon, ConfirmDialog, Footer },
+  components: { BasePage, BaseBreadcrumbs, BaseCard, AppIcon, ConfirmDialog, BaseFooter },
   data() {
     return {
       breadcrumbs: [

@@ -1,22 +1,3 @@
-<script setup>
-import { onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import AuthPage from '@/components/layout/AuthPage.vue'
-import { useAuthStore } from '@/stores/auth.js'
-
-const authStore = useAuthStore()
-const done = ref(false)
-
-onMounted(async () => {
-  try {
-    await authStore.logout()
-  } catch {
-    // nothing more useful to do on this page
-  }
-  done.value = true
-})
-</script>
-
 <template>
   <AuthPage title="Abmelden" breadcrumb-label="Abmelden">
     <p class="font-light">
@@ -27,3 +8,30 @@ onMounted(async () => {
     </RouterLink>
   </AuthPage>
 </template>
+
+<script>
+import { RouterLink } from 'vue-router'
+import AuthPage from '@/components/layout/AuthPage.vue'
+import { useAuthStore } from '@/stores/auth.js'
+
+export default {
+  name: 'LogoutView',
+  components: { RouterLink, AuthPage },
+  data() {
+    return { done: false }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+  },
+  async mounted() {
+    try {
+      await this.authStore.logout()
+    } catch {
+      // nothing more useful to do on this page
+    }
+    this.done = true
+  },
+}
+</script>

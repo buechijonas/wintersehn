@@ -1,8 +1,3 @@
-<script setup>
-import { RouterLink } from 'vue-router'
-import AuthPage from '@/components/layout/AuthPage.vue'
-</script>
-
 <template>
   <AuthPage title="Verifizierung ausstehend" breadcrumb-label="Verifizierung">
     <p class="font-light">
@@ -14,3 +9,13 @@ import AuthPage from '@/components/layout/AuthPage.vue'
     <RouterLink to="/logout" class="btn btn-primary w-full mt-6 shadow-none">Abmelden</RouterLink>
   </AuthPage>
 </template>
+
+<script>
+import { RouterLink } from 'vue-router'
+import AuthPage from '@/components/layout/AuthPage.vue'
+
+export default {
+  name: 'VerifyPendingView',
+  components: { RouterLink, AuthPage },
+}
+</script>

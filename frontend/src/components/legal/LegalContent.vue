@@ -1,39 +1,3 @@
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import LegalPage from '@/components/layout/LegalPage.vue'
-import LegalSection from '@/components/legal/LegalSection.vue'
-import LegalAddress from '@/components/legal/LegalAddress.vue'
-import LegalIllustration from '@/components/legal/LegalIllustration.vue'
-import { undraws } from '@/assets/images.js'
-import { useAuthStore } from '@/stores/auth.js'
-
-const props = defineProps({
-  page: {
-    type: Object,
-    required: true,
-  },
-})
-
-const authStore = useAuthStore()
-const router = useRouter()
-const accepting = ref(false)
-
-function onCancel() {
-  router.push('/logout')
-}
-
-async function onAccept() {
-  accepting.value = true
-  try {
-    await authStore.acceptConsent(props.page.consentField)
-    router.push('/')
-  } finally {
-    accepting.value = false
-  }
-}
-</script>
-
 <template>
   <LegalPage :title="page.title" :breadcrumb-label="page.breadcrumbLabel">
     <p v-if="page.intro" class="mt-6 font-medium text-gray">{{ page.intro }}</p>
@@ -67,3 +31,45 @@ async function onAccept() {
     </div>
   </LegalPage>
 </template>
+
+<script>
+import LegalPage from '@/components/layout/LegalPage.vue'
+import LegalSection from '@/components/legal/LegalSection.vue'
+import LegalAddress from '@/components/legal/LegalAddress.vue'
+import LegalIllustration from '@/components/legal/LegalIllustration.vue'
+import { undraws } from '@/assets/images.js'
+import { useAuthStore } from '@/stores/auth.js'
+
+export default {
+  name: 'LegalContent',
+  components: { LegalPage, LegalSection, LegalAddress, LegalIllustration },
+  props: {
+    page: {
+      type: Object,
+      required: true,
+    },
+  },
+  data() {
+    return { undraws, accepting: false }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+  },
+  methods: {
+    onCancel() {
+      this.$router.push('/logout')
+    },
+    async onAccept() {
+      this.accepting = true
+      try {
+        await this.authStore.acceptConsent(this.page.consentField)
+        this.$router.push('/')
+      } finally {
+        this.accepting = false
+      }
+    },
+  },
+}
+</script>

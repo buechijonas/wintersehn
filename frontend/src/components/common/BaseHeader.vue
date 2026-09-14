@@ -1,26 +1,3 @@
-<script setup>
-import { computed, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import { icons } from '@/assets/icons.js'
-import { profiles } from '@/assets/images.js'
-import { isNavDrawerOpen } from '@/lib/navDrawer.js'
-import { useAuthStore } from '@/stores/auth.js'
-import packageJson from '../../../package.json'
-
-const authStore = useAuthStore()
-const menu = ref(null)
-
-const avatarSrc = computed(() => profiles[authStore.user?.avatar] ?? icons.user)
-const drawerIcon = computed(() => (isNavDrawerOpen.value ? icons.cross : icons['menu-burger']))
-const brandInitial = computed(() =>
-  (authStore.user?.verified ? 'Jonas S. Büchi' : packageJson.name).charAt(0),
-)
-
-function closeMenu() {
-  menu.value?.hidePopover()
-}
-</script>
-
 <template>
   <div class="relative z-20 h-12 w-full flex items-center bg-primary">
     <div
@@ -69,3 +46,36 @@ function closeMenu() {
     </div>
   </div>
 </template>
+
+<script>
+import { RouterLink } from 'vue-router'
+import { icons } from '@/assets/icons.js'
+import { profiles } from '@/assets/images.js'
+import { isNavDrawerOpen } from '@/lib/navDrawer.js'
+import { useAuthStore } from '@/stores/auth.js'
+import packageJson from '../../../package.json'
+
+export default {
+  name: 'BaseHeader',
+  components: { RouterLink },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    avatarSrc() {
+      return profiles[this.authStore.user?.avatar] ?? icons.user
+    },
+    drawerIcon() {
+      return isNavDrawerOpen.value ? icons.cross : icons['menu-burger']
+    },
+    brandInitial() {
+      return (this.authStore.user?.verified ? 'Jonas S. Büchi' : packageJson.name).charAt(0)
+    },
+  },
+  methods: {
+    closeMenu() {
+      this.$refs.menu?.hidePopover()
+    },
+  },
+}
+</script>

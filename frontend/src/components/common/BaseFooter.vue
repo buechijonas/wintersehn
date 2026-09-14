@@ -1,9 +1,3 @@
-<script setup>
-import { RouterLink } from 'vue-router'
-import { icons } from '@/assets/icons.js'
-import { footerLinks } from '@/data/footer.js'
-</script>
-
 <template>
   <footer
     class="flex h-12 w-full shrink-0 items-center justify-evenly bg-base-100 border-t border-wntrs-border border-solid max-lg:sticky max-lg:bottom-0 max-lg:mt-auto lg:h-auto lg:w-auto lg:justify-center lg:bg-transparent lg:border-0"
@@ -27,3 +21,17 @@ import { footerLinks } from '@/data/footer.js'
     </component>
   </footer>
 </template>
+
+<script>
+import { RouterLink } from 'vue-router'
+import { icons } from '@/assets/icons.js'
+import { footerLinks } from '@/data/footer.js'
+
+export default {
+  name: 'BaseFooter',
+  components: { RouterLink },
+  data() {
+    return { icons, footerLinks, RouterLink }
+  },
+}
+</script>

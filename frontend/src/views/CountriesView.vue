@@ -1,22 +1,6 @@
-<script setup>
-import { computed, onMounted } from 'vue'
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import CardCategory from '@/components/common/CardCategory.vue'
-import Footer from '@/components/common/Footer.vue'
-import { useContentStore } from '@/stores/content.js'
-
-const contentStore = useContentStore()
-const breadcrumbs = [{ label: 'Länder', to: '/' }]
-
-onMounted(() => contentStore.fetchContent('countries'))
-
-const countryCategories = computed(() => contentStore.items.countries?.data ?? [])
-</script>
-
 <template>
-  <Page active-navigation="countries">
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage active-navigation="countries">
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col gap-4 pt-12 pb-12 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <CardCategory
         v-for="category in countryCategories"
@@ -25,6 +9,35 @@ const countryCategories = computed(() => contentStore.items.countries?.data ?? [
         :items="category.items"
       />
     </div>
-    <Footer />
-  </Page>
+    <BaseFooter />
+  </BasePage>
 </template>
+
+<script>
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import CardCategory from '@/components/common/CardCategory.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+import { useContentStore } from '@/stores/content.js'
+
+export default {
+  name: 'CountriesView',
+  components: { BasePage, BaseBreadcrumbs, CardCategory, BaseFooter },
+  data() {
+    return {
+      breadcrumbs: [{ label: 'Länder', to: '/' }],
+    }
+  },
+  computed: {
+    contentStore() {
+      return useContentStore()
+    },
+    countryCategories() {
+      return this.contentStore.items.countries?.data ?? []
+    },
+  },
+  mounted() {
+    this.contentStore.fetchContent('countries')
+  },
+}
+</script>

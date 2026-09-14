@@ -1,19 +1,6 @@
-<script setup>
-import { computed } from 'vue'
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import Footer from '@/components/common/Footer.vue'
-
-const props = defineProps({
-  title: { type: String, required: true },
-  breadcrumbLabel: { type: String, default: null },
-})
-
-const breadcrumbs = computed(() => [{ label: props.breadcrumbLabel ?? props.title, to: '/' }])
-</script>
 <template>
-  <Page>
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage>
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div
       class="flex flex-col pt-8 lg:pb-8 lg:gap-8 overflow-y-auto max-lg:h-[calc(100dvh-101px)] lg:max-h-[calc(100dvh-101px)]"
     >
@@ -27,7 +14,27 @@ const breadcrumbs = computed(() => [{ label: props.breadcrumbLabel ?? props.titl
           </div>
         </div>
       </div>
-      <Footer />
+      <BaseFooter />
     </div>
-  </Page>
+  </BasePage>
 </template>
+
+<script>
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+
+export default {
+  name: 'LegalPage',
+  components: { BasePage, BaseBreadcrumbs, BaseFooter },
+  props: {
+    title: { type: String, required: true },
+    breadcrumbLabel: { type: String, default: null },
+  },
+  computed: {
+    breadcrumbs() {
+      return [{ label: this.breadcrumbLabel ?? this.title, to: '/' }]
+    },
+  },
+}
+</script>

@@ -1,12 +1,3 @@
-<script setup>
-defineProps({
-  items: {
-    type: Array,
-    required: true,
-  },
-})
-</script>
-
 <template>
   <div class="border-b border-wntrs-border py-2 px-6">
     <div class="breadcrumbs text-sm">
@@ -24,3 +15,18 @@ defineProps({
     </div>
   </div>
 </template>
+
+<script>
+import { RouterLink } from 'vue-router'
+
+export default {
+  name: 'BaseBreadcrumbs',
+  components: { RouterLink },
+  props: {
+    items: {
+      type: Array,
+      required: true,
+    },
+  },
+}
+</script>
