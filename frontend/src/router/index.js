@@ -23,6 +23,8 @@ import AccountEditView from '@/views/AccountEditView.vue'
 import PasswordEditView from '@/views/PasswordEditView.vue'
 import AdminView from '@/views/AdminView.vue'
 import AdminContentView from '@/views/AdminContentView.vue'
+import AdminEthosView from '@/views/AdminEthosView.vue'
+import AdminEthosItemCreateView from '@/views/AdminEthosItemCreateView.vue'
 import AdminRolesView from '@/views/AdminRolesView.vue'
 import AdminUsersView from '@/views/AdminUsersView.vue'
 
@@ -156,6 +158,18 @@ const router = createRouter({
       path: '/admin/users',
       name: 'admin-users',
       component: AdminUsersView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/ethos',
+      name: 'admin-ethos',
+      component: AdminEthosView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/ethos/:section/create',
+      name: 'admin-ethos-item-create',
+      component: AdminEthosItemCreateView,
       meta: { requiresAuth: true, permission: 'can_view_admin' },
     },
     {
