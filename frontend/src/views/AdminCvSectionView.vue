@@ -7,39 +7,49 @@
 
         <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
-        <div v-if="section" class="flex flex-wrap gap-2">
-          <div v-for="(entry, entryIndex) in timeline" :key="entryIndex" class="relative shrink-0">
-            <BaseCard class="size-40 flex items-center justify-center p-4">
-              <div class="flex flex-col items-center text-center gap-2">
-                <img
-                  class="size-14"
-                  :src="flatIcons[entry.icon ?? section.icon]"
-                  :alt="entry.title"
-                />
-                <p class="font-mono italic text-wntrs-muted text-xs">{{ entry.year }}</p>
-                <div>
-                  <p class="text-wntrs-slate text-xs font-bold">{{ entry.title }}</p>
-                  <p class="text-wntrs-slate font-light text-xs">{{ entry.description }}</p>
+        <SortableList
+          v-if="section"
+          :items="timeline"
+          :disabled="!canEdit"
+          class="flex flex-wrap gap-2"
+          @reorder="reorderTimeline"
+        >
+          <template #default="{ item: entry, index: entryIndex }">
+            <div class="relative shrink-0">
+              <BaseCard class="size-40 flex items-center justify-center p-4">
+                <div class="flex flex-col items-center text-center gap-2">
+                  <img
+                    class="size-14"
+                    :src="flatIcons[entry.icon ?? section.icon]"
+                    :alt="entry.title"
+                  />
+                  <p class="font-mono italic text-wntrs-muted text-xs">{{ entry.year }}</p>
+                  <div>
+                    <p class="text-wntrs-slate text-xs font-bold">{{ entry.title }}</p>
+                    <p class="text-wntrs-slate font-light text-xs">{{ entry.description }}</p>
+                  </div>
                 </div>
-              </div>
-            </BaseCard>
-            <DeleteButton
-              v-if="canEdit"
-              class="absolute top-2 right-2"
-              :disabled="saving"
-              @click="askRemoveEntry(entryIndex)"
-            />
-          </div>
+              </BaseCard>
+              <DeleteButton
+                v-if="canEdit"
+                class="absolute top-2 right-2"
+                :disabled="saving"
+                @click="askRemoveEntry(entryIndex)"
+              />
+            </div>
+          </template>
 
-          <BaseCard
-            v-if="canEdit"
-            tag="router-link"
-            :to="`/admin/cv/${key}/create`"
-            class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
-          >
-            <span class="text-4xl text-wntrs-muted leading-none">+</span>
-          </BaseCard>
-        </div>
+          <template #append>
+            <BaseCard
+              v-if="canEdit"
+              tag="router-link"
+              :to="`/admin/cv/${key}/create`"
+              class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
+            >
+              <span class="text-4xl text-wntrs-muted leading-none">+</span>
+            </BaseCard>
+          </template>
+        </SortableList>
       </div>
     </div>
 
@@ -61,13 +71,22 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import SortableList from '@/components/common/SortableList.vue'
 import { flats } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 
 export default {
   name: 'AdminCvSectionView',
-  components: { BasePage, BaseBreadcrumbs, BaseCard, DeleteButton, ConfirmDialog, BaseFooter },
+  components: {
+    BasePage,
+    BaseBreadcrumbs,
+    BaseCard,
+    DeleteButton,
+    ConfirmDialog,
+    BaseFooter,
+    SortableList,
+  },
   data() {
     return {
       error: '',
@@ -145,6 +164,11 @@ export default {
       } finally {
         this.saving = false
       }
+    },
+    reorderTimeline(entries) {
+      this.persistTimeline(
+        entries.map((entry, i) => ({ ...entry, side: i % 2 === 0 ? 'start' : 'end' })),
+      )
     },
     askRemoveEntry(entryIndex) {
       const { title } = this.timeline[entryIndex]

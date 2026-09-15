@@ -27,35 +27,40 @@
               </DeleteButton>
             </div>
 
-            <div class="flex flex-wrap gap-2">
-              <div
-                v-for="(item, itemIndex) in section.items"
-                :key="itemIndex"
-                class="relative shrink-0"
-              >
-                <BaseCard class="size-40 flex items-center justify-center p-4">
-                  <div class="flex flex-col items-center text-center gap-4">
-                    <img class="size-16" :src="countryIcons[item.icon]" :alt="item.label" />
-                    <p class="text-wntrs-slate text-sm">{{ item.label }}</p>
-                  </div>
-                </BaseCard>
-                <DeleteButton
-                  v-if="canEdit"
-                  class="absolute top-2 right-2"
-                  :disabled="saving"
-                  @click="askRemoveItem(sectionIndex, itemIndex)"
-                />
-              </div>
+            <SortableList
+              :items="section.items"
+              :disabled="!canEdit"
+              class="flex flex-wrap gap-2"
+              @reorder="(items) => reorderItems(sectionIndex, items)"
+            >
+              <template #default="{ item, index: itemIndex }">
+                <div class="relative shrink-0">
+                  <BaseCard class="size-40 flex items-center justify-center p-4">
+                    <div class="flex flex-col items-center text-center gap-4">
+                      <img class="size-16" :src="countryIcons[item.icon]" :alt="item.label" />
+                      <p class="text-wntrs-slate text-sm">{{ item.label }}</p>
+                    </div>
+                  </BaseCard>
+                  <DeleteButton
+                    v-if="canEdit"
+                    class="absolute top-2 right-2"
+                    :disabled="saving"
+                    @click="askRemoveItem(sectionIndex, itemIndex)"
+                  />
+                </div>
+              </template>
 
-              <BaseCard
-                v-if="canEdit"
-                tag="router-link"
-                :to="`/admin/countries/${sectionIndex}/create`"
-                class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
-              >
-                <span class="text-4xl text-wntrs-muted leading-none">+</span>
-              </BaseCard>
-            </div>
+              <template #append>
+                <BaseCard
+                  v-if="canEdit"
+                  tag="router-link"
+                  :to="`/admin/countries/${sectionIndex}/create`"
+                  class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
+                >
+                  <span class="text-4xl text-wntrs-muted leading-none">+</span>
+                </BaseCard>
+              </template>
+            </SortableList>
           </BaseCard>
         </div>
 
@@ -91,6 +96,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import SortableList from '@/components/common/SortableList.vue'
 import { countries } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
@@ -105,6 +111,7 @@ export default {
     DeleteButton,
     ConfirmDialog,
     BaseFooter,
+    SortableList,
   },
   data() {
     return {
@@ -171,6 +178,11 @@ export default {
       this.dialogMessage = message
       this.pendingAction = action
       this.$refs.confirmDialog?.open()
+    },
+    reorderItems(sectionIndex, items) {
+      this.persist(
+        this.sections.map((section, i) => (i === sectionIndex ? { ...section, items } : section)),
+      )
     },
     askRemoveSection(sectionIndex) {
       const { title } = this.sections[sectionIndex]
