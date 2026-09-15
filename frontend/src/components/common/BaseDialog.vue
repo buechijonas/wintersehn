@@ -6,17 +6,25 @@
           ✕
         </BaseButton>
       </form>
-      <h3 v-if="title" class="text-lg font-bold">{{ title }}</h3>
-      <p v-if="description" class="py-4">{{ description }}</p>
-      <div v-if="buttons.length" class="modal-action">
-        <BaseButton
-          v-for="button in buttons"
-          :key="button.value"
-          :variant="button.variant ?? 'neutral'"
-          @click="handleClick(button)"
-        >
-          {{ button.label }}
-        </BaseButton>
+      <slot name="header">
+        <h3 v-if="title" class="text-lg font-bold">{{ title }}</h3>
+      </slot>
+      <div class="py-4">
+        <slot>
+          <p v-if="description">{{ description }}</p>
+        </slot>
+      </div>
+      <div v-if="buttons.length || $slots.actions" class="modal-action">
+        <slot name="actions">
+          <BaseButton
+            v-for="button in buttons"
+            :key="button.value"
+            :variant="button.variant ?? 'neutral'"
+            @click="handleClick(button)"
+          >
+            {{ button.label }}
+          </BaseButton>
+        </slot>
       </div>
     </div>
     <form method="dialog" class="modal-backdrop">
