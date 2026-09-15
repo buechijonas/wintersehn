@@ -25,6 +25,8 @@ import AdminView from '@/views/AdminView.vue'
 import AdminContentView from '@/views/AdminContentView.vue'
 import AdminEthosView from '@/views/AdminEthosView.vue'
 import AdminEthosItemCreateView from '@/views/AdminEthosItemCreateView.vue'
+import AdminCountriesView from '@/views/AdminCountriesView.vue'
+import AdminCountriesItemCreateView from '@/views/AdminCountriesItemCreateView.vue'
 import AdminRolesView from '@/views/AdminRolesView.vue'
 import AdminUsersView from '@/views/AdminUsersView.vue'
 
@@ -170,6 +172,18 @@ const router = createRouter({
       path: '/admin/ethos/:section/create',
       name: 'admin-ethos-item-create',
       component: AdminEthosItemCreateView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/countries',
+      name: 'admin-countries',
+      component: AdminCountriesView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/countries/:section/create',
+      name: 'admin-countries-item-create',
+      component: AdminCountriesItemCreateView,
       meta: { requiresAuth: true, permission: 'can_view_admin' },
     },
     {
