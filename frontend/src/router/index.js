@@ -27,6 +27,9 @@ import AdminEthosView from '@/views/AdminEthosView.vue'
 import AdminEthosItemCreateView from '@/views/AdminEthosItemCreateView.vue'
 import AdminCountriesView from '@/views/AdminCountriesView.vue'
 import AdminCountriesItemCreateView from '@/views/AdminCountriesItemCreateView.vue'
+import AdminCvView from '@/views/AdminCvView.vue'
+import AdminCvSectionView from '@/views/AdminCvSectionView.vue'
+import AdminCvEntryCreateView from '@/views/AdminCvEntryCreateView.vue'
 import AdminRolesView from '@/views/AdminRolesView.vue'
 import AdminUsersView from '@/views/AdminUsersView.vue'
 
@@ -184,6 +187,24 @@ const router = createRouter({
       path: '/admin/countries/:section/create',
       name: 'admin-countries-item-create',
       component: AdminCountriesItemCreateView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/cv',
+      name: 'admin-cv',
+      component: AdminCvView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/cv/:key/create',
+      name: 'admin-cv-entry-create',
+      component: AdminCvEntryCreateView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/cv/:key',
+      name: 'admin-cv-section',
+      component: AdminCvSectionView,
       meta: { requiresAuth: true, permission: 'can_view_admin' },
     },
     {
