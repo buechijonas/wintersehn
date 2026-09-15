@@ -8,9 +8,10 @@
     <div class="flex items-center gap-3 ml-auto px-6">
       <template v-if="authStore.isAuthenticated">
         <span class="text-white text-sm">{{ authStore.user.username }}</span>
-        <button
-          type="button"
-          class="btn btn-square btn-ghost btn-sm"
+        <BaseButton
+          variant="ghost"
+          shape="square"
+          size="sm"
           popovertarget="user-menu"
           style="anchor-name: --user-menu-anchor"
         >
@@ -20,7 +21,7 @@
             class="size-5"
             :class="{ invert: !authStore.user?.avatar }"
           />
-        </button>
+        </BaseButton>
         <ul
           id="user-menu"
           ref="menu"
@@ -49,6 +50,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { icons } from '@/assets/icons.js'
 import { profiles } from '@/assets/images.js'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
@@ -57,7 +59,7 @@ import packageJson from '../../../package.json'
 
 export default {
   name: 'BaseHeader',
-  components: { RouterLink },
+  components: { RouterLink, BaseButton },
   computed: {
     authStore() {
       return useAuthStore()

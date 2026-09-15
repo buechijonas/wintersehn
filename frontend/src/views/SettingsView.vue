@@ -26,7 +26,7 @@
                   {{ authStore.user.email }}
                 </p>
               </div>
-              <RouterLink to="/settings/account" class="btn shadow-none shrink-0">Bearbeiten</RouterLink>
+              <BaseButton to="/settings/account" class="shrink-0">Bearbeiten</BaseButton>
             </BaseCard>
           </div>
         </div>
@@ -35,7 +35,7 @@
           <h3 class="text-xl my-4">Passwort</h3>
           <BaseCard class="p-6 flex items-center justify-between gap-4">
             <p class="text-wntrs-muted">Passwort ändern oder zurücksetzen.</p>
-            <RouterLink to="/settings/password" class="btn shadow-none">Ändern</RouterLink>
+            <BaseButton to="/settings/password">Ändern</BaseButton>
           </BaseCard>
         </div>
       </div>
@@ -45,18 +45,18 @@
 </template>
 
 <script>
-import { RouterLink } from 'vue-router'
 import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'SettingsView',
-  components: { RouterLink, BasePage, BaseBreadcrumbs, BaseCard, BaseFooter },
+  components: { BasePage, BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton },
   data() {
     return {
       breadcrumbs: [{ label: 'Einstellungen', to: '/' }],

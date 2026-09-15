@@ -24,18 +24,9 @@
             class="hidden"
             @change="onFileSelected"
           />
-          <button type="button" class="btn shadow-none" @click="pickFile">Datei hochladen</button>
-          <button type="button" class="btn shadow-none" @click="downloadBackup">
-            Als Datei sichern
-          </button>
-          <button
-            type="button"
-            class="btn btn-primary shadow-none"
-            :disabled="saving"
-            @click="save"
-          >
-            Speichern
-          </button>
+          <BaseButton @click="pickFile">Datei hochladen</BaseButton>
+          <BaseButton @click="downloadBackup">Als Datei sichern</BaseButton>
+          <BaseButton variant="primary" :disabled="saving" @click="save">Speichern</BaseButton>
         </div>
       </div>
     </div>
@@ -47,6 +38,7 @@
 import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 
@@ -65,7 +57,7 @@ const SECTION_LABELS = {
 
 export default {
   name: 'AdminContentView',
-  components: { BasePage, BaseBreadcrumbs, BaseFooter },
+  components: { BasePage, BaseBreadcrumbs, BaseFooter, BaseButton },
   data() {
     return {
       text: '',

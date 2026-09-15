@@ -70,10 +70,8 @@
             <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
             <div class="flex gap-4 mt-4">
-              <RouterLink to="/settings" class="btn shadow-none">Abbrechen</RouterLink>
-              <button type="submit" class="btn btn-primary shadow-none" :disabled="saving">
-                Speichern
-              </button>
+              <CancelButton to="/settings" />
+              <BaseButton type="submit" variant="primary" :disabled="saving">Speichern</BaseButton>
             </div>
           </form>
         </BaseCard>
@@ -84,11 +82,12 @@
 </template>
 
 <script>
-import { RouterLink } from 'vue-router'
 import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import CancelButton from '@/components/common/CancelButton.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -148,7 +147,7 @@ const AVATAR_LABELS = {
 
 export default {
   name: 'AccountEditView',
-  components: { RouterLink, BasePage, BaseBreadcrumbs, BaseCard, BaseFooter },
+  components: { BasePage, BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, CancelButton },
   data() {
     const authStore = useAuthStore()
     return {

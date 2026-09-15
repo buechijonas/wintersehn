@@ -46,22 +46,18 @@
           <div>Version {{ version }}</div>
           <div>Created by Wintersehn</div>
         </div>
-        <RouterLink
+        <BaseButton
           v-if="!authStore.isAuthenticated"
+          variant="primary"
+          block
           to="/login"
-          class="btn btn-primary w-full shadow-none"
           @click="isNavDrawerOpen = false"
         >
           <img :src="icons.enter" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Anmelden
-        </RouterLink>
-        <RouterLink
-          v-else
-          to="/logout"
-          class="btn btn-primary w-full shadow-none"
-          @click="isNavDrawerOpen = false"
-        >
+        </BaseButton>
+        <BaseButton v-else variant="primary" block to="/logout" @click="isNavDrawerOpen = false">
           <img :src="icons.exit" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Abmelden
-        </RouterLink>
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -69,6 +65,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { icons } from '@/assets/icons.js'
 import { navigationItems } from '@/data/navigation.js'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
@@ -77,7 +74,7 @@ import packageJson from '../../../package.json'
 
 export default {
   name: 'BaseNavigation',
-  components: { RouterLink },
+  components: { RouterLink, BaseButton },
   props: {
     activeNavigation: {
       type: String,

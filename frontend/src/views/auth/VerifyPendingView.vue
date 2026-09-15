@@ -6,16 +6,16 @@
       und wartet nun auf die Bestätigung durch den Inhaber. Sie erhalten Zugriff, sobald die
       Verifizierung abgeschlossen ist.
     </p>
-    <RouterLink to="/logout" class="btn btn-primary w-full mt-6 shadow-none">Abmelden</RouterLink>
+    <BaseButton variant="primary" block class="mt-6" to="/logout">Abmelden</BaseButton>
   </AuthPage>
 </template>
 
 <script>
-import { RouterLink } from 'vue-router'
 import AuthPage from '@/components/layout/AuthPage.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 
 export default {
   name: 'VerifyPendingView',
-  components: { RouterLink, AuthPage },
+  components: { AuthPage, BaseButton },
 }
 </script>

@@ -25,7 +25,7 @@ export default {
     buttons() {
       return [
         { value: 'cancel', label: this.cancelLabel },
-        { value: 'confirm', label: this.confirmLabel, class: 'btn-error' },
+        { value: 'confirm', label: this.confirmLabel, variant: 'error' },
       ]
     },
   },

@@ -17,16 +17,14 @@
                 :disabled="!canEdit"
                 @change="renameSection(sectionIndex, $event)"
               />
-              <button
+              <DeleteButton
                 v-if="canEdit"
-                type="button"
-                class="btn btn-ghost btn-xs shrink-0 text-error"
+                class="shrink-0"
                 :disabled="saving"
                 @click="askRemoveSection(sectionIndex)"
               >
-                <AppIcon name="trash" class="size-4 icon-error" alt="" />
                 Abschnitt löschen
-              </button>
+              </DeleteButton>
             </div>
 
             <div class="flex flex-wrap gap-2">
@@ -41,15 +39,12 @@
                     <p class="text-wntrs-slate text-sm">{{ item.label }}</p>
                   </div>
                 </BaseCard>
-                <button
+                <DeleteButton
                   v-if="canEdit"
-                  type="button"
-                  class="btn btn-circle btn-xs absolute top-2 right-2"
+                  class="absolute top-2 right-2"
                   :disabled="saving"
                   @click="askRemoveItem(sectionIndex, itemIndex)"
-                >
-                  <AppIcon name="trash" class="size-3 icon-error" alt="Löschen" />
-                </button>
+                />
               </div>
 
               <BaseCard
@@ -72,9 +67,7 @@
             class="input flex-1"
             @keyup.enter="addSection"
           />
-          <button type="button" class="btn btn-primary shadow-none" @click="addSection">
-            Abschnitt hinzufügen
-          </button>
+          <BaseButton variant="primary" @click="addSection">Abschnitt hinzufügen</BaseButton>
         </div>
       </div>
     </div>
@@ -94,7 +87,8 @@
 import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import DeleteButton from '@/components/common/DeleteButton.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import { flats } from '@/assets/images.js'
@@ -103,7 +97,15 @@ import { useContentStore } from '@/stores/content.js'
 
 export default {
   name: 'AdminEthosView',
-  components: { BasePage, BaseBreadcrumbs, BaseCard, AppIcon, ConfirmDialog, BaseFooter },
+  components: {
+    BasePage,
+    BaseBreadcrumbs,
+    BaseCard,
+    BaseButton,
+    DeleteButton,
+    ConfirmDialog,
+    BaseFooter,
+  },
   data() {
     return {
       breadcrumbs: [
@@ -194,10 +196,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.icon-error {
-  filter: brightness(0) saturate(100%) invert(62%) sepia(21%) saturate(11611%) hue-rotate(320deg)
-    brightness(116%) contrast(109%);
-}
-</style>

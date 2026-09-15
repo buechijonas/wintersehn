@@ -12,9 +12,9 @@
             <div class="flex">
               <div class="my-auto">{{ item.name }}</div>
             </div>
-            <a :href="item.url" class="btn btn-square btn-ghost">
+            <BaseButton variant="ghost" shape="square" :href="item.url">
               <img class="size-[1.2em]" alt="open" :src="icons['share-square']" />
-            </a>
+            </BaseButton>
           </li>
         </BaseCard>
       </div>
@@ -28,13 +28,14 @@ import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 
 export default {
   name: 'MediaView',
-  components: { BasePage, BaseBreadcrumbs, BaseCard, BaseFooter },
+  components: { BasePage, BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton },
   data() {
     return {
       icons,

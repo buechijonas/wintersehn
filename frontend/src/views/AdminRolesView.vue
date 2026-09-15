@@ -21,14 +21,9 @@
                       :disabled="!authStore.user?.can_manage_roles"
                       @change="renameRole(role, $event)"
                     />
-                    <button
-                      v-if="authStore.user?.can_manage_roles"
-                      type="button"
-                      class="btn btn-ghost btn-xs"
-                      @click="removeRole(role)"
-                    >
+                    <DeleteButton v-if="authStore.user?.can_manage_roles" @click="removeRole(role)">
                       Löschen
-                    </button>
+                    </DeleteButton>
                   </div>
                 </th>
               </tr>
@@ -58,9 +53,7 @@
             class="input flex-1"
             @keyup.enter="addRole"
           />
-          <button type="button" class="btn btn-primary shadow-none" @click="addRole">
-            Rolle hinzufügen
-          </button>
+          <BaseButton variant="primary" @click="addRole">Rolle hinzufügen</BaseButton>
         </div>
       </div>
     </div>
@@ -72,12 +65,14 @@
 import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import DeleteButton from '@/components/common/DeleteButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useRbacStore } from '@/stores/rbac.js'
 
 export default {
   name: 'AdminRolesView',
-  components: { BasePage, BaseBreadcrumbs, BaseFooter },
+  components: { BasePage, BaseBreadcrumbs, BaseFooter, BaseButton, DeleteButton },
   data() {
     return {
       breadcrumbs: [

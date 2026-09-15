@@ -23,9 +23,9 @@
 
       <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
-      <button type="submit" class="btn btn-primary w-full mt-6 shadow-none" :disabled="loading">
+      <BaseButton type="submit" variant="primary" block class="mt-6" :disabled="loading">
         Anmelden
-      </button>
+      </BaseButton>
     </form>
     <p class="text-sm mt-4 text-center text-wntrs-muted">
       Noch kein Konto?
@@ -37,11 +37,12 @@
 <script>
 import { RouterLink } from 'vue-router'
 import AuthPage from '@/components/layout/AuthPage.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'LoginView',
-  components: { RouterLink, AuthPage },
+  components: { RouterLink, AuthPage, BaseButton },
   data() {
     return {
       username: '',

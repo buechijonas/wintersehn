@@ -37,16 +37,18 @@
                     <p class="text-wntrs-slate font-light text-xs">{{ entry.description }}</p>
                   </div>
                 </BaseCard>
-                <a
+                <BaseButton
                   v-for="link in entry.links ?? []"
                   :key="link.url"
+                  variant="primary"
+                  size="sm"
+                  class="w-40"
                   :href="link.url"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="btn btn-primary btn-sm w-40 shadow-none"
                 >
                   {{ link.label }}
-                </a>
+                </BaseButton>
               </div>
             </div>
             <hr :class="{ invisible: index === section.timeline.length - 1 }" />
@@ -63,12 +65,13 @@ import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { flats } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
 
 export default {
   name: 'CvSectionView',
-  components: { BasePage, BaseBreadcrumbs, BaseCard, BaseFooter },
+  components: { BasePage, BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton },
   data() {
     return { flats }
   },

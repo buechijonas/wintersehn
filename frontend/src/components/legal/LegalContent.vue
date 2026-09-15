@@ -19,15 +19,10 @@
       "
       class="flex gap-4 mt-6"
     >
-      <button type="button" class="btn flex-1 shadow-none" @click="onCancel">Abbrechen</button>
-      <button
-        type="button"
-        class="btn btn-primary flex-1 shadow-none"
-        :disabled="accepting"
-        @click="onAccept"
-      >
+      <CancelButton class="flex-1" to="/logout" />
+      <BaseButton variant="primary" class="flex-1" :disabled="accepting" @click="onAccept">
         Zustimmen
-      </button>
+      </BaseButton>
     </div>
   </LegalPage>
 </template>
@@ -37,12 +32,14 @@ import LegalPage from '@/components/layout/LegalPage.vue'
 import LegalSection from '@/components/legal/LegalSection.vue'
 import LegalAddress from '@/components/legal/LegalAddress.vue'
 import LegalIllustration from '@/components/legal/LegalIllustration.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import CancelButton from '@/components/common/CancelButton.vue'
 import { undraws } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'LegalContent',
-  components: { LegalPage, LegalSection, LegalAddress, LegalIllustration },
+  components: { LegalPage, LegalSection, LegalAddress, LegalIllustration, BaseButton, CancelButton },
   props: {
     page: {
       type: Object,
@@ -58,9 +55,6 @@ export default {
     },
   },
   methods: {
-    onCancel() {
-      this.$router.push('/logout')
-    },
     async onAccept() {
       this.accepting = true
       try {

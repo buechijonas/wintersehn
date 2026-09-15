@@ -3,20 +3,18 @@
     <p class="font-light">
       {{ done ? 'Sie wurden erfolgreich abgemeldet.' : 'Sie werden abgemeldet …' }}
     </p>
-    <RouterLink to="/" class="btn btn-primary w-full mt-6 shadow-none">
-      Zurück zur Startseite
-    </RouterLink>
+    <BaseButton variant="primary" block class="mt-6" to="/">Zurück zur Startseite</BaseButton>
   </AuthPage>
 </template>
 
 <script>
-import { RouterLink } from 'vue-router'
 import AuthPage from '@/components/layout/AuthPage.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 
 export default {
   name: 'LogoutView',
-  components: { RouterLink, AuthPage },
+  components: { AuthPage, BaseButton },
   data() {
     return { done: false }
   },

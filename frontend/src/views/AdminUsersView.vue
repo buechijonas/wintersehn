@@ -48,15 +48,11 @@
                   />
                 </td>
                 <td class="text-right">
-                  <button
+                  <DeleteButton
                     v-if="authStore.user?.can_manage_roles && user.id !== authStore.user.id"
-                    type="button"
-                    class="btn btn-ghost btn-square btn-xs"
                     title="Löschen"
                     @click="onDeleteUser(user)"
-                  >
-                    <img :src="icons.trash" alt="Löschen" class="size-4 trash-icon" />
-                  </button>
+                  />
                 </td>
               </tr>
             </tbody>
@@ -72,6 +68,7 @@
 import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import DeleteButton from '@/components/common/DeleteButton.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -79,7 +76,7 @@ import { useRbacStore } from '@/stores/rbac.js'
 
 export default {
   name: 'AdminUsersView',
-  components: { BasePage, BaseBreadcrumbs, BaseFooter },
+  components: { BasePage, BaseBreadcrumbs, BaseFooter, DeleteButton },
   data() {
     return {
       breadcrumbs: [{ label: 'Admin', to: '/admin' }, { label: 'Nutzer' }],
@@ -135,10 +132,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.trash-icon {
-  filter: brightness(0) saturate(100%) invert(54%) sepia(50%) saturate(3825%) hue-rotate(318deg)
-    brightness(110%) contrast(101%);
-}
-</style>
