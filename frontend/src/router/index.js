@@ -30,6 +30,8 @@ import AdminCountriesItemCreateView from '@/views/AdminCountriesItemCreateView.v
 import AdminCvView from '@/views/AdminCvView.vue'
 import AdminCvSectionView from '@/views/AdminCvSectionView.vue'
 import AdminCvEntryCreateView from '@/views/AdminCvEntryCreateView.vue'
+import AdminMediaView from '@/views/AdminMediaView.vue'
+import AdminMediaItemCreateView from '@/views/AdminMediaItemCreateView.vue'
 import AdminRolesView from '@/views/AdminRolesView.vue'
 import AdminUsersView from '@/views/AdminUsersView.vue'
 
@@ -205,6 +207,18 @@ const router = createRouter({
       path: '/admin/cv/:key',
       name: 'admin-cv-section',
       component: AdminCvSectionView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/media',
+      name: 'admin-media',
+      component: AdminMediaView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/media/:section/create',
+      name: 'admin-media-item-create',
+      component: AdminMediaItemCreateView,
       meta: { requiresAuth: true, permission: 'can_view_admin' },
     },
     {

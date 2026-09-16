@@ -16,7 +16,12 @@
               required
             />
 
-            <IconPickerField v-model="selectedIcon" :icons="flatIcons" class="mt-4" />
+            <IconPickerField
+              v-model="selectedIcon"
+              :icons="flatIcons"
+              :categories="flatCategories"
+              class="mt-4"
+            />
 
             <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
@@ -40,7 +45,7 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import CancelButton from '@/components/common/CancelButton.vue'
 import IconPickerField from '@/components/common/IconPickerField.vue'
-import { flats } from '@/assets/images.js'
+import { flats, flatCategories } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
 
 export default {
@@ -68,6 +73,9 @@ export default {
     },
     flatIcons() {
       return flats
+    },
+    flatCategories() {
+      return flatCategories
     },
     sectionIndex() {
       return Number(this.$route.params.section)

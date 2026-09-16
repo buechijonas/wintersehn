@@ -24,6 +24,7 @@
             <IconPickerField
               v-model="selectedIcon"
               :icons="flatIcons"
+              :categories="flatCategories"
               class="mt-4"
               allow-empty
               :empty-icon="section.icon"
@@ -68,7 +69,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import CancelButton from '@/components/common/CancelButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import IconPickerField from '@/components/common/IconPickerField.vue'
-import { flats } from '@/assets/images.js'
+import { flats, flatCategories } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
 
 export default {
@@ -100,6 +101,9 @@ export default {
     },
     flatIcons() {
       return flats
+    },
+    flatCategories() {
+      return flatCategories
     },
     key() {
       return this.$route.params.key

@@ -1,6 +1,6 @@
 <template>
   <dialog ref="dialog" class="modal">
-    <div class="modal-box">
+    <div class="modal-box flex flex-col" :class="boxClass">
       <form method="dialog">
         <BaseButton type="submit" variant="ghost" shape="circle" size="sm" class="absolute right-2 top-2">
           ✕
@@ -9,7 +9,7 @@
       <slot name="header">
         <h3 v-if="title" class="text-lg font-bold">{{ title }}</h3>
       </slot>
-      <div class="py-4">
+      <div class="py-4 flex-1 min-h-0 flex flex-col">
         <slot>
           <p v-if="description">{{ description }}</p>
         </slot>
@@ -43,6 +43,7 @@ export default {
     title: { type: String, default: '' },
     description: { type: String, default: '' },
     buttons: { type: Array, default: () => [] },
+    boxClass: { type: [String, Array, Object], default: '' },
   },
   emits: ['action'],
   methods: {

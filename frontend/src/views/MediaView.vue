@@ -7,7 +7,7 @@
           <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">{{ group.title }}</li>
           <li v-for="item in group.items" :key="item.url" class="list-row">
             <div>
-              <img class="size-10" :alt="item.platform" :src="icons[item.icon]" />
+              <img class="size-10" :alt="item.platform" :src="social[item.icon]" />
             </div>
             <div class="flex">
               <div class="my-auto">{{ item.name }}</div>
@@ -30,6 +30,7 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { icons } from '@/assets/icons.js'
+import { social } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 
@@ -39,6 +40,7 @@ export default {
   data() {
     return {
       icons,
+      social,
       breadcrumbs: [{ label: 'Medien', to: '/' }],
     }
   },
