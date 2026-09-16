@@ -23,6 +23,7 @@ import AccountEditView from '@/views/AccountEditView.vue'
 import PasswordEditView from '@/views/PasswordEditView.vue'
 import AdminView from '@/views/AdminView.vue'
 import AdminContentView from '@/views/AdminContentView.vue'
+import AdminLegalView from '@/views/AdminLegalView.vue'
 import AdminEthosView from '@/views/AdminEthosView.vue'
 import AdminEthosItemCreateView from '@/views/AdminEthosItemCreateView.vue'
 import AdminCountriesView from '@/views/AdminCountriesView.vue'
@@ -219,6 +220,41 @@ const router = createRouter({
       path: '/admin/media/:section/create',
       name: 'admin-media-item-create',
       component: AdminMediaItemCreateView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/impressum',
+      name: 'admin-impressum',
+      component: AdminLegalView,
+      props: { contentKey: 'impressum', label: 'Impressum' },
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/privacy',
+      name: 'admin-privacy',
+      component: AdminLegalView,
+      props: { contentKey: 'privacy', label: 'Datenschutzerklärung' },
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/cookies',
+      name: 'admin-cookies',
+      component: AdminLegalView,
+      props: { contentKey: 'cookies', label: 'Cookierichtlinie' },
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/terms',
+      name: 'admin-terms',
+      component: AdminLegalView,
+      props: { contentKey: 'terms', label: 'Nutzungsrichtlinien' },
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/disclaimer',
+      name: 'admin-disclaimer',
+      component: AdminLegalView,
+      props: { contentKey: 'disclaimer', label: 'Haftungsausschluss' },
       meta: { requiresAuth: true, permission: 'can_view_admin' },
     },
     {

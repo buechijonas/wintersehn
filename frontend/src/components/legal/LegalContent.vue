@@ -5,6 +5,7 @@
       v-for="(section, index) in page.sections"
       :key="section.title ?? index"
       :title="section.title"
+      :subtitle="section.subtitle"
       :text="section.text"
       :items="section.items"
     >

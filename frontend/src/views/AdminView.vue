@@ -48,11 +48,11 @@ export default {
         {
           title: 'Rechtliches',
           items: [
-            { icon: 'verified', label: 'Impressum', to: '/admin/impressum' },
+            { icon: 'calendar_and_date/verified', label: 'Impressum', to: '/admin/impressum' },
             { icon: 'privacy-policy', label: 'Datenschutzerklärung', to: '/admin/privacy' },
-            { icon: 'cookies', label: 'Cookierichtlinien', to: '/admin/cookies' },
-            { icon: 'agreement', label: 'Nutzungsrichtlinien', to: '/admin/terms' },
-            { icon: 'attorney', label: 'Haftungsausschluss', to: '/admin/disclaimer' },
+            { icon: 'breakfast/cookies', label: 'Cookierichtlinien', to: '/admin/cookies' },
+            { icon: 'calendar_and_date/agreement', label: 'Nutzungsrichtlinien', to: '/admin/terms' },
+            { icon: 'law_and_justice/attorney', label: 'Haftungsausschluss', to: '/admin/disclaimer' },
           ],
         },
       ],
