@@ -1,43 +1,3 @@
-<script setup>
-import { ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import AuthPage from '@/components/layout/AuthPage.vue'
-import { useAuthStore } from '@/stores/auth.js'
-
-const authStore = useAuthStore()
-const router = useRouter()
-
-const username = ref('')
-const email = ref('')
-const password = ref('')
-const passwordConfirm = ref('')
-const error = ref('')
-const loading = ref(false)
-
-async function onSubmit() {
-  error.value = ''
-
-  if (password.value !== passwordConfirm.value) {
-    error.value = 'Die Passwörter stimmen nicht überein.'
-    return
-  }
-
-  loading.value = true
-  try {
-    await authStore.signup({
-      username: username.value,
-      email: email.value,
-      password: password.value,
-    })
-    router.push('/')
-  } catch (e) {
-    error.value = e.message
-  } finally {
-    loading.value = false
-  }
-}
-</script>
-
 <template>
   <AuthPage title="Registrieren" breadcrumb-label="Registrieren">
     <form class="fieldset" @submit.prevent="onSubmit">
@@ -83,9 +43,9 @@ async function onSubmit() {
 
       <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
-      <button type="submit" class="btn btn-primary w-full mt-6 shadow-none" :disabled="loading">
+      <BaseButton type="submit" variant="primary" block class="mt-6" :disabled="loading">
         Registrieren
-      </button>
+      </BaseButton>
     </form>
     <p class="text-sm mt-4 text-center text-wntrs-muted">
       Bereits ein Konto?
@@ -93,3 +53,54 @@ async function onSubmit() {
     </p>
   </AuthPage>
 </template>
+
+<script>
+import { RouterLink } from 'vue-router'
+import AuthPage from '@/components/layout/AuthPage.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import { useAuthStore } from '@/stores/auth.js'
+
+export default {
+  name: 'SignupView',
+  components: { RouterLink, AuthPage, BaseButton },
+  data() {
+    return {
+      username: '',
+      email: '',
+      password: '',
+      passwordConfirm: '',
+      error: '',
+      loading: false,
+    }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+  },
+  methods: {
+    async onSubmit() {
+      this.error = ''
+
+      if (this.password !== this.passwordConfirm) {
+        this.error = 'Die Passwörter stimmen nicht überein.'
+        return
+      }
+
+      this.loading = true
+      try {
+        await this.authStore.signup({
+          username: this.username,
+          email: this.email,
+          password: this.password,
+        })
+        this.$router.push('/')
+      } catch (e) {
+        this.error = e.message
+      } finally {
+        this.loading = false
+      }
+    },
+  },
+}
+</script>

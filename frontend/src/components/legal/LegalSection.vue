@@ -1,11 +1,3 @@
-<script setup>
-defineProps({
-  title: { type: String, default: '' },
-  text: { type: String, default: '' },
-  items: { type: Array, default: () => [] },
-})
-</script>
-
 <template>
   <section class="my-6">
     <h3 v-if="title" class="font-medium">{{ title }}</h3>
@@ -21,6 +13,18 @@ defineProps({
     <slot />
   </section>
 </template>
+
+<script>
+export default {
+  name: 'LegalSection',
+  props: {
+    title: { type: String, default: '' },
+    text: { type: String, default: '' },
+    items: { type: Array, default: () => [] },
+  },
+}
+</script>
+
 <style scoped>
 ul {
   list-style-type: disc;

@@ -1,45 +1,6 @@
-<script setup>
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import CardCategory from '@/components/common/CardCategory.vue'
-import Footer from '@/components/common/Footer.vue'
-
-const breadcrumbs = [{ label: 'Admin', to: '/' }]
-
-const categories = [
-  {
-    title: 'Zugriff',
-    items: [
-      { icon: 'permission', label: 'Rollen & Rechte', to: '/admin/roles' },
-      { icon: 'people', label: 'Nutzer', to: '/admin/users' },
-    ],
-  },
-  {
-    title: 'Inhalte',
-    items: [
-      { icon: 'switzerland', label: 'Über mich', to: '/admin/about' },
-      { icon: 'integrity', label: 'Ethos', to: '/admin/ethos' },
-      { icon: 'cover-letter', label: 'Lebenslauf', to: '/admin/cv' },
-      { icon: 'destination', label: 'Länder', to: '/admin/countries' },
-      { icon: 'social-media', label: 'Medien', to: '/admin/media' },
-    ],
-  },
-  {
-    title: 'Rechtliches',
-    items: [
-      { icon: 'verified', label: 'Impressum', to: '/admin/impressum' },
-      { icon: 'privacy-policy', label: 'Datenschutzerklärung', to: '/admin/privacy' },
-      { icon: 'cookies', label: 'Cookierichtlinien', to: '/admin/cookies' },
-      { icon: 'agreement', label: 'Nutzungsrichtlinien', to: '/admin/terms' },
-      { icon: 'attorney', label: 'Haftungsausschluss', to: '/admin/disclaimer' },
-    ],
-  },
-]
-</script>
-
 <template>
-  <Page active-navigation="admin">
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage active-navigation="admin">
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="flex flex-col gap-4">
         <CardCategory
@@ -50,6 +11,52 @@ const categories = [
         />
       </div>
     </div>
-    <Footer />
-  </Page>
+    <BaseFooter />
+  </BasePage>
 </template>
+
+<script>
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import CardCategory from '@/components/common/CardCategory.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+
+export default {
+  name: 'AdminView',
+  components: { BasePage, BaseBreadcrumbs, CardCategory, BaseFooter },
+  data() {
+    return {
+      breadcrumbs: [{ label: 'Admin', to: '/' }],
+      categories: [
+        {
+          title: 'Zugriff',
+          items: [
+            { icon: 'permission', label: 'Rollen & Rechte', to: '/admin/roles' },
+            { icon: 'people', label: 'Nutzer', to: '/admin/users' },
+          ],
+        },
+        {
+          title: 'Inhalte',
+          items: [
+            { icon: 'switzerland', label: 'Über mich', to: '/admin/about' },
+            { icon: 'integrity', label: 'Ethos', to: '/admin/ethos' },
+            { icon: 'cover-letter', label: 'Lebenslauf', to: '/admin/cv' },
+            { icon: 'destination', label: 'Länder', to: '/admin/countries' },
+            { icon: 'social-media', label: 'Medien', to: '/admin/media' },
+          ],
+        },
+        {
+          title: 'Rechtliches',
+          items: [
+            { icon: 'verified', label: 'Impressum', to: '/admin/impressum' },
+            { icon: 'privacy-policy', label: 'Datenschutzerklärung', to: '/admin/privacy' },
+            { icon: 'cookies', label: 'Cookierichtlinien', to: '/admin/cookies' },
+            { icon: 'agreement', label: 'Nutzungsrichtlinien', to: '/admin/terms' },
+            { icon: 'attorney', label: 'Haftungsausschluss', to: '/admin/disclaimer' },
+          ],
+        },
+      ],
+    }
+  },
+}
+</script>

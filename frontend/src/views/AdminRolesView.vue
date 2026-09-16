@@ -1,83 +1,6 @@
-<script setup>
-import { onMounted, ref } from 'vue'
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import Footer from '@/components/common/Footer.vue'
-import { useAuthStore } from '@/stores/auth.js'
-import { useRbacStore } from '@/stores/rbac.js'
-
-const authStore = useAuthStore()
-const rbacStore = useRbacStore()
-
-const breadcrumbs = [
-  { label: 'Admin', to: '/admin' },
-  { label: 'Rollen & Rechte' },
-]
-
-const error = ref('')
-const newRoleName = ref('')
-
-onMounted(async () => {
-  try {
-    await rbacStore.fetchAll()
-  } catch (e) {
-    error.value = e.message
-  }
-})
-
-function hasPermission(role, codename) {
-  return role.permissions.includes(codename)
-}
-
-async function togglePermission(role, codename) {
-  error.value = ''
-  const next = hasPermission(role, codename)
-    ? role.permissions.filter((p) => p !== codename)
-    : [...role.permissions, codename]
-  try {
-    await rbacStore.setRolePermissions(role.id, next)
-  } catch (e) {
-    error.value = e.message
-  }
-}
-
-async function addRole() {
-  error.value = ''
-  const name = newRoleName.value.trim()
-  if (!name) return
-  try {
-    await rbacStore.createRole(name)
-    newRoleName.value = ''
-  } catch (e) {
-    error.value = e.message
-  }
-}
-
-async function removeRole(role) {
-  error.value = ''
-  try {
-    await rbacStore.deleteRole(role.id)
-  } catch (e) {
-    error.value = e.message
-  }
-}
-
-async function renameRole(role, event) {
-  const name = event.target.value.trim()
-  event.target.value = name
-  if (!name || name === role.name) return
-  error.value = ''
-  try {
-    await rbacStore.renameRole(role.id, name)
-  } catch (e) {
-    error.value = e.message
-  }
-}
-</script>
-
 <template>
-  <Page active-navigation="admin">
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage active-navigation="admin">
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-200">
         <h2 class="text-xl my-4">Rollen &amp; Rechte</h2>
@@ -98,14 +21,9 @@ async function renameRole(role, event) {
                       :disabled="!authStore.user?.can_manage_roles"
                       @change="renameRole(role, $event)"
                     />
-                    <button
-                      v-if="authStore.user?.can_manage_roles"
-                      type="button"
-                      class="btn btn-ghost btn-xs"
-                      @click="removeRole(role)"
-                    >
+                    <DeleteButton v-if="authStore.user?.can_manage_roles" @click="removeRole(role)">
                       Löschen
-                    </button>
+                    </DeleteButton>
                   </div>
                 </th>
               </tr>
@@ -135,12 +53,96 @@ async function renameRole(role, event) {
             class="input flex-1"
             @keyup.enter="addRole"
           />
-          <button type="button" class="btn btn-primary shadow-none" @click="addRole">
-            Rolle hinzufügen
-          </button>
+          <BaseButton variant="primary" @click="addRole">Rolle hinzufügen</BaseButton>
         </div>
       </div>
     </div>
-    <Footer />
-  </Page>
+    <BaseFooter />
+  </BasePage>
 </template>
+
+<script>
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import DeleteButton from '@/components/common/DeleteButton.vue'
+import { useAuthStore } from '@/stores/auth.js'
+import { useRbacStore } from '@/stores/rbac.js'
+
+export default {
+  name: 'AdminRolesView',
+  components: { BasePage, BaseBreadcrumbs, BaseFooter, BaseButton, DeleteButton },
+  data() {
+    return {
+      breadcrumbs: [
+        { label: 'Admin', to: '/admin' },
+        { label: 'Rollen & Rechte' },
+      ],
+      error: '',
+      newRoleName: '',
+    }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+    rbacStore() {
+      return useRbacStore()
+    },
+  },
+  async mounted() {
+    try {
+      await this.rbacStore.fetchAll()
+    } catch (e) {
+      this.error = e.message
+    }
+  },
+  methods: {
+    hasPermission(role, codename) {
+      return role.permissions.includes(codename)
+    },
+    async togglePermission(role, codename) {
+      this.error = ''
+      const next = this.hasPermission(role, codename)
+        ? role.permissions.filter((p) => p !== codename)
+        : [...role.permissions, codename]
+      try {
+        await this.rbacStore.setRolePermissions(role.id, next)
+      } catch (e) {
+        this.error = e.message
+      }
+    },
+    async addRole() {
+      this.error = ''
+      const name = this.newRoleName.trim()
+      if (!name) return
+      try {
+        await this.rbacStore.createRole(name)
+        this.newRoleName = ''
+      } catch (e) {
+        this.error = e.message
+      }
+    },
+    async removeRole(role) {
+      this.error = ''
+      try {
+        await this.rbacStore.deleteRole(role.id)
+      } catch (e) {
+        this.error = e.message
+      }
+    },
+    async renameRole(role, event) {
+      const name = event.target.value.trim()
+      event.target.value = name
+      if (!name || name === role.name) return
+      this.error = ''
+      try {
+        await this.rbacStore.renameRole(role.id, name)
+      } catch (e) {
+        this.error = e.message
+      }
+    },
+  },
+}
+</script>

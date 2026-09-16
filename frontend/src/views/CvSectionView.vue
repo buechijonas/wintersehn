@@ -1,32 +1,6 @@
-<script setup>
-import { computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import Page from '@/components/layout/Page.vue'
-import Breadcrumbs from '@/components/common/Breadcrumbs.vue'
-import Card from '@/components/common/Card.vue'
-import Footer from '@/components/common/Footer.vue'
-import { flats } from '@/assets/images.js'
-import { useContentStore } from '@/stores/content.js'
-
-const route = useRoute()
-const contentStore = useContentStore()
-
-onMounted(() => contentStore.fetchContent('cv'))
-
-const cvCategories = computed(() => contentStore.items.cv?.data ?? [])
-const section = computed(() =>
-  cvCategories.value.flatMap((category) => category.items).find((item) => item.key === route.params.key),
-)
-
-const breadcrumbs = computed(() => [
-  { label: 'Lebenslauf', to: '/cv' },
-  { label: section.value?.label ?? '' },
-])
-</script>
-
 <template>
-  <Page active-navigation="cv">
-    <Breadcrumbs :items="breadcrumbs" />
+  <BasePage active-navigation="cv">
+    <BaseBreadcrumbs :items="breadcrumbs" />
     <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
       <div class="mx-auto w-full max-w-200">
         <h2 class="text-xl my-4">{{ section?.label }}</h2>
@@ -50,7 +24,7 @@ const breadcrumbs = computed(() => [
               "
             >
               <div class="flex flex-col items-center gap-1">
-                <Card
+                <BaseCard
                   class="size-40 flex flex-col items-center justify-center text-center gap-4 p-2"
                 >
                   <img
@@ -62,17 +36,19 @@ const breadcrumbs = computed(() => [
                     <div class="text-wntrs-slate text-xs font-bold">{{ entry.title }}</div>
                     <p class="text-wntrs-slate font-light text-xs">{{ entry.description }}</p>
                   </div>
-                </Card>
-                <a
+                </BaseCard>
+                <BaseButton
                   v-for="link in entry.links ?? []"
                   :key="link.url"
+                  variant="primary"
+                  size="sm"
+                  class="w-40"
                   :href="link.url"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="btn btn-primary btn-sm w-40 shadow-none"
                 >
                   {{ link.label }}
-                </a>
+                </BaseButton>
               </div>
             </div>
             <hr :class="{ invisible: index === section.timeline.length - 1 }" />
@@ -80,6 +56,46 @@ const breadcrumbs = computed(() => [
         </ul>
       </div>
     </div>
-    <Footer />
-  </Page>
+    <BaseFooter />
+  </BasePage>
 </template>
+
+<script>
+import BasePage from '@/components/layout/BasePage.vue'
+import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
+import BaseFooter from '@/components/common/BaseFooter.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import { flats } from '@/assets/images.js'
+import { useContentStore } from '@/stores/content.js'
+
+export default {
+  name: 'CvSectionView',
+  components: { BasePage, BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton },
+  data() {
+    return { flats }
+  },
+  computed: {
+    contentStore() {
+      return useContentStore()
+    },
+    cvCategories() {
+      return this.contentStore.items.cv?.data ?? []
+    },
+    section() {
+      return this.cvCategories
+        .flatMap((category) => category.items)
+        .find((item) => item.key === this.$route.params.key)
+    },
+    breadcrumbs() {
+      return [
+        { label: 'Lebenslauf', to: '/cv' },
+        { label: this.section?.label ?? '' },
+      ]
+    },
+  },
+  mounted() {
+    this.contentStore.fetchContent('cv')
+  },
+}
+</script>

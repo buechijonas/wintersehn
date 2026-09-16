@@ -1,29 +1,35 @@
-<script setup>
-import { onMounted, ref } from 'vue'
-import { RouterLink } from 'vue-router'
-import AuthPage from '@/components/layout/AuthPage.vue'
-import { useAuthStore } from '@/stores/auth.js'
-
-const authStore = useAuthStore()
-const done = ref(false)
-
-onMounted(async () => {
-  try {
-    await authStore.logout()
-  } catch {
-    // nothing more useful to do on this page
-  }
-  done.value = true
-})
-</script>
-
 <template>
   <AuthPage title="Abmelden" breadcrumb-label="Abmelden">
     <p class="font-light">
       {{ done ? 'Sie wurden erfolgreich abgemeldet.' : 'Sie werden abgemeldet …' }}
     </p>
-    <RouterLink to="/" class="btn btn-primary w-full mt-6 shadow-none">
-      Zurück zur Startseite
-    </RouterLink>
+    <BaseButton variant="primary" block class="mt-6" to="/">Zurück zur Startseite</BaseButton>
   </AuthPage>
 </template>
+
+<script>
+import AuthPage from '@/components/layout/AuthPage.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import { useAuthStore } from '@/stores/auth.js'
+
+export default {
+  name: 'LogoutView',
+  components: { AuthPage, BaseButton },
+  data() {
+    return { done: false }
+  },
+  computed: {
+    authStore() {
+      return useAuthStore()
+    },
+  },
+  async mounted() {
+    try {
+      await this.authStore.logout()
+    } catch {
+      // nothing more useful to do on this page
+    }
+    this.done = true
+  },
+}
+</script>

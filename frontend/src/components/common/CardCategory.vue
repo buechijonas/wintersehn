@@ -1,12 +1,3 @@
-<script setup>
-import IconLabelCard from '@/components/common/IconLabelCard.vue'
-
-defineProps({
-  title: { type: String, required: true },
-  items: { type: Array, required: true },
-})
-</script>
-
 <template>
   <div class="mx-auto w-full max-w-200">
     <h2 class="text-xl my-4 text-center lg:text-left">{{ title }}</h2>
@@ -22,3 +13,16 @@ defineProps({
     </div>
   </div>
 </template>
+
+<script>
+import IconLabelCard from '@/components/common/IconLabelCard.vue'
+
+export default {
+  name: 'CardCategory',
+  components: { IconLabelCard },
+  props: {
+    title: { type: String, required: true },
+    items: { type: Array, required: true },
+  },
+}
+</script>

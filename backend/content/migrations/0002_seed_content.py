@@ -4,27 +4,27 @@ ETHOS = [
     {
         "title": "Interessen",
         "items": [
-            {"icon": "galaxy", "label": "Astronomie"},
+            {"icon": "physics/galaxy", "label": "Astronomie"},
             {"icon": "computer-science", "label": "Informatik"},
             {"icon": "geopolitics", "label": "Geopolitik"},
-            {"icon": "hieroglyph", "label": "Geschichte"},
-            {"icon": "sprout", "label": "Umwelt & Klima"},
+            {"icon": "archeology/hieroglyph", "label": "Geschichte"},
+            {"icon": "spring/sprout", "label": "Umwelt & Klima"},
         ],
     },
     {
         "title": "Hobbys",
         "items": [
-            {"icon": "videogames", "label": "Gaming"},
+            {"icon": "stay_at_home/videogames", "label": "Gaming"},
             {"icon": "terraria", "label": "Terrarium"},
-            {"icon": "coding", "label": "Programmieren"},
+            {"icon": "stem/coding", "label": "Programmieren"},
             {"icon": "web-design", "label": "Web design"},
-            {"icon": "europe", "label": "Propaganda"},
+            {"icon": "europe/europe", "label": "Propaganda"},
         ],
     },
     {
         "title": "Aktivitäten",
         "items": [
-            {"icon": "music", "label": "Klavier"},
+            {"icon": "stay_at_home/music", "label": "Klavier"},
             {"icon": "photo-excursion", "label": "Fotoexkursion"},
             {"icon": "hiking", "label": "Wandern"},
             {"icon": "ski", "label": "Ski"},
@@ -38,7 +38,7 @@ CV = [
         "items": [
             {
                 "key": "academic",
-                "icon": "mortarboard",
+                "icon": "education/graduation_hat",
                 "label": "Akademischer Werdegang",
                 "to": "/cv/academic",
                 "timeline": [
@@ -76,7 +76,7 @@ CV = [
             },
             {
                 "key": "professional",
-                "icon": "bag",
+                "icon": "city_life/bag_2",
                 "label": "Beruflicher Werdegang",
                 "to": "/cv/professional",
                 "timeline": [
@@ -119,7 +119,7 @@ CV = [
             },
             {
                 "key": "military",
-                "icon": "switzerland",
+                "icon": "flags/switzerland",
                 "label": "Militärischer Werdegang",
                 "to": "/cv/military",
                 "timeline": [
@@ -127,14 +127,14 @@ CV = [
                         "year": "2027",
                         "title": "Schweizer Armee",
                         "description": "Funkaufklärer",
-                        "icon": "medal",
+                        "icon": "military/medal",
                         "side": "start",
                     },
                 ],
             },
             {
                 "key": "nonprofit",
-                "icon": "salvation-army",
+                "icon": "christmas_characters/salvation_army",
                 "label": "Gemeinnütziger Werdegang",
                 "to": "/cv/nonprofit",
                 "timeline": [
@@ -148,7 +148,7 @@ CV = [
             },
             {
                 "key": "political",
-                "icon": "politician",
+                "icon": "voting_elections/politician",
                 "label": "Politischer Werdegang",
                 "to": "/cv/political",
                 "timeline": [
@@ -156,7 +156,7 @@ CV = [
                         "year": "2025",
                         "title": "We are Europe",
                         "description": "Euro-Föderalist",
-                        "icon": "european-union",
+                        "icon": "flags/european_union",
                         "side": "start",
                     },
                 ],
