@@ -38,7 +38,7 @@ export default {
         {
           title: 'Inhalte',
           items: [
-            { icon: 'switzerland', label: 'Über mich', to: '/admin/about' },
+            { icon: 'country_flags/switzerland', label: 'Über mich', to: '/admin/about' },
             { icon: 'integrity', label: 'Ethos', to: '/admin/ethos' },
             { icon: 'cover-letter', label: 'Lebenslauf', to: '/admin/cv' },
             { icon: 'destination', label: 'Länder', to: '/admin/countries' },
