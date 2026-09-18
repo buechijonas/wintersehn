@@ -36,6 +36,13 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
 
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/', timeout=3)"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
     depends_on:
       db:
         condition: service_healthy
