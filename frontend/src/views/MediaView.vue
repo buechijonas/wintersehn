@@ -1,7 +1,7 @@
 <template>
   <BasePage active-navigation="media">
     <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pt-8 pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
+    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
       <div class="mx-auto w-full max-w-150">
         <BaseCard v-for="group in visibleGroups" :key="group.title" tag="ul" class="list mt-4">
           <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">{{ group.title }}</li>

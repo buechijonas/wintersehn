@@ -1,7 +1,7 @@
 <template>
   <BasePage active-navigation="ethos">
     <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col gap-4 pt-12 pb-12 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto">
+    <div class="flex flex-col gap-4 pb-12 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
       <CardCategory
         v-for="category in ethosCategories"
         :key="category.title"

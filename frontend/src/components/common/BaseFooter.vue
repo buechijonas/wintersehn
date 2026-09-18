@@ -1,6 +1,6 @@
 <template>
   <footer
-    class="flex h-12 w-full shrink-0 items-center justify-evenly bg-base-100 border-t border-wntrs-border border-solid max-lg:sticky max-lg:bottom-0 max-lg:mt-auto lg:h-auto lg:w-auto lg:justify-center lg:bg-transparent lg:border-0"
+    class="flex h-12 w-full shrink-0 items-center justify-evenly bg-base-100 border-t border-wntrs-border border-solid max-lg:sticky max-lg:bottom-0 max-lg:mt-auto lg:h-auto lg:w-auto lg:justify-center lg:bg-transparent lg:border-0 lg:mt-6 lg:mb-6"
   >
     <component
       :is="link.disabled ? 'div' : RouterLink"
