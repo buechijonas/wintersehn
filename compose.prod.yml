@@ -40,10 +40,36 @@ services:
       db:
         condition: service_healthy
 
-  proxy:
+  origin:
     image: buechijonas/wintersehn-proxy:latest
 
     restart: unless-stopped
+
+    depends_on:
+      - backend
+
+  anubis:
+    image: ghcr.io/techarohq/anubis:latest
+    pull_policy: always
+
+    restart: unless-stopped
+
+    environment:
+      BIND: ":3000"
+      TARGET: "http://origin:80"
+      METRICS_BIND: ":9090"
+      SERVE_ROBOTS_TXT: "true"
+      COOKIE_DOMAIN: ${DOMAIN}
+
+    depends_on:
+      - origin
+
+  edge:
+    image: buechijonas/wintersehn-proxy:latest
+
+    restart: unless-stopped
+
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.edge", "--adapter", "caddyfile"]
 
     ports:
       - "80:80"
@@ -58,7 +84,7 @@ services:
       - caddy_config:/config
 
     depends_on:
-      - backend
+      - anubis
 
 volumes:
   postgres_data:
