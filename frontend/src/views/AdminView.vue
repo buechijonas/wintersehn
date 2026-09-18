@@ -53,7 +53,7 @@ export default {
             { icon: 'breakfast/cookies', label: 'Cookierichtlinien', to: '/admin/cookies' },
             { icon: 'calendar_and_date/agreement', label: 'Nutzungsrichtlinien', to: '/admin/terms' },
             { icon: 'law_and_justice/attorney', label: 'Haftungsausschluss', to: '/admin/disclaimer' },
-            { icon: 'feedbacks/location_pin', label: 'Adresse', to: '/admin/address' },
+            { icon: 'navigation_maps/placeholder', label: 'Adresse', to: '/admin/address' },
           ],
         },
       ],
