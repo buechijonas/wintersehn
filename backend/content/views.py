@@ -10,11 +10,23 @@ from .rbac import managed_permissions_queryset, set_role_permissions
 from .rbac_serializers import PermissionSerializer, RoleSerializer
 from .serializers import SiteContentSerializer
 
+VIEW_PERMISSION_BY_KEY = {
+    "about": "content.view_about",
+    "ethos": "content.view_ethos",
+    "cv": "content.view_cv",
+    "countries": "content.view_countries",
+    "media": "content.view_media",
+}
+
 
 class SiteContentView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, key):
+        required_perm = VIEW_PERMISSION_BY_KEY.get(key)
+        if required_perm and not request.user.has_perm(required_perm):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         content = get_object_or_404(SiteContent, key=key)
         return Response(SiteContentSerializer(content).data)
 
