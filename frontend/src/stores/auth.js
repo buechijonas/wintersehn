@@ -30,10 +30,10 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
-  async function signup({ username, email, password }) {
+  async function signup({ username, email, password, altcha }) {
     const response = await apiFetch('/api/auth/signup/', {
       method: 'POST',
-      body: JSON.stringify({ username, email, password }),
+      body: JSON.stringify({ username, email, password, altcha }),
     })
     const data = await response.json().catch(() => null)
     if (!response.ok) {
