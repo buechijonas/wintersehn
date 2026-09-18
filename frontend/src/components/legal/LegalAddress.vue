@@ -3,12 +3,20 @@
 </template>
 
 <script>
+import { useContentStore } from '@/stores/content.js'
+
 export default {
   name: 'LegalAddress',
-  data() {
-    return {
-      lines: ['Jonas S. Büchi', 'Eichmatt 1', 'CH-3324 Hindelbank', 'Kanton Bern'],
-    }
+  computed: {
+    contentStore() {
+      return useContentStore()
+    },
+    lines() {
+      return this.contentStore.items.address?.data?.lines ?? []
+    },
+  },
+  mounted() {
+    this.contentStore.fetchContent('address')
   },
 }
 </script>

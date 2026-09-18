@@ -6,11 +6,11 @@
       draggable="true"
       class="cursor-move"
       :class="{ 'opacity-40': draggedItem === item }"
-      @dragstart="onDragStart(item, $event)"
-      @dragenter.prevent="onDragEnter(item)"
-      @dragover.prevent
-      @drop.prevent="onDrop"
-      @dragend="onDragEnd"
+      @dragstart.stop="onDragStart(item, $event)"
+      @dragenter.prevent.stop="onDragEnter(item)"
+      @dragover.prevent.stop
+      @drop.prevent.stop="onDrop"
+      @dragend.stop="onDragEnd"
     >
       <slot :item="item" :index="index" />
     </div>
@@ -41,7 +41,7 @@ export default {
   },
   methods: {
     onDragStart(item, event) {
-      if (this.disabled || event.target.closest('button')) {
+      if (this.disabled || event.target.closest('button, input, textarea')) {
         event.preventDefault()
         return
       }

@@ -7,80 +7,87 @@
 
         <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
-        <div class="flex flex-col gap-4">
-          <BaseCard v-for="(section, sectionIndex) in sections" :key="sectionIndex" class="p-6">
-            <div class="flex items-center justify-between gap-4 mb-4">
-              <input
-                type="text"
-                class="input input-sm w-full max-w-60"
-                :value="section.title"
-                :disabled="!canEdit"
-                @change="renameSection(sectionIndex, $event)"
-              />
-              <div v-if="canEdit" class="flex items-center gap-1 shrink-0">
-                <BaseButton
-                  type="button"
-                  variant="ghost"
-                  shape="circle"
-                  size="xs"
-                  :class="{ 'text-success': !section.requiresAuth }"
-                  :disabled="saving"
-                  :title="
-                    section.requiresAuth
-                      ? 'Nur für angemeldete Nutzer mit Berechtigung sichtbar – klicken um öffentlich zu machen'
-                      : 'Öffentlich sichtbar – klicken um einzuschränken'
-                  "
-                  @click="toggleRequiresAuth(sectionIndex)"
-                >
-                  <AppIcon
-                    :name="section.requiresAuth ? 'lock' : 'earth-europa'"
-                    class="size-4"
-                    :class="{ 'icon-success': !section.requiresAuth }"
-                    alt="Sichtbarkeit umschalten"
-                  />
-                </BaseButton>
-                <DeleteButton :disabled="saving" @click="askRemoveSection(sectionIndex)">
-                  Abschnitt löschen
-                </DeleteButton>
-              </div>
-            </div>
-
-            <SortableList
-              :items="section.items"
-              :disabled="!canEdit"
-              class="flex flex-wrap gap-2"
-              @reorder="(items) => reorderItems(sectionIndex, items)"
-            >
-              <template #default="{ item, index: itemIndex }">
-                <div class="relative shrink-0">
-                  <BaseCard class="size-40 flex items-center justify-center p-4">
-                    <div class="flex flex-col items-center text-center gap-4">
-                      <img class="size-16" :src="mediaIcons[item.icon]" :alt="item.platform" />
-                      <p class="text-wntrs-slate text-sm">{{ item.name }}</p>
-                    </div>
-                  </BaseCard>
-                  <DeleteButton
-                    v-if="canEdit"
-                    class="absolute top-2 right-2"
+        <SortableList
+          :items="sections"
+          :disabled="!canEdit"
+          class="flex flex-col gap-4"
+          @reorder="reorderSections"
+        >
+          <template #default="{ item: section, index: sectionIndex }">
+            <BaseCard class="p-6">
+              <div class="flex items-center justify-between gap-4 mb-4">
+                <input
+                  type="text"
+                  class="input input-sm w-full max-w-60"
+                  :value="section.title"
+                  :disabled="!canEdit"
+                  @change="renameSection(sectionIndex, $event)"
+                />
+                <div v-if="canEdit" class="flex items-center gap-1 shrink-0">
+                  <BaseButton
+                    type="button"
+                    variant="ghost"
+                    shape="circle"
+                    size="xs"
+                    :class="{ 'text-success': !section.requiresAuth }"
                     :disabled="saving"
-                    @click="askRemoveItem(sectionIndex, itemIndex)"
-                  />
+                    :title="
+                      section.requiresAuth
+                        ? 'Nur für angemeldete Nutzer mit Berechtigung sichtbar – klicken um öffentlich zu machen'
+                        : 'Öffentlich sichtbar – klicken um einzuschränken'
+                    "
+                    @click="toggleRequiresAuth(sectionIndex)"
+                  >
+                    <AppIcon
+                      :name="section.requiresAuth ? 'lock' : 'earth-europa'"
+                      class="size-4"
+                      :class="{ 'icon-success': !section.requiresAuth }"
+                      alt="Sichtbarkeit umschalten"
+                    />
+                  </BaseButton>
+                  <DeleteButton :disabled="saving" @click="askRemoveSection(sectionIndex)">
+                    Abschnitt löschen
+                  </DeleteButton>
                 </div>
-              </template>
+              </div>
 
-              <template #append>
-                <BaseCard
-                  v-if="canEdit"
-                  tag="router-link"
-                  :to="`/admin/media/${sectionIndex}/create`"
-                  class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
-                >
-                  <span class="text-4xl text-wntrs-muted leading-none">+</span>
-                </BaseCard>
-              </template>
-            </SortableList>
-          </BaseCard>
-        </div>
+              <SortableList
+                :items="section.items"
+                :disabled="!canEdit"
+                class="flex flex-wrap gap-2"
+                @reorder="(items) => reorderItems(sectionIndex, items)"
+              >
+                <template #default="{ item, index: itemIndex }">
+                  <div class="relative shrink-0">
+                    <BaseCard class="size-40 flex items-center justify-center p-4">
+                      <div class="flex flex-col items-center text-center gap-4">
+                        <img class="size-16" :src="mediaIcons[item.icon]" :alt="item.platform" />
+                        <p class="text-wntrs-slate text-sm">{{ item.name }}</p>
+                      </div>
+                    </BaseCard>
+                    <DeleteButton
+                      v-if="canEdit"
+                      class="absolute top-2 right-2"
+                      :disabled="saving"
+                      @click="askRemoveItem(sectionIndex, itemIndex)"
+                    />
+                  </div>
+                </template>
+
+                <template #append>
+                  <BaseCard
+                    v-if="canEdit"
+                    tag="router-link"
+                    :to="`/admin/media/${sectionIndex}/create`"
+                    class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
+                  >
+                    <span class="text-4xl text-wntrs-muted leading-none">+</span>
+                  </BaseCard>
+                </template>
+              </SortableList>
+            </BaseCard>
+          </template>
+        </SortableList>
 
         <div v-if="canEdit" class="flex gap-4 mt-6">
           <input
@@ -199,6 +206,9 @@ export default {
           i === sectionIndex ? { ...section, requiresAuth: !section.requiresAuth } : section,
         ),
       )
+    },
+    reorderSections(sections) {
+      this.persist(sections)
     },
     reorderItems(sectionIndex, items) {
       this.persist(
