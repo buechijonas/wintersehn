@@ -1,5 +1,5 @@
 <template>
-  <LegalPage :title="page.title" :breadcrumb-label="page.breadcrumbLabel">
+  <LegalPage :title="page.title">
     <LegalSection
       v-for="(section, index) in page.sections"
       :key="section.title ?? index"

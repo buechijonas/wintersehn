@@ -1,41 +1,38 @@
 <template>
-  <BasePage active-navigation="admin">
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="mx-auto w-full max-w-200">
-        <h2 class="text-xl my-4">{{ label }}</h2>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="mx-auto w-full max-w-200">
+      <h2 class="text-xl my-4">{{ label }}</h2>
 
-        <textarea
-          v-model="text"
-          rows="24"
-          spellcheck="false"
-          :readonly="!authStore.user?.can_edit_content"
-          class="textarea w-full font-mono text-xs"
-        ></textarea>
+      <textarea
+        v-model="text"
+        rows="24"
+        spellcheck="false"
+        :readonly="!authStore.user?.can_edit_content"
+        class="textarea w-full font-mono text-xs"
+      ></textarea>
 
-        <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
-        <p v-if="saved" class="text-success text-sm mt-2">Gespeichert.</p>
+      <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
+      <p v-if="saved" class="text-success text-sm mt-2">Gespeichert.</p>
 
-        <div v-if="authStore.user?.can_edit_content" class="flex gap-4 mt-4">
-          <input
-            ref="fileInput"
-            type="file"
-            accept="application/json"
-            class="hidden"
-            @change="onFileSelected"
-          />
-          <BaseButton @click="pickFile">Datei hochladen</BaseButton>
-          <BaseButton @click="downloadBackup">Als Datei sichern</BaseButton>
-          <BaseButton variant="primary" :disabled="saving" @click="save">Speichern</BaseButton>
-        </div>
+      <div v-if="authStore.user?.can_edit_content" class="flex gap-4 mt-4">
+        <input
+          ref="fileInput"
+          type="file"
+          accept="application/json"
+          class="hidden"
+          @change="onFileSelected"
+        />
+        <BaseButton @click="pickFile">Datei hochladen</BaseButton>
+        <BaseButton @click="downloadBackup">Als Datei sichern</BaseButton>
+        <BaseButton variant="primary" :disabled="saving" @click="save">Speichern</BaseButton>
       </div>
     </div>
-    <BaseFooter />
-  </BasePage>
+  </div>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -57,7 +54,7 @@ const SECTION_LABELS = {
 
 export default {
   name: 'AdminContentView',
-  components: { BasePage, BaseBreadcrumbs, BaseFooter, BaseButton },
+  components: { BaseBreadcrumbs, BaseFooter, BaseButton },
   data() {
     return {
       text: '',

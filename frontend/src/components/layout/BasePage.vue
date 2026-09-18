@@ -4,7 +4,10 @@
     <BaseNavigation class="col-start-2" :active-navigation="activeNavigation" />
     <div class="col-start-3 flex min-w-0 flex-col bg-base-200">
       <BaseHeader />
-      <div class="flex flex-1 flex-col lg:flex-none lg:h-[calc(100dvh-48px)] lg:overflow-y-auto">
+      <div
+        ref="scrollArea"
+        class="flex flex-1 flex-col lg:flex-none lg:h-[calc(100dvh-48px)] lg:overflow-y-auto"
+      >
         <slot />
       </div>
     </div>
@@ -22,6 +25,11 @@ export default {
     activeNavigation: {
       type: String,
       default: null,
+    },
+  },
+  watch: {
+    $route() {
+      if (this.$refs.scrollArea) this.$refs.scrollArea.scrollTop = 0
     },
   },
 }

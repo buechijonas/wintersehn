@@ -1,44 +1,41 @@
 <template>
-  <BasePage active-navigation="admin">
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="mx-auto w-full max-w-150">
-        <h2 class="text-xl font-light my-4">Neuer Eintrag</h2>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="mx-auto w-full max-w-150">
+      <h2 class="text-xl font-light my-4">Neuer Eintrag</h2>
 
-        <BaseCard v-if="section" class="p-6">
-          <form class="fieldset" @submit.prevent="save">
-            <label class="label" for="ethos-item-title">Titel</label>
-            <input
-              id="ethos-item-title"
-              v-model="title"
-              type="text"
-              class="input w-full"
-              required
-            />
+      <BaseCard v-if="section" class="p-6">
+        <form class="fieldset" @submit.prevent="save">
+          <label class="label" for="ethos-item-title">Titel</label>
+          <input
+            id="ethos-item-title"
+            v-model="title"
+            type="text"
+            class="input w-full"
+            required
+          />
 
-            <IconPickerField
-              v-model="selectedIcon"
-              :icons="flatIcons"
-              :categories="flatCategories"
-              class="mt-4"
-            />
+          <IconPickerField
+            v-model="selectedIcon"
+            :icons="flatIcons"
+            :categories="flatCategories"
+            class="mt-4"
+          />
 
-            <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
+          <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
-            <div class="flex gap-4 mt-4">
-              <CancelButton to="/admin/ethos" />
-              <BaseButton type="submit" variant="primary" :disabled="saving">Speichern</BaseButton>
-            </div>
-          </form>
-        </BaseCard>
-      </div>
+          <div class="flex gap-4 mt-4">
+            <CancelButton to="/admin/ethos" />
+            <BaseButton type="submit" variant="primary" :disabled="saving">Speichern</BaseButton>
+          </div>
+        </form>
+      </BaseCard>
     </div>
-    <BaseFooter />
-  </BasePage>
+  </div>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
@@ -51,7 +48,6 @@ import { useContentStore } from '@/stores/content.js'
 export default {
   name: 'AdminEthosItemCreateView',
   components: {
-    BasePage,
     BaseBreadcrumbs,
     BaseCard,
     BaseFooter,

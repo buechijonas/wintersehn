@@ -1,67 +1,64 @@
 <template>
-  <BasePage active-navigation="admin">
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="mx-auto w-full max-w-150">
-        <h2 class="text-xl font-light my-4">Neuer Eintrag</h2>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="mx-auto w-full max-w-150">
+      <h2 class="text-xl font-light my-4">Neuer Eintrag</h2>
 
-        <BaseCard v-if="section" class="p-6">
-          <form class="fieldset" @submit.prevent="save">
-            <label class="label" for="cv-entry-year">Jahr</label>
-            <input id="cv-entry-year" v-model="year" type="text" class="input w-full" required />
+      <BaseCard v-if="section" class="p-6">
+        <form class="fieldset" @submit.prevent="save">
+          <label class="label" for="cv-entry-year">Jahr</label>
+          <input id="cv-entry-year" v-model="year" type="text" class="input w-full" required />
 
-            <label class="label mt-4" for="cv-entry-title">Titel</label>
-            <input id="cv-entry-title" v-model="title" type="text" class="input w-full" required />
+          <label class="label mt-4" for="cv-entry-title">Titel</label>
+          <input id="cv-entry-title" v-model="title" type="text" class="input w-full" required />
 
-            <label class="label mt-4" for="cv-entry-description">Beschreibung</label>
-            <input
-              id="cv-entry-description"
-              v-model="description"
-              type="text"
-              class="input w-full"
-            />
+          <label class="label mt-4" for="cv-entry-description">Beschreibung</label>
+          <input
+            id="cv-entry-description"
+            v-model="description"
+            type="text"
+            class="input w-full"
+          />
 
-            <IconPickerField
-              v-model="selectedIcon"
-              :icons="flatIcons"
-              :categories="flatCategories"
-              class="mt-4"
-              allow-empty
-              :empty-icon="section.icon"
-              empty-label="Abschnitts-Icon (Standard)"
-            />
+          <IconPickerField
+            v-model="selectedIcon"
+            :icons="flatIcons"
+            :categories="flatCategories"
+            class="mt-4"
+            allow-empty
+            :empty-icon="section.icon"
+            empty-label="Abschnitts-Icon (Standard)"
+          />
 
-            <label class="label mt-4">Links</label>
-            <div class="flex flex-col gap-2">
-              <div v-for="(link, linkIndex) in links" :key="linkIndex" class="flex gap-2">
-                <input
-                  v-model="link.label"
-                  type="text"
-                  placeholder="Beschriftung"
-                  class="input w-full"
-                />
-                <input v-model="link.url" type="url" placeholder="URL" class="input w-full" />
-                <DeleteButton @click="removeLink(linkIndex)" />
-              </div>
-              <BaseButton type="button" size="sm" @click="addLink">Link hinzufügen</BaseButton>
+          <label class="label mt-4">Links</label>
+          <div class="flex flex-col gap-2">
+            <div v-for="(link, linkIndex) in links" :key="linkIndex" class="flex gap-2">
+              <input
+                v-model="link.label"
+                type="text"
+                placeholder="Beschriftung"
+                class="input w-full"
+              />
+              <input v-model="link.url" type="url" placeholder="URL" class="input w-full" />
+              <DeleteButton @click="removeLink(linkIndex)" />
             </div>
+            <BaseButton type="button" size="sm" @click="addLink">Link hinzufügen</BaseButton>
+          </div>
 
-            <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
+          <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
-            <div class="flex gap-4 mt-4">
-              <CancelButton :to="`/admin/cv/${key}`" />
-              <BaseButton type="submit" variant="primary" :disabled="saving">Speichern</BaseButton>
-            </div>
-          </form>
-        </BaseCard>
-      </div>
+          <div class="flex gap-4 mt-4">
+            <CancelButton :to="`/admin/cv/${key}`" />
+            <BaseButton type="submit" variant="primary" :disabled="saving">Speichern</BaseButton>
+          </div>
+        </form>
+      </BaseCard>
     </div>
-    <BaseFooter />
-  </BasePage>
+  </div>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
@@ -75,7 +72,6 @@ import { useContentStore } from '@/stores/content.js'
 export default {
   name: 'AdminCvEntryCreateView',
   components: {
-    BasePage,
     BaseBreadcrumbs,
     BaseCard,
     BaseFooter,

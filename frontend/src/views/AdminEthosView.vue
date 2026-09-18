@@ -1,102 +1,99 @@
 <template>
-  <BasePage active-navigation="admin">
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="mx-auto w-full max-w-200">
-        <h2 class="text-xl my-4">Ethos</h2>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="mx-auto w-full max-w-200">
+      <h2 class="text-xl my-4">Ethos</h2>
 
-        <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
+      <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
-        <SortableList
-          :items="sections"
-          :disabled="!canEdit"
-          class="flex flex-col gap-4"
-          @reorder="reorderSections"
-        >
-          <template #default="{ item: section, index: sectionIndex }">
-            <BaseCard class="p-6">
-              <div class="flex items-center justify-between gap-4 mb-4">
-                <input
-                  type="text"
-                  class="input input-sm w-full max-w-60"
-                  :value="section.title"
-                  :disabled="!canEdit"
-                  @change="renameSection(sectionIndex, $event)"
-                />
-                <DeleteButton
-                  v-if="canEdit"
-                  class="shrink-0"
-                  :disabled="saving"
-                  @click="askRemoveSection(sectionIndex)"
-                >
-                  Abschnitt löschen
-                </DeleteButton>
-              </div>
-
-              <SortableList
-                :items="section.items"
+      <SortableList
+        :items="sections"
+        :disabled="!canEdit"
+        class="flex flex-col gap-4"
+        @reorder="reorderSections"
+      >
+        <template #default="{ item: section, index: sectionIndex }">
+          <BaseCard class="p-6">
+            <div class="flex items-center justify-between gap-4 mb-4">
+              <input
+                type="text"
+                class="input input-sm w-full max-w-60"
+                :value="section.title"
                 :disabled="!canEdit"
-                class="flex flex-wrap gap-2"
-                @reorder="(items) => reorderItems(sectionIndex, items)"
+                @change="renameSection(sectionIndex, $event)"
+              />
+              <DeleteButton
+                v-if="canEdit"
+                class="shrink-0"
+                :disabled="saving"
+                @click="askRemoveSection(sectionIndex)"
               >
-                <template #default="{ item, index: itemIndex }">
-                  <div class="relative shrink-0">
-                    <BaseCard class="size-40 flex items-center justify-center p-4">
-                      <div class="flex flex-col items-center text-center gap-4">
-                        <img class="size-16" :src="flatIcons[item.icon]" :alt="item.label" />
-                        <p class="text-wntrs-slate text-sm">{{ item.label }}</p>
-                      </div>
-                    </BaseCard>
-                    <DeleteButton
-                      v-if="canEdit"
-                      class="absolute top-2 right-2"
-                      :disabled="saving"
-                      @click="askRemoveItem(sectionIndex, itemIndex)"
-                    />
-                  </div>
-                </template>
+                Abschnitt löschen
+              </DeleteButton>
+            </div>
 
-                <template #append>
-                  <BaseCard
-                    v-if="canEdit"
-                    tag="router-link"
-                    :to="`/admin/ethos/${sectionIndex}/create`"
-                    class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
-                  >
-                    <span class="text-4xl text-wntrs-muted leading-none">+</span>
+            <SortableList
+              :items="section.items"
+              :disabled="!canEdit"
+              class="flex flex-wrap gap-2"
+              @reorder="(items) => reorderItems(sectionIndex, items)"
+            >
+              <template #default="{ item, index: itemIndex }">
+                <div class="relative shrink-0">
+                  <BaseCard class="size-40 flex items-center justify-center p-4">
+                    <div class="flex flex-col items-center text-center gap-4">
+                      <img class="size-16" :src="flatIcons[item.icon]" :alt="item.label" />
+                      <p class="text-wntrs-slate text-sm">{{ item.label }}</p>
+                    </div>
                   </BaseCard>
-                </template>
-              </SortableList>
-            </BaseCard>
-          </template>
-        </SortableList>
+                  <DeleteButton
+                    v-if="canEdit"
+                    class="absolute top-2 right-2"
+                    :disabled="saving"
+                    @click="askRemoveItem(sectionIndex, itemIndex)"
+                  />
+                </div>
+              </template>
 
-        <div v-if="canEdit" class="flex gap-4 mt-6">
-          <input
-            v-model="newSectionTitle"
-            type="text"
-            placeholder="Neuer Abschnitt"
-            class="input flex-1"
-            @keyup.enter="addSection"
-          />
-          <BaseButton variant="primary" @click="addSection">Abschnitt hinzufügen</BaseButton>
-        </div>
+              <template #append>
+                <BaseCard
+                  v-if="canEdit"
+                  tag="router-link"
+                  :to="`/admin/ethos/${sectionIndex}/create`"
+                  class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
+                >
+                  <span class="text-4xl text-wntrs-muted leading-none">+</span>
+                </BaseCard>
+              </template>
+            </SortableList>
+          </BaseCard>
+        </template>
+      </SortableList>
+
+      <div v-if="canEdit" class="flex gap-4 mt-6">
+        <input
+          v-model="newSectionTitle"
+          type="text"
+          placeholder="Neuer Abschnitt"
+          class="input flex-1"
+          @keyup.enter="addSection"
+        />
+        <BaseButton variant="primary" @click="addSection">Abschnitt hinzufügen</BaseButton>
       </div>
     </div>
+  </div>
 
-    <ConfirmDialog
-      ref="confirmDialog"
-      :title="dialogTitle"
-      :message="dialogMessage"
-      @confirm="onConfirmDelete"
-    />
+  <ConfirmDialog
+    ref="confirmDialog"
+    :title="dialogTitle"
+    :message="dialogMessage"
+    @confirm="onConfirmDelete"
+  />
 
-    <BaseFooter />
-  </BasePage>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -111,7 +108,6 @@ import { useContentStore } from '@/stores/content.js'
 export default {
   name: 'AdminEthosView',
   components: {
-    BasePage,
     BaseBreadcrumbs,
     BaseCard,
     BaseButton,

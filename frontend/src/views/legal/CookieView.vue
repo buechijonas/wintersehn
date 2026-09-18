@@ -1,5 +1,5 @@
 <template>
-  <LegalContentLoader content-key="cookies" />
+  <LegalContentLoader content-key="cookies" label="Cookierichtlinie" />
 </template>
 
 <script>

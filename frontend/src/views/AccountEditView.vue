@@ -1,88 +1,85 @@
 <template>
-  <BasePage>
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="mx-auto w-full max-w-150">
-        <h2 class="text-xl font-light my-4">Konto bearbeiten</h2>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="mx-auto w-full max-w-150">
+      <h2 class="text-xl font-light my-4">Konto bearbeiten</h2>
 
-        <BaseCard class="p-6">
-          <form class="fieldset" @submit.prevent="save">
-            <label class="label" for="account-username">Benutzername</label>
-            <input
-              id="account-username"
-              v-model="username"
-              type="text"
-              autocomplete="username"
-              class="input w-full"
-              required
-            />
+      <BaseCard class="p-6">
+        <form class="fieldset" @submit.prevent="save">
+          <label class="label" for="account-username">Benutzername</label>
+          <input
+            id="account-username"
+            v-model="username"
+            type="text"
+            autocomplete="username"
+            class="input w-full"
+            required
+          />
 
-            <label class="label mt-2" for="account-email">E-Mail</label>
-            <input
-              id="account-email"
-              v-model="email"
-              type="email"
-              autocomplete="email"
-              class="input w-full"
-              required
-            />
+          <label class="label mt-2" for="account-email">E-Mail</label>
+          <input
+            id="account-email"
+            v-model="email"
+            type="email"
+            autocomplete="email"
+            class="input w-full"
+            required
+          />
 
-            <label class="label mt-4">Profilbild</label>
-            <div class="flex items-center gap-4">
-              <BaseCard class="size-16 shrink-0 flex items-center justify-center p-2">
-                <img class="size-11" :src="avatarSrc(selectedAvatar)" alt="" />
-              </BaseCard>
+          <label class="label mt-4">Profilbild</label>
+          <div class="flex items-center gap-4">
+            <BaseCard class="size-16 shrink-0 flex items-center justify-center p-2">
+              <img class="size-11" :src="avatarSrc(selectedAvatar)" alt="" />
+            </BaseCard>
 
-              <div class="w-full">
-                <button
-                  type="button"
-                  popovertarget="avatar-menu"
-                  style="anchor-name: --avatar-menu-anchor"
-                  class="select w-full flex items-center gap-2"
-                >
-                  <img class="size-5" :src="avatarSrc(selectedAvatar)" alt="" />
-                  <span>{{ avatarLabel(selectedAvatar) }}</span>
-                </button>
+            <div class="w-full">
+              <button
+                type="button"
+                popovertarget="avatar-menu"
+                style="anchor-name: --avatar-menu-anchor"
+                class="select w-full flex items-center gap-2"
+              >
+                <img class="size-5" :src="avatarSrc(selectedAvatar)" alt="" />
+                <span>{{ avatarLabel(selectedAvatar) }}</span>
+              </button>
 
-                <ul
-                  id="avatar-menu"
-                  ref="avatarMenu"
-                  popover
-                  class="dropdown menu rounded-box bg-base-100 shadow-sm max-h-72 overflow-y-auto flex-nowrap"
-                  style="position-anchor: --avatar-menu-anchor; width: anchor-size(width)"
-                >
-                  <li>
-                    <a :class="{ active: selectedAvatar === '' }" @click="chooseAvatar('')">
-                      <img class="size-6" :src="icons.user" alt="" />
-                      Kein Profilbild
-                    </a>
-                  </li>
-                  <li v-for="key in avatarKeys" :key="key">
-                    <a :class="{ active: selectedAvatar === key }" @click="chooseAvatar(key)">
-                      <img class="size-6" :src="profiles[key]" alt="" />
-                      {{ avatarLabel(key) }}
-                    </a>
-                  </li>
-                </ul>
-              </div>
+              <ul
+                id="avatar-menu"
+                ref="avatarMenu"
+                popover
+                class="dropdown menu rounded-box bg-base-100 shadow-sm max-h-72 overflow-y-auto flex-nowrap"
+                style="position-anchor: --avatar-menu-anchor; width: anchor-size(width)"
+              >
+                <li>
+                  <a :class="{ active: selectedAvatar === '' }" @click="chooseAvatar('')">
+                    <img class="size-6" :src="icons.user" alt="" />
+                    Kein Profilbild
+                  </a>
+                </li>
+                <li v-for="key in avatarKeys" :key="key">
+                  <a :class="{ active: selectedAvatar === key }" @click="chooseAvatar(key)">
+                    <img class="size-6" :src="profiles[key]" alt="" />
+                    {{ avatarLabel(key) }}
+                  </a>
+                </li>
+              </ul>
             </div>
+          </div>
 
-            <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
+          <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
-            <div class="flex gap-4 mt-4">
-              <CancelButton to="/settings" />
-              <BaseButton type="submit" variant="primary" :disabled="saving">Speichern</BaseButton>
-            </div>
-          </form>
-        </BaseCard>
-      </div>
+          <div class="flex gap-4 mt-4">
+            <CancelButton to="/settings" />
+            <BaseButton type="submit" variant="primary" :disabled="saving">Speichern</BaseButton>
+          </div>
+        </form>
+      </BaseCard>
     </div>
-    <BaseFooter />
-  </BasePage>
+  </div>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
@@ -147,7 +144,7 @@ const AVATAR_LABELS = {
 
 export default {
   name: 'AccountEditView',
-  components: { BasePage, BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, CancelButton },
+  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, CancelButton },
   data() {
     const authStore = useAuthStore()
     return {

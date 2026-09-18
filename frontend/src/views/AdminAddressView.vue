@@ -1,53 +1,50 @@
 <template>
-  <BasePage active-navigation="admin">
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="mx-auto w-full max-w-200">
-        <h2 class="text-xl my-4">Adresse</h2>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="mx-auto w-full max-w-200">
+      <h2 class="text-xl my-4">Adresse</h2>
 
-        <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
+      <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
-        <SortableList
-          :items="lines"
-          :disabled="!canEdit"
-          class="flex flex-col gap-4"
-          @reorder="reorderLines"
-        >
-          <template #default="{ item: line, index: lineIndex }">
-            <BaseCard class="p-6">
-              <div class="flex items-center gap-2">
-                <input
-                  type="text"
-                  class="input input-sm flex-1"
-                  :value="line"
-                  :disabled="!canEdit"
-                  @change="updateLine(lineIndex, $event.target.value)"
-                />
-                <DeleteButton v-if="canEdit" :disabled="saving" @click="removeLine(lineIndex)" />
-              </div>
-            </BaseCard>
-          </template>
-        </SortableList>
+      <SortableList
+        :items="lines"
+        :disabled="!canEdit"
+        class="flex flex-col gap-4"
+        @reorder="reorderLines"
+      >
+        <template #default="{ item: line, index: lineIndex }">
+          <BaseCard class="p-6">
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                class="input input-sm flex-1"
+                :value="line"
+                :disabled="!canEdit"
+                @change="updateLine(lineIndex, $event.target.value)"
+              />
+              <DeleteButton v-if="canEdit" :disabled="saving" @click="removeLine(lineIndex)" />
+            </div>
+          </BaseCard>
+        </template>
+      </SortableList>
 
-        <div v-if="canEdit" class="flex gap-4 mt-6">
-          <input
-            v-model="newLine"
-            type="text"
-            placeholder="Neue Zeile"
-            class="input flex-1"
-            @keyup.enter="addLine"
-          />
-          <BaseButton variant="primary" @click="addLine">Zeile hinzufügen</BaseButton>
-        </div>
+      <div v-if="canEdit" class="flex gap-4 mt-6">
+        <input
+          v-model="newLine"
+          type="text"
+          placeholder="Neue Zeile"
+          class="input flex-1"
+          @keyup.enter="addLine"
+        />
+        <BaseButton variant="primary" @click="addLine">Zeile hinzufügen</BaseButton>
       </div>
     </div>
+  </div>
 
-    <BaseFooter />
-  </BasePage>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -60,7 +57,6 @@ import { useContentStore } from '@/stores/content.js'
 export default {
   name: 'AdminAddressView',
   components: {
-    BasePage,
     BaseBreadcrumbs,
     BaseCard,
     BaseButton,
