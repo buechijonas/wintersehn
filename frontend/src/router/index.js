@@ -24,6 +24,7 @@ import PasswordEditView from '@/views/PasswordEditView.vue'
 import AdminView from '@/views/AdminView.vue'
 import AdminContentView from '@/views/AdminContentView.vue'
 import AdminLegalView from '@/views/AdminLegalView.vue'
+import AdminAddressView from '@/views/AdminAddressView.vue'
 import AdminEthosView from '@/views/AdminEthosView.vue'
 import AdminEthosItemCreateView from '@/views/AdminEthosItemCreateView.vue'
 import AdminCountriesView from '@/views/AdminCountriesView.vue'
@@ -154,6 +155,12 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: AdminView,
+      meta: { requiresAuth: true, permission: 'can_view_admin' },
+    },
+    {
+      path: '/admin/address',
+      name: 'admin-address',
+      component: AdminAddressView,
       meta: { requiresAuth: true, permission: 'can_view_admin' },
     },
     {

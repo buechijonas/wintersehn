@@ -1,6 +1,5 @@
 <template>
   <LegalPage :title="page.title" :breadcrumb-label="page.breadcrumbLabel">
-    <p v-if="page.intro" class="mt-6 font-medium text-gray">{{ page.intro }}</p>
     <LegalSection
       v-for="(section, index) in page.sections"
       :key="section.title ?? index"
