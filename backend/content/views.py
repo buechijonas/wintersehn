@@ -15,7 +15,6 @@ VIEW_PERMISSION_BY_KEY = {
     "ethos": "content.view_ethos",
     "cv": "content.view_cv",
     "countries": "content.view_countries",
-    "media": "content.view_media",
 }
 
 
@@ -28,7 +27,12 @@ class SiteContentView(APIView):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         content = get_object_or_404(SiteContent, key=key)
-        return Response(SiteContentSerializer(content).data)
+        data = content.data
+
+        if key == "media" and not request.user.has_perm("content.view_media"):
+            data = [group for group in data if not group.get("requiresAuth")]
+
+        return Response({"key": content.key, "data": data, "updated_at": content.updated_at})
 
     def put(self, request, key):
         if not request.user.has_perm("content.change_sitecontent"):
