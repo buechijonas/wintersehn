@@ -37,6 +37,10 @@ if not SECRET_KEY:
         )
     SECRET_KEY = "django-insecure-9u0u(7ytdpu4fycdcbahos%w2-828t$ggq16*-+xllgv$6j5q@"
 
+# Signs ALTCHA proof-of-work challenges (signup form). Falls back to
+# SECRET_KEY so no extra configuration is required to get started.
+ALTCHA_HMAC_SECRET = os.getenv("ALTCHA_HMAC_SECRET", SECRET_KEY)
+
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,backend").split(",")
 
 CSRF_TRUSTED_ORIGINS = os.getenv(

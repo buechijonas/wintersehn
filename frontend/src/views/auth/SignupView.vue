@@ -1,6 +1,6 @@
 <template>
   <AuthPage title="Registrieren" breadcrumb-label="Registrieren">
-    <form class="fieldset" @submit.prevent="onSubmit">
+    <form ref="form" class="fieldset" @submit.prevent="onSubmit">
       <label class="label" for="signup-username">Benutzername</label>
       <input
         id="signup-username"
@@ -41,6 +41,13 @@
         required
       />
 
+      <altcha-widget
+        class="mt-4"
+        challenge="/api/auth/altcha-challenge/"
+        auto="onload"
+        name="altcha"
+      ></altcha-widget>
+
       <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
       <BaseButton type="submit" variant="primary" block class="mt-6" :disabled="loading">
@@ -54,7 +61,19 @@
   </AuthPage>
 </template>
 
+<style scoped>
+altcha-widget {
+  display: block;
+  --altcha-max-width: 100%;
+  --altcha-color-base: var(--color-base-100);
+  --altcha-border-color: color-mix(in oklab, var(--color-base-content) 20%, transparent);
+  --altcha-border-width: var(--border, 1px);
+  --altcha-border-radius: var(--radius-field, 0.25rem);
+}
+</style>
+
 <script>
+import 'altcha'
 import { RouterLink } from 'vue-router'
 import AuthPage from '@/components/layout/AuthPage.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -87,12 +106,19 @@ export default {
         return
       }
 
+      const altcha = new FormData(this.$refs.form).get('altcha')
+      if (!altcha) {
+        this.error = 'Bitte warte, bis die Bot-Verifizierung abgeschlossen ist.'
+        return
+      }
+
       this.loading = true
       try {
         await this.authStore.signup({
           username: this.username,
           email: this.email,
           password: this.password,
+          altcha,
         })
         this.$router.push('/')
       } catch (e) {

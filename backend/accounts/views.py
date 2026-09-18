@@ -1,3 +1,7 @@
+import datetime
+
+from altcha import create_challenge, verify_solution
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model, login, logout, update_session_auth_hash
 from django.contrib.auth.models import Group
 from django.middleware.csrf import get_token
@@ -22,10 +26,37 @@ CONSENT_FIELDS = {"privacy", "terms", "disclaimer"}
 User = get_user_model()
 
 
+class AltchaChallengeView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        challenge = create_challenge(
+            algorithm="PBKDF2/SHA-256",
+            cost=5_000,
+            expires_at=datetime.datetime.now(datetime.timezone.utc)
+            + datetime.timedelta(minutes=10),
+            hmac_secret=settings.ALTCHA_HMAC_SECRET,
+        )
+        return Response(challenge.to_dict())
+
+
 class SignupView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
+        altcha_payload = request.data.get("altcha")
+        if not altcha_payload:
+            return Response(
+                {"detail": "Bitte bestätige, dass du kein Bot bist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        result = verify_solution(altcha_payload, settings.ALTCHA_HMAC_SECRET)
+        if not result.verified:
+            return Response(
+                {"detail": "Bot-Verifizierung fehlgeschlagen. Bitte lade die Seite neu."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
