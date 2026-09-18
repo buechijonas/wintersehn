@@ -26,9 +26,9 @@
                 <div v-if="canEdit" class="flex items-center gap-1 shrink-0">
                   <BaseButton
                     type="button"
-                    variant="ghost"
+                    variant="neutral"
                     shape="circle"
-                    size="xs"
+                    size="sm"
                     :class="{ 'text-success': !section.requiresAuth }"
                     :disabled="saving"
                     :title="

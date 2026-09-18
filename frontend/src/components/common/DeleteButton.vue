@@ -1,5 +1,5 @@
 <template>
-  <BaseButton variant="ghost" :shape="hasLabel ? null : 'circle'" size="xs" class="text-error">
+  <BaseButton variant="neutral" :shape="hasLabel ? null : 'circle'" size="sm" class="text-error">
     <AppIcon name="trash" class="size-4 icon-error" alt="" />
     <slot />
   </BaseButton>
