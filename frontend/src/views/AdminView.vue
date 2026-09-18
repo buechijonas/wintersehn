@@ -1,29 +1,26 @@
 <template>
-  <BasePage active-navigation="admin">
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="flex flex-col gap-4">
-        <CardCategory
-          v-for="category in categories"
-          :key="category.title"
-          :title="category.title"
-          :items="category.items"
-        />
-      </div>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="flex flex-col gap-4">
+      <CardCategory
+        v-for="category in categories"
+        :key="category.title"
+        :title="category.title"
+        :items="category.items"
+      />
     </div>
-    <BaseFooter />
-  </BasePage>
+  </div>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import CardCategory from '@/components/common/CardCategory.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 
 export default {
   name: 'AdminView',
-  components: { BasePage, BaseBreadcrumbs, CardCategory, BaseFooter },
+  components: { BaseBreadcrumbs, CardCategory, BaseFooter },
   data() {
     return {
       breadcrumbs: [{ label: 'Admin', to: '/' }],

@@ -1,5 +1,5 @@
 <template>
-  <LegalContentLoader content-key="impressum" />
+  <LegalContentLoader content-key="impressum" label="Impressum" />
 </template>
 
 <script>

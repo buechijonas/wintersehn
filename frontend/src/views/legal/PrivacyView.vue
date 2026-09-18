@@ -1,5 +1,5 @@
 <template>
-  <LegalContentLoader content-key="privacy" />
+  <LegalContentLoader content-key="privacy" label="Datenschutzerklärung" />
 </template>
 
 <script>

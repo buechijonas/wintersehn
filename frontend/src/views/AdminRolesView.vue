@@ -1,68 +1,65 @@
 <template>
-  <BasePage active-navigation="admin">
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="mx-auto w-full max-w-200">
-        <h2 class="text-xl my-4">Rollen &amp; Rechte</h2>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="mx-auto w-full max-w-200">
+      <h2 class="text-xl my-4">Rollen &amp; Rechte</h2>
 
-        <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
+      <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
-        <div class="overflow-x-auto">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Berechtigung</th>
-                <th v-for="role in rbacStore.roles" :key="role.id" class="min-w-40">
-                  <div class="flex flex-col gap-1">
-                    <input
-                      type="text"
-                      class="input input-sm w-full"
-                      :value="role.name"
-                      :disabled="!authStore.user?.can_manage_roles"
-                      @change="renameRole(role, $event)"
-                    />
-                    <DeleteButton v-if="authStore.user?.can_manage_roles" @click="removeRole(role)">
-                      Löschen
-                    </DeleteButton>
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="permission in rbacStore.permissions" :key="permission.codename">
-                <td class="text-wntrs-slate">{{ permission.name }}</td>
-                <td v-for="role in rbacStore.roles" :key="role.id" class="text-center">
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Berechtigung</th>
+              <th v-for="role in rbacStore.roles" :key="role.id" class="min-w-40">
+                <div class="flex flex-col gap-1">
                   <input
-                    type="checkbox"
-                    class="checkbox"
-                    :checked="hasPermission(role, permission.codename)"
-                    :disabled="!authStore.user?.can_manage_permissions"
-                    @change="togglePermission(role, permission.codename)"
+                    type="text"
+                    class="input input-sm w-full"
+                    :value="role.name"
+                    :disabled="!authStore.user?.can_manage_roles"
+                    @change="renameRole(role, $event)"
                   />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+                  <DeleteButton v-if="authStore.user?.can_manage_roles" @click="removeRole(role)">
+                    Löschen
+                  </DeleteButton>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="permission in rbacStore.permissions" :key="permission.codename">
+              <td class="text-wntrs-slate">{{ permission.name }}</td>
+              <td v-for="role in rbacStore.roles" :key="role.id" class="text-center">
+                <input
+                  type="checkbox"
+                  class="checkbox"
+                  :checked="hasPermission(role, permission.codename)"
+                  :disabled="!authStore.user?.can_manage_permissions"
+                  @change="togglePermission(role, permission.codename)"
+                />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        <div v-if="authStore.user?.can_manage_roles" class="flex gap-4 mt-6">
-          <input
-            v-model="newRoleName"
-            type="text"
-            placeholder="Neue Rolle"
-            class="input flex-1"
-            @keyup.enter="addRole"
-          />
-          <BaseButton variant="primary" @click="addRole">Rolle hinzufügen</BaseButton>
-        </div>
+      <div v-if="authStore.user?.can_manage_roles" class="flex gap-4 mt-6">
+        <input
+          v-model="newRoleName"
+          type="text"
+          placeholder="Neue Rolle"
+          class="input flex-1"
+          @keyup.enter="addRole"
+        />
+        <BaseButton variant="primary" @click="addRole">Rolle hinzufügen</BaseButton>
       </div>
     </div>
-    <BaseFooter />
-  </BasePage>
+  </div>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -72,7 +69,7 @@ import { useRbacStore } from '@/stores/rbac.js'
 
 export default {
   name: 'AdminRolesView',
-  components: { BasePage, BaseBreadcrumbs, BaseFooter, BaseButton, DeleteButton },
+  components: { BaseBreadcrumbs, BaseFooter, BaseButton, DeleteButton },
   data() {
     return {
       breadcrumbs: [

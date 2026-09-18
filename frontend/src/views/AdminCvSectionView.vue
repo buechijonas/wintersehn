@@ -1,71 +1,68 @@
 <template>
-  <BasePage active-navigation="admin">
-    <BaseBreadcrumbs :items="breadcrumbs" />
-    <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-      <div class="mx-auto w-full max-w-200">
-        <h2 class="text-xl my-4">{{ section?.label }}</h2>
+  <BaseBreadcrumbs :items="breadcrumbs" />
+  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="mx-auto w-full max-w-200">
+      <h2 class="text-xl my-4">{{ section?.label }}</h2>
 
-        <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
+      <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
-        <SortableList
-          v-if="section"
-          :items="timeline"
-          :disabled="!canEdit"
-          class="flex flex-wrap gap-2"
-          @reorder="reorderTimeline"
-        >
-          <template #default="{ item: entry, index: entryIndex }">
-            <div class="relative shrink-0">
-              <BaseCard class="size-40 flex items-center justify-center p-4">
-                <div class="flex flex-col items-center text-center gap-2">
-                  <img
-                    class="size-14"
-                    :src="flatIcons[entry.icon ?? section.icon]"
-                    :alt="entry.title"
-                  />
-                  <p class="font-mono italic text-wntrs-muted text-xs">{{ entry.year }}</p>
-                  <div>
-                    <p class="text-wntrs-slate text-xs font-bold">{{ entry.title }}</p>
-                    <p class="text-wntrs-slate font-light text-xs">{{ entry.description }}</p>
-                  </div>
+      <SortableList
+        v-if="section"
+        :items="timeline"
+        :disabled="!canEdit"
+        class="flex flex-wrap gap-2"
+        @reorder="reorderTimeline"
+      >
+        <template #default="{ item: entry, index: entryIndex }">
+          <div class="relative shrink-0">
+            <BaseCard class="size-40 flex items-center justify-center p-4">
+              <div class="flex flex-col items-center text-center gap-2">
+                <img
+                  class="size-14"
+                  :src="flatIcons[entry.icon ?? section.icon]"
+                  :alt="entry.title"
+                />
+                <p class="font-mono italic text-wntrs-muted text-xs">{{ entry.year }}</p>
+                <div>
+                  <p class="text-wntrs-slate text-xs font-bold">{{ entry.title }}</p>
+                  <p class="text-wntrs-slate font-light text-xs">{{ entry.description }}</p>
                 </div>
-              </BaseCard>
-              <DeleteButton
-                v-if="canEdit"
-                class="absolute top-2 right-2"
-                :disabled="saving"
-                @click="askRemoveEntry(entryIndex)"
-              />
-            </div>
-          </template>
-
-          <template #append>
-            <BaseCard
-              v-if="canEdit"
-              tag="router-link"
-              :to="`/admin/cv/${key}/create`"
-              class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
-            >
-              <span class="text-4xl text-wntrs-muted leading-none">+</span>
+              </div>
             </BaseCard>
-          </template>
-        </SortableList>
-      </div>
+            <DeleteButton
+              v-if="canEdit"
+              class="absolute top-2 right-2"
+              :disabled="saving"
+              @click="askRemoveEntry(entryIndex)"
+            />
+          </div>
+        </template>
+
+        <template #append>
+          <BaseCard
+            v-if="canEdit"
+            tag="router-link"
+            :to="`/admin/cv/${key}/create`"
+            class="size-40 shrink-0 flex items-center justify-center p-4 hover:bg-base-200"
+          >
+            <span class="text-4xl text-wntrs-muted leading-none">+</span>
+          </BaseCard>
+        </template>
+      </SortableList>
     </div>
+  </div>
 
-    <ConfirmDialog
-      ref="confirmDialog"
-      :title="dialogTitle"
-      :message="dialogMessage"
-      @confirm="onConfirmDelete"
-    />
+  <ConfirmDialog
+    ref="confirmDialog"
+    :title="dialogTitle"
+    :message="dialogMessage"
+    @confirm="onConfirmDelete"
+  />
 
-    <BaseFooter />
-  </BasePage>
+  <BaseFooter />
 </template>
 
 <script>
-import BasePage from '@/components/layout/BasePage.vue'
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
@@ -79,7 +76,6 @@ import { useContentStore } from '@/stores/content.js'
 export default {
   name: 'AdminCvSectionView',
   components: {
-    BasePage,
     BaseBreadcrumbs,
     BaseCard,
     DeleteButton,

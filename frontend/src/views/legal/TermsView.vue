@@ -1,5 +1,5 @@
 <template>
-  <LegalContentLoader content-key="terms" />
+  <LegalContentLoader content-key="terms" label="Nutzungsrichtlinien" />
 </template>
 
 <script>
