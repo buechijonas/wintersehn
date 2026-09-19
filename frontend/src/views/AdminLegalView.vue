@@ -79,9 +79,11 @@
               >
                 <template #default="{ item, index: itemIndex }">
                   <div class="flex items-center gap-2 bg-base-200 rounded-box p-3">
-                    <div class="flex-1">
-                      <p class="font-medium text-sm">{{ item.listtitle }}</p>
-                      <p v-if="item.texttitle" class="text-sm text-wntrs-slate">{{ item.texttitle }}</p>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-medium text-sm truncate">{{ item.listtitle }}</p>
+                      <p v-if="item.texttitle" class="text-sm text-wntrs-slate truncate">
+                        {{ item.texttitle }}
+                      </p>
                     </div>
                     <DeleteButton
                       v-if="canEdit"
