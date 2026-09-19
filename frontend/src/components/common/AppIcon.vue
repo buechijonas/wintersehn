@@ -18,11 +18,12 @@ export default {
 </script>
 
 <style scoped>
-:where([data-theme='dark']) .app-icon:not(.icon-error):not(.icon-success) {
+:where([data-theme='dark']) .app-icon:not(.icon-error):not(.icon-success):not(.icon-primary) {
   filter: invert(1);
 }
 @media (prefers-color-scheme: dark) {
-  :where(:root:not([data-theme])) .app-icon:not(.icon-error):not(.icon-success) {
+  :where(:root:not([data-theme]))
+    .app-icon:not(.icon-error):not(.icon-success):not(.icon-primary) {
     filter: invert(1);
   }
 }

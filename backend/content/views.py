@@ -1,6 +1,14 @@
+import io
+import uuid
+
+from django.conf import settings
 from django.contrib.auth.models import Group
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.shortcuts import get_object_or_404
+from PIL import Image
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +17,10 @@ from .models import SiteContent
 from .rbac import managed_permissions_queryset, set_role_permissions
 from .rbac_serializers import PermissionSerializer, RoleSerializer
 from .serializers import SiteContentSerializer
+
+MAX_UPLOAD_SIZE = 512 * 1024 * 1024  # 512 MB
+MAX_DIMENSION = 2000
+ALLOWED_IMAGE_FORMATS = {"JPEG": "jpg", "PNG": "png", "WEBP": "webp", "GIF": "gif"}
 
 VIEW_PERMISSION_BY_KEY = {
     "about": "content.view_about",
@@ -32,7 +44,9 @@ class SiteContentView(APIView):
         if key == "media" and not request.user.has_perm("content.view_media"):
             data = [group for group in data if not group.get("requiresAuth")]
 
-        return Response({"key": content.key, "data": data, "updated_at": content.updated_at})
+        return Response(
+            {"key": content.key, "data": data, "updated_at": content.updated_at}
+        )
 
     def put(self, request, key):
         if not request.user.has_perm("content.change_sitecontent"):
@@ -45,6 +59,68 @@ class SiteContentView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class ContentImageUploadView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser]
+
+    def post(self, request):
+        if not request.user.has_perm("content.change_sitecontent"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        upload = request.FILES.get("file")
+        if not upload:
+            return Response(
+                {"detail": "Keine Datei erhalten."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        if upload.size > MAX_UPLOAD_SIZE:
+            return Response(
+                {"detail": "Datei ist zu gross (max. 512 MB)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        raw = upload.read()
+        try:
+            # verify() only checks integrity and leaves the file unusable
+            # afterwards, so the image is re-opened to actually read it.
+            # Pillow can raise all sorts of exceptions for malformed/corrupt
+            # input here (SyntaxError, ValueError, struct.error, ...), not
+            # just UnidentifiedImageError/OSError - this is a boundary
+            # against untrusted input, so anything that fails to parse as a
+            # genuine image is rejected as a clean 400 rather than a 500.
+            Image.open(io.BytesIO(raw)).verify()
+            image = Image.open(io.BytesIO(raw))
+            image_format = image.format
+        except Exception:
+            return Response(
+                {"detail": "Datei ist kein gültiges Bild."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        extension = ALLOWED_IMAGE_FORMATS.get(image_format)
+        if not extension:
+            return Response(
+                {"detail": "Nicht unterstütztes Bildformat (JPEG, PNG, WEBP, GIF)."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if image.width > MAX_DIMENSION or image.height > MAX_DIMENSION:
+            if image_format == "JPEG" and image.mode in ("RGBA", "P"):
+                image = image.convert("RGB")
+            image.thumbnail((MAX_DIMENSION, MAX_DIMENSION))
+            buffer = io.BytesIO()
+            image.save(buffer, format=image_format)
+            raw = buffer.getvalue()
+
+        # The filename is generated server-side and never derived from the
+        # client-supplied name, which rules out path traversal/collisions.
+        saved_path = default_storage.save(
+            f"uploads/{uuid.uuid4().hex}.{extension}", ContentFile(raw)
+        )
+        return Response(
+            {"url": f"{settings.MEDIA_URL}{saved_path}"}, status=status.HTTP_201_CREATED
+        )
 
 
 class PermissionListView(APIView):

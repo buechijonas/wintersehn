@@ -40,10 +40,16 @@
             >
               <template #default="{ item, index: itemIndex }">
                 <div class="relative shrink-0">
-                  <BaseCard class="size-40 flex items-center justify-center p-4">
-                    <div class="flex flex-col items-center text-center gap-4">
+                  <BaseCard
+                    tag="router-link"
+                    :to="`/admin/countries/${sectionIndex}/${itemIndex}/albums`"
+                    class="size-40 flex items-center justify-center p-4 hover:bg-base-200"
+                  >
+                    <div class="flex flex-col items-center text-center gap-4 w-full">
                       <img class="size-16" :src="countryIcons[item.icon]" :alt="item.label" />
-                      <p class="text-wntrs-slate text-sm">{{ item.label }}</p>
+                      <p class="text-wntrs-slate text-sm line-clamp-2 text-ellipsis w-full">
+                        {{ item.label }}
+                      </p>
                     </div>
                   </BaseCard>
                   <DeleteButton
