@@ -1,7 +1,7 @@
 <template>
   <div class="relative z-20 h-12 w-full flex items-center bg-primary">
     <div
-      class="lg:hidden flex items-center justify-center size-12 shrink-0 bg-white text-base-content text-[1.2rem] font-normal"
+      class="lg:hidden flex items-center justify-center size-12 shrink-0 bg-base-100 text-base-content text-[1.2rem] font-normal"
     >
       {{ brandInitial }}
     </div>
