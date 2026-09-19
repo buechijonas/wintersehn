@@ -37,6 +37,9 @@
           </li>
         </ul>
       </template>
+      <BaseButton v-else variant="ghost" shape="square" size="sm" to="/settings">
+        <img :src="icons.settings" alt="Einstellungen" class="size-5 invert" />
+      </BaseButton>
       <label
         for="my-drawer-3"
         aria-label="Navigation öffnen"
@@ -60,6 +63,9 @@ import packageJson from '../../../package.json'
 export default {
   name: 'BaseHeader',
   components: { RouterLink, BaseButton },
+  data() {
+    return { icons }
+  },
   computed: {
     authStore() {
       return useAuthStore()

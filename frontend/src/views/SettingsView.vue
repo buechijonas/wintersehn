@@ -4,39 +4,41 @@
     <div class="mx-auto w-full max-w-150">
       <h2 class="text-xl font-light my-4">Einstellungen</h2>
 
-      <div class="flex flex-col items-center gap-4 mb-10 sm:flex-row sm:items-start">
-        <div class="flex flex-col items-center shrink-0">
-          <h3 class="text-xl my-4">Profilbild</h3>
-          <BaseCard class="size-24 shrink-0 flex items-center justify-center p-2">
-            <img class="size-14" :src="avatarSrc" alt="" />
-          </BaseCard>
+      <template v-if="authStore.isAuthenticated">
+        <div class="flex flex-col items-center gap-4 mb-10 sm:flex-row sm:items-start">
+          <div class="flex flex-col items-center shrink-0">
+            <h3 class="text-xl my-4">Profilbild</h3>
+            <BaseCard class="size-24 shrink-0 flex items-center justify-center p-2">
+              <img class="size-14" :src="avatarSrc" alt="" />
+            </BaseCard>
+          </div>
+
+          <div class="flex-1 flex flex-col min-w-0 w-full sm:w-auto">
+            <h3 class="text-xl my-4">Konto</h3>
+            <BaseCard class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex flex-col gap-1 min-w-0">
+                <p class="flex flex-wrap gap-1 min-w-0">
+                  <span class="text-wntrs-muted shrink-0">Benutzername:</span>
+                  <span class="truncate min-w-0">{{ authStore.user.username }}</span>
+                </p>
+                <p class="flex flex-wrap gap-1 min-w-0">
+                  <span class="text-wntrs-muted shrink-0">E-Mail:</span>
+                  <span class="truncate min-w-0">{{ authStore.user.email }}</span>
+                </p>
+              </div>
+              <BaseButton to="/settings/account" class="shrink-0">Bearbeiten</BaseButton>
+            </BaseCard>
+          </div>
         </div>
 
-        <div class="flex-1 flex flex-col min-w-0 w-full sm:w-auto">
-          <h3 class="text-xl my-4">Konto</h3>
-          <BaseCard class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div class="flex flex-col gap-1 min-w-0">
-              <p class="flex flex-wrap gap-1 min-w-0">
-                <span class="text-wntrs-muted shrink-0">Benutzername:</span>
-                <span class="truncate min-w-0">{{ authStore.user.username }}</span>
-              </p>
-              <p class="flex flex-wrap gap-1 min-w-0">
-                <span class="text-wntrs-muted shrink-0">E-Mail:</span>
-                <span class="truncate min-w-0">{{ authStore.user.email }}</span>
-              </p>
-            </div>
-            <BaseButton to="/settings/account" class="shrink-0">Bearbeiten</BaseButton>
+        <div class="mb-10">
+          <h3 class="text-xl my-4">Passwort</h3>
+          <BaseCard class="p-6 flex items-center justify-between gap-4">
+            <p class="text-wntrs-muted">Passwort ändern oder zurücksetzen.</p>
+            <BaseButton to="/settings/password">Ändern</BaseButton>
           </BaseCard>
         </div>
-      </div>
-
-      <div class="mb-10">
-        <h3 class="text-xl my-4">Passwort</h3>
-        <BaseCard class="p-6 flex items-center justify-between gap-4">
-          <p class="text-wntrs-muted">Passwort ändern oder zurücksetzen.</p>
-          <BaseButton to="/settings/password">Ändern</BaseButton>
-        </BaseCard>
-      </div>
+      </template>
 
       <div class="mb-10">
         <h3 class="text-xl my-4">Darstellung</h3>
@@ -127,7 +129,7 @@ export default {
       return useAuthStore()
     },
     avatarSrc() {
-      return profiles[this.authStore.user.avatar] ?? icons.user
+      return profiles[this.authStore.user?.avatar] ?? icons.user
     },
     themeMode: {
       get() {
