@@ -9,10 +9,34 @@
   --color-primary-content: #ffffff;
 }
 
+@plugin "daisyui/theme" {
+  name: "dark";
+  prefersdark: true;
+
+  --color-primary: #d07497;
+  --color-primary-content: #ffffff;
+}
+
 @theme {
   --color-wntrs-muted: #a8b3bf;
   --color-wntrs-slate: #6c829c;
   --color-wntrs-border: #e3e5e8;
   --color-wntrs-highlight: #f0dbe3;
   --text-title: 2.5rem;
+}
+
+[data-theme="dark"] {
+  --color-wntrs-muted: #8b96a3;
+  --color-wntrs-slate: #a7b6c8;
+  --color-wntrs-border: #3a3f4a;
+  --color-wntrs-highlight: #3d2530;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-wntrs-muted: #8b96a3;
+    --color-wntrs-slate: #a7b6c8;
+    --color-wntrs-border: #3a3f4a;
+    --color-wntrs-highlight: #3d2530;
+  }
 }
