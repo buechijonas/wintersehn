@@ -8,6 +8,8 @@ import EthosView from '@/views/EthosView.vue'
 import CvView from '@/views/CvView.vue'
 import CvSectionView from '@/views/CvSectionView.vue'
 import CountriesView from '@/views/CountriesView.vue'
+import CountryDetailView from '@/views/CountryDetailView.vue'
+import AlbumView from '@/views/AlbumView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
 import PrivacyView from '@/views/legal/PrivacyView.vue'
@@ -29,6 +31,8 @@ import AdminEthosView from '@/views/AdminEthosView.vue'
 import AdminEthosItemCreateView from '@/views/AdminEthosItemCreateView.vue'
 import AdminCountriesView from '@/views/AdminCountriesView.vue'
 import AdminCountriesItemCreateView from '@/views/AdminCountriesItemCreateView.vue'
+import AdminCountryAlbumsView from '@/views/AdminCountryAlbumsView.vue'
+import AdminAlbumEditView from '@/views/AdminAlbumEditView.vue'
 import AdminCvView from '@/views/AdminCvView.vue'
 import AdminCvSectionView from '@/views/AdminCvSectionView.vue'
 import AdminCvEntryCreateView from '@/views/AdminCvEntryCreateView.vue'
@@ -81,6 +85,26 @@ const router = createRouter({
       path: '/countries',
       name: 'countries',
       component: CountriesView,
+      meta: {
+        requiresAuth: true,
+        permission: 'can_view_countries',
+        activeNavigation: 'countries',
+      },
+    },
+    {
+      path: '/countries/:section/:item',
+      name: 'country-detail',
+      component: CountryDetailView,
+      meta: {
+        requiresAuth: true,
+        permission: 'can_view_countries',
+        activeNavigation: 'countries',
+      },
+    },
+    {
+      path: '/countries/:section/:item/:album',
+      name: 'album-detail',
+      component: AlbumView,
       meta: {
         requiresAuth: true,
         permission: 'can_view_countries',
@@ -202,6 +226,18 @@ const router = createRouter({
       path: '/admin/countries/:section/create',
       name: 'admin-countries-item-create',
       component: AdminCountriesItemCreateView,
+      meta: { requiresAuth: true, permission: 'can_view_admin', activeNavigation: 'admin' },
+    },
+    {
+      path: '/admin/countries/:section/:item/albums',
+      name: 'admin-country-albums',
+      component: AdminCountryAlbumsView,
+      meta: { requiresAuth: true, permission: 'can_view_admin', activeNavigation: 'admin' },
+    },
+    {
+      path: '/admin/countries/:section/:item/albums/:album',
+      name: 'admin-album-edit',
+      component: AdminAlbumEditView,
       meta: { requiresAuth: true, permission: 'can_view_admin', activeNavigation: 'admin' },
     },
     {

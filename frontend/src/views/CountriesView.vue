@@ -35,7 +35,14 @@ export default {
       return !this.contentStore.items.countries
     },
     countryCategories() {
-      return this.contentStore.items.countries?.data ?? []
+      const sections = this.contentStore.items.countries?.data ?? []
+      return sections.map((section, sectionIndex) => ({
+        ...section,
+        items: section.items.map((item, itemIndex) => ({
+          ...item,
+          to: `/countries/${sectionIndex}/${itemIndex}`,
+        })),
+      }))
     },
   },
   mounted() {

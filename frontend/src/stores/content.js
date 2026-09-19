@@ -30,5 +30,19 @@ export const useContentStore = defineStore('content', () => {
     return body.data
   }
 
-  return { items, fetchContent, saveContent }
+  async function uploadImage(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await apiFetch('/api/content/uploads/', {
+      method: 'POST',
+      body: formData,
+    })
+    const body = await response.json().catch(() => null)
+    if (!response.ok) {
+      throw new Error(extractErrorMessage(body, 'Hochladen fehlgeschlagen.'))
+    }
+    return body.url
+  }
+
+  return { items, fetchContent, saveContent, uploadImage }
 })
