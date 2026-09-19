@@ -18,7 +18,7 @@
             <div class="my-auto">{{ item.name }}</div>
           </div>
           <BaseButton variant="ghost" shape="square" :href="item.url">
-            <img class="size-[1.2em]" alt="open" :src="icons['share-square']" />
+            <AppIcon class="size-[1.2em]" alt="open" name="share-square" />
           </BaseButton>
         </li>
       </BaseCard>
@@ -32,17 +32,16 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
-import { icons } from '@/assets/icons.js'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { social } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 
 export default {
   name: 'MediaView',
-  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton },
+  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon },
   data() {
     return {
-      icons,
       social,
       breadcrumbs: [{ label: 'Medien', to: '/' }],
     }

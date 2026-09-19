@@ -37,6 +37,31 @@
           <BaseButton to="/settings/password">Ändern</BaseButton>
         </BaseCard>
       </div>
+
+      <div class="mb-10">
+        <h3 class="text-xl my-4">Darstellung</h3>
+        <BaseCard class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <p class="text-wntrs-muted">Erscheinungsbild der Oberfläche.</p>
+          <div class="flex gap-2">
+            <BaseButton
+              v-for="option in themeOptions"
+              :key="option.value"
+              type="button"
+              size="sm"
+              :variant="themeMode === option.value ? 'primary' : 'neutral'"
+              @click="themeMode = option.value"
+            >
+              <AppIcon
+                :name="option.icon"
+                class="size-4"
+                :class="{ invert: themeMode === option.value }"
+                alt=""
+              />
+              {{ option.label }}
+            </BaseButton>
+          </div>
+        </BaseCard>
+      </div>
     </div>
   </div>
   <BaseFooter />
@@ -47,16 +72,24 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
+import { themeMode } from '@/lib/theme.js'
 
 export default {
   name: 'SettingsView',
-  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton },
+  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon },
   data() {
     return {
+      icons,
       breadcrumbs: [{ label: 'Einstellungen', to: '/' }],
+      themeOptions: [
+        { value: 'auto', icon: 'laptop', label: 'Auto' },
+        { value: 'light', icon: 'brightness', label: 'Hell' },
+        { value: 'dark', icon: 'moon-stars', label: 'Dunkel' },
+      ],
     }
   },
   computed: {
@@ -65,6 +98,14 @@ export default {
     },
     avatarSrc() {
       return profiles[this.authStore.user.avatar] ?? icons.user
+    },
+    themeMode: {
+      get() {
+        return themeMode.value
+      },
+      set(value) {
+        themeMode.value = value
+      },
     },
   },
 }
