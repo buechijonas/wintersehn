@@ -143,7 +143,6 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: SettingsView,
-      meta: { requiresAuth: true },
     },
     {
       path: '/settings/account',

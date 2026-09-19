@@ -59,9 +59,11 @@
               <template #default="{ item, index: itemIndex }">
                 <div class="relative shrink-0">
                   <BaseCard class="size-40 flex items-center justify-center p-4">
-                    <div class="flex flex-col items-center text-center gap-4">
+                    <div class="flex flex-col items-center text-center gap-4 w-full">
                       <img class="size-16" :src="mediaIcons[item.icon]" :alt="item.platform" />
-                      <p class="text-wntrs-slate text-sm">{{ item.name }}</p>
+                      <p class="text-wntrs-slate text-sm line-clamp-2 text-ellipsis w-full">
+                        {{ item.name }}
+                      </p>
                     </div>
                   </BaseCard>
                   <DeleteButton

@@ -4,7 +4,7 @@
     :to="to"
     class="size-40 shrink-0 flex items-center justify-center p-4"
   >
-    <div class="flex flex-col items-center text-center gap-4">
+    <div class="flex flex-col items-center text-center gap-4 w-full">
       <div class="relative size-16 shrink-0">
         <div v-if="!imgLoaded" class="skeleton absolute inset-0 rounded-full"></div>
         <img
@@ -15,7 +15,7 @@
           @load="imgLoaded = true"
         />
       </div>
-      <p class="text-wntrs-slate text-sm">{{ label }}</p>
+      <p class="text-wntrs-slate text-sm line-clamp-2 text-ellipsis w-full">{{ label }}</p>
     </div>
   </BaseCard>
 </template>

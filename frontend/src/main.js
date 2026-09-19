@@ -1,5 +1,6 @@
 import './assets/main.css'
 import './lib/theme.js'
+import './lib/dyslexia.js'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
