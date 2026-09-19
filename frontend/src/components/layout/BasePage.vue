@@ -1,8 +1,8 @@
 <template>
   <div class="relative grid min-h-[100dvh] grid-cols-[8px_auto_1fr]">
-    <div class="absolute top-0 left-0 z-20 h-full w-2 bg-primary" />
-    <BaseNavigation class="col-start-2" :active-navigation="activeNavigation" />
-    <div class="col-start-3 flex min-w-0 flex-col bg-base-200">
+    <div class="app-nav-accent absolute top-0 left-0 z-20 h-full w-2 bg-primary" />
+    <BaseNavigation :active-navigation="activeNavigation" />
+    <div class="col-start-3 row-start-1 flex min-w-0 flex-col bg-base-200">
       <BaseHeader />
       <div
         ref="scrollArea"

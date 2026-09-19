@@ -1,12 +1,12 @@
 <template>
-  <div class="hidden h-12 w-[330px] items-center pl-8 lg:flex">
+  <div class="app-nav col-start-2 row-start-1 hidden h-12 w-[330px] items-center pl-8 lg:flex">
     <h1 class="text-[1.2rem]">{{ displayName }}</h1>
   </div>
-  <div class="drawer drawer-end lg:drawer-open lg:top-16 lg:h-[calc(100dvh-64px)]">
+  <div class="col-start-2 row-start-1 drawer drawer-end lg:drawer-open">
     <input id="my-drawer-3" v-model="isNavDrawerOpen" type="checkbox" class="drawer-toggle" />
     <div class="drawer-content"></div>
     <div
-      class="drawer-side flex flex-col overflow-y-auto bg-base-100 max-lg:top-12 max-lg:h-[calc(100dvh-48px)] lg:top-16 lg:h-[calc(100dvh-64px)]"
+      class="app-nav drawer-side flex flex-col overflow-y-auto bg-base-100 top-12 h-[calc(100dvh-48px)]"
     >
       <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
       <ul class="menu w-full lg:w-80 p-4 gap-2">

@@ -73,3 +73,85 @@
 [data-dyslexia="on"] {
   font-family: "OpenDyslexic", sans-serif;
 }
+
+[data-contrast="on"] {
+  --color-wntrs-border: #8a97a5;
+}
+
+[data-theme="dark"][data-contrast="on"] {
+  --color-wntrs-border: #6b7482;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme])[data-contrast="on"] {
+    --color-wntrs-border: #6b7482;
+  }
+}
+
+[data-contrast="on"] {
+  --wntrs-contrast-border: var(--color-wntrs-border);
+}
+
+[data-contrast="on"] .btn {
+  border-color: var(--wntrs-contrast-border);
+}
+
+[data-contrast="on"] .app-header {
+  border-color: var(--wntrs-contrast-border);
+}
+
+[data-contrast="on"] .table :where(thead tr :is(td, th), tbody tr:not(:last-child) :is(td, th)) {
+  border-color: var(--wntrs-contrast-border);
+}
+
+[data-contrast="on"] :where(.input, .select, .textarea, .checkbox) {
+  --input-color: var(--wntrs-contrast-border);
+}
+
+[data-contrast="on"] {
+  --wntrs-contrast-primary-border: color-mix(in srgb, var(--color-primary) 80%, black);
+}
+
+[data-theme="dark"][data-contrast="on"] {
+  --wntrs-contrast-primary-border: color-mix(in srgb, var(--color-primary) 80%, white);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme])[data-contrast="on"] {
+    --wntrs-contrast-primary-border: color-mix(in srgb, var(--color-primary) 80%, white);
+  }
+}
+
+[data-contrast="on"] .btn-primary {
+  border-color: var(--wntrs-contrast-primary-border);
+}
+
+[data-contrast="on"] .app-topbar {
+  border-bottom: 1px solid var(--wntrs-contrast-primary-border);
+}
+
+[data-contrast="on"] .app-topbar .btn {
+  border-color: var(--wntrs-contrast-primary-border);
+}
+
+[data-contrast="on"] .app-nav-accent {
+  border-right: 1px solid var(--wntrs-contrast-primary-border);
+}
+
+[data-contrast="on"] .app-nav {
+  border-right: 1px solid var(--wntrs-contrast-border);
+}
+
+[data-contrast="on"] .btn-error {
+  border-color: color-mix(in srgb, var(--color-error) 80%, black);
+}
+
+[data-theme="dark"][data-contrast="on"] .btn-error {
+  border-color: color-mix(in srgb, var(--color-error) 80%, white);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme])[data-contrast="on"] .btn-error {
+    border-color: color-mix(in srgb, var(--color-error) 80%, white);
+  }
+}
