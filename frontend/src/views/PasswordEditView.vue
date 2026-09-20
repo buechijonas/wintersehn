@@ -58,10 +58,12 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import CancelButton from '@/components/common/CancelButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'PasswordEditView',
   components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, CancelButton },
+  mixins: [asyncActionMixin],
   data() {
     return {
       breadcrumbs: [
@@ -71,8 +73,6 @@ export default {
       currentPassword: '',
       newPassword: '',
       newPasswordConfirm: '',
-      error: '',
-      saving: false,
     }
   },
   computed: {
@@ -82,22 +82,15 @@ export default {
   },
   methods: {
     async save() {
-      this.error = ''
-
       if (this.newPassword !== this.newPasswordConfirm) {
         this.error = 'Die Passwörter stimmen nicht überein.'
         return
       }
 
-      this.saving = true
-      try {
-        await this.authStore.changePassword(this.currentPassword, this.newPassword)
-        this.$router.push('/settings')
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+      await this.runAction(() =>
+        this.authStore.changePassword(this.currentPassword, this.newPassword),
+      )
+      if (!this.error) this.$router.push('/settings')
     },
   },
 }

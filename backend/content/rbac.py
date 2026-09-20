@@ -3,16 +3,19 @@ from django.contrib.contenttypes.models import ContentType
 
 from .models import SiteContent
 
+CONTENT_CRUD_KEYS = ["about", "ethos", "cv", "countries", "media"]
+
 MANAGED_PERMISSIONS = [
-    "view_about",
-    "view_ethos",
-    "view_cv",
-    "view_countries",
-    "view_media",
     "view_admin",
     "change_sitecontent",
-    "manage_permissions",
-    "manage_roles",
+    *[f"{verb}_{key}" for key in CONTENT_CRUD_KEYS for verb in ("add", "view", "change", "delete")],
+    "add_permission",
+    "change_permission",
+    "delete_permission",
+    "add_role",
+    "change_role",
+    "view_role",
+    "delete_role",
 ]
 
 

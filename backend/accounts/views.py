@@ -110,7 +110,7 @@ class UserListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not request.user.has_perm("content.manage_roles"):
+        if not request.user.has_perm("content.view_role"):
             return Response(status=status.HTTP_403_FORBIDDEN)
         users = User.objects.all().order_by("username")
         return Response(UserRoleSerializer(users, many=True).data)
@@ -120,7 +120,7 @@ class UserRoleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
-        if not request.user.has_perm("content.manage_roles"):
+        if not request.user.has_perm("content.change_role"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         user = get_object_or_404(User, pk=pk)
@@ -137,7 +137,7 @@ class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk):
-        if not request.user.has_perm("content.manage_roles"):
+        if not request.user.has_perm("content.change_role"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         if int(pk) == request.user.pk:
@@ -155,7 +155,7 @@ class UserVerifyView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
-        if not request.user.has_perm("content.manage_roles"):
+        if not request.user.has_perm("content.change_role"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         user = get_object_or_404(User, pk=pk)

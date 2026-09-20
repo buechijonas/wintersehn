@@ -46,7 +46,7 @@
               <AppIcon
                 :name="album.thumbnail === image ? 'graphic-style' : 'picture'"
                 class="size-4"
-                :class="{ 'icon-primary': album.thumbnail === image }"
+                :class="{ 'icon-tint-primary': album.thumbnail === image }"
                 alt="Als Thumbnail verwenden"
               />
             </BaseButton>
@@ -85,6 +85,7 @@ import SortableList from '@/components/common/SortableList.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import countryAlbumRouteMixin from '@/mixins/countryAlbumRouteMixin.js'
 import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminAlbumEditView',
@@ -99,13 +100,7 @@ export default {
     BaseFooter,
     SortableList,
   },
-  mixins: [countryAlbumRouteMixin, confirmDeleteMixin],
-  data() {
-    return {
-      error: '',
-      saving: false,
-    }
-  },
+  mixins: [countryAlbumRouteMixin, confirmDeleteMixin, asyncActionMixin],
   computed: {
     authStore() {
       return useAuthStore()
@@ -114,7 +109,7 @@ export default {
       return this.album?.images ?? []
     },
     canEdit() {
-      return !!this.authStore.user?.can_edit_content
+      return !!this.authStore.user?.can_change_countries
     },
     breadcrumbs() {
       return [
@@ -129,33 +124,25 @@ export default {
     },
   },
   methods: {
-    async persistAlbum(patch) {
-      this.error = ''
-      this.saving = true
-      try {
-        const data = this.sections.map((section, sIndex) =>
-          sIndex !== this.sectionIndex
-            ? section
-            : {
-                ...section,
-                items: section.items.map((item, iIndex) =>
-                  iIndex !== this.itemIndex
-                    ? item
-                    : {
-                        ...item,
-                        albums: item.albums.map((album, aIndex) =>
-                          aIndex === this.albumIndex ? { ...album, ...patch } : album,
-                        ),
-                      },
-                ),
-              },
-        )
-        await this.contentStore.saveContent('countries', data)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persistAlbum(patch) {
+      const data = this.sections.map((section, sIndex) =>
+        sIndex !== this.sectionIndex
+          ? section
+          : {
+              ...section,
+              items: section.items.map((item, iIndex) =>
+                iIndex !== this.itemIndex
+                  ? item
+                  : {
+                      ...item,
+                      albums: item.albums.map((album, aIndex) =>
+                        aIndex === this.albumIndex ? { ...album, ...patch } : album,
+                      ),
+                    },
+              ),
+            },
+      )
+      return this.runAction(() => this.contentStore.saveContent('countries', data))
     },
     renameAlbum(event) {
       const title = event.target.value.trim()
@@ -185,22 +172,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-/* Approximates --color-primary (#b42b5f). */
-.icon-primary {
-  filter: brightness(0) saturate(100%) invert(24%) sepia(55%) saturate(2090%) hue-rotate(303deg)
-    brightness(86%) contrast(85%);
-}
-/* Approximates the dark theme's --color-primary (#d07497). */
-:where([data-theme='dark']) .icon-primary {
-  filter: brightness(0) saturate(100%) invert(53%) sepia(25%) saturate(700%) hue-rotate(295deg)
-    brightness(100%) contrast(95%);
-}
-@media (prefers-color-scheme: dark) {
-  :where(:root:not([data-theme])) .icon-primary {
-    filter: brightness(0) saturate(100%) invert(53%) sepia(25%) saturate(700%) hue-rotate(295deg)
-      brightness(100%) contrast(95%);
-  }
-}
-</style>

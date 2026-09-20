@@ -23,7 +23,7 @@
 
       <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
-      <BaseButton type="submit" variant="primary" block class="mt-6" :disabled="loading">
+      <BaseButton type="submit" variant="primary" block class="mt-6" :disabled="saving">
         Anmelden
       </BaseButton>
     </form>
@@ -39,16 +39,16 @@ import { RouterLink } from 'vue-router'
 import AuthPage from '@/components/layout/AuthPage.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'LoginView',
   components: { RouterLink, AuthPage, BaseButton },
+  mixins: [asyncActionMixin],
   data() {
     return {
       username: '',
       password: '',
-      error: '',
-      loading: false,
     }
   },
   computed: {
@@ -58,16 +58,8 @@ export default {
   },
   methods: {
     async onSubmit() {
-      this.error = ''
-      this.loading = true
-      try {
-        await this.authStore.login(this.username, this.password)
-        this.$router.push('/')
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.loading = false
-      }
+      await this.runAction(() => this.authStore.login(this.username, this.password))
+      if (!this.error) this.$router.push('/')
     },
   },
 }

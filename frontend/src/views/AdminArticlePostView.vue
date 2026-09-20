@@ -146,6 +146,8 @@ import SortableList from '@/components/common/SortableList.vue'
 import ImageUploadField from '@/components/common/ImageUploadField.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
+import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminArticlePostView',
@@ -161,14 +163,10 @@ export default {
     SortableList,
     ImageUploadField,
   },
+  mixins: [confirmDeleteMixin, asyncActionMixin],
   data() {
     return {
-      error: '',
-      saving: false,
       newSectionTitle: '',
-      dialogTitle: '',
-      dialogMessage: '',
-      pendingAction: null,
       sectionTextareas: {},
       linkDialogSectionIndex: null,
       linkDialogSelection: null,
@@ -208,16 +206,8 @@ export default {
     this.contentStore.fetchContent('article')
   },
   methods: {
-    async persist(posts) {
-      this.error = ''
-      this.saving = true
-      try {
-        await this.contentStore.saveContent('article', posts)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persist(posts) {
+      return this.runAction(() => this.contentStore.saveContent('article', posts))
     },
     persistPost(patch) {
       return this.persist(
@@ -300,12 +290,6 @@ export default {
       }
       this.error = 'Bitte einen bestehenden Link markieren oder den Cursor hineinsetzen.'
     },
-    confirmRemoval(title, message, action) {
-      this.dialogTitle = title
-      this.dialogMessage = message
-      this.pendingAction = action
-      this.$refs.confirmDialog?.open()
-    },
     askRemoveSection(sectionIndex) {
       const { title } = this.sections[sectionIndex]
       this.confirmRemoval(
@@ -313,9 +297,6 @@ export default {
         `Möchtest du "${title || 'diesen Abschnitt'}" wirklich löschen?`,
         () => this.persistSections(this.sections.filter((_, i) => i !== sectionIndex)),
       )
-    },
-    onConfirmDelete() {
-      this.pendingAction?.()
     },
   },
 }

@@ -19,14 +19,33 @@ class UserSerializer(serializers.ModelSerializer):
     verified = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     can_edit_content = serializers.SerializerMethodField()
+    can_add_about = serializers.SerializerMethodField()
     can_view_about = serializers.SerializerMethodField()
+    can_change_about = serializers.SerializerMethodField()
+    can_delete_about = serializers.SerializerMethodField()
+    can_add_ethos = serializers.SerializerMethodField()
     can_view_ethos = serializers.SerializerMethodField()
+    can_change_ethos = serializers.SerializerMethodField()
+    can_delete_ethos = serializers.SerializerMethodField()
+    can_add_cv = serializers.SerializerMethodField()
     can_view_cv = serializers.SerializerMethodField()
+    can_change_cv = serializers.SerializerMethodField()
+    can_delete_cv = serializers.SerializerMethodField()
+    can_add_countries = serializers.SerializerMethodField()
     can_view_countries = serializers.SerializerMethodField()
+    can_change_countries = serializers.SerializerMethodField()
+    can_delete_countries = serializers.SerializerMethodField()
+    can_add_media = serializers.SerializerMethodField()
     can_view_media = serializers.SerializerMethodField()
+    can_change_media = serializers.SerializerMethodField()
+    can_delete_media = serializers.SerializerMethodField()
     can_view_admin = serializers.SerializerMethodField()
-    can_manage_permissions = serializers.SerializerMethodField()
-    can_manage_roles = serializers.SerializerMethodField()
+    can_add_permission = serializers.SerializerMethodField()
+    can_delete_permission = serializers.SerializerMethodField()
+    can_add_role = serializers.SerializerMethodField()
+    can_change_role = serializers.SerializerMethodField()
+    can_view_role = serializers.SerializerMethodField()
+    can_delete_role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -39,14 +58,33 @@ class UserSerializer(serializers.ModelSerializer):
             "verified",
             "role",
             "can_edit_content",
+            "can_add_about",
             "can_view_about",
+            "can_change_about",
+            "can_delete_about",
+            "can_add_ethos",
             "can_view_ethos",
+            "can_change_ethos",
+            "can_delete_ethos",
+            "can_add_cv",
             "can_view_cv",
+            "can_change_cv",
+            "can_delete_cv",
+            "can_add_countries",
             "can_view_countries",
+            "can_change_countries",
+            "can_delete_countries",
+            "can_add_media",
             "can_view_media",
+            "can_change_media",
+            "can_delete_media",
             "can_view_admin",
-            "can_manage_permissions",
-            "can_manage_roles",
+            "can_add_permission",
+            "can_delete_permission",
+            "can_add_role",
+            "can_change_role",
+            "can_view_role",
+            "can_delete_role",
         ]
 
     def get_consent(self, obj):
@@ -66,29 +104,86 @@ class UserSerializer(serializers.ModelSerializer):
     def get_can_edit_content(self, obj):
         return obj.has_perm("content.change_sitecontent")
 
+    def get_can_add_about(self, obj):
+        return obj.has_perm("content.add_about")
+
     def get_can_view_about(self, obj):
         return obj.has_perm("content.view_about")
+
+    def get_can_change_about(self, obj):
+        return obj.has_perm("content.change_about")
+
+    def get_can_delete_about(self, obj):
+        return obj.has_perm("content.delete_about")
+
+    def get_can_add_ethos(self, obj):
+        return obj.has_perm("content.add_ethos")
 
     def get_can_view_ethos(self, obj):
         return obj.has_perm("content.view_ethos")
 
+    def get_can_change_ethos(self, obj):
+        return obj.has_perm("content.change_ethos")
+
+    def get_can_delete_ethos(self, obj):
+        return obj.has_perm("content.delete_ethos")
+
+    def get_can_add_cv(self, obj):
+        return obj.has_perm("content.add_cv")
+
     def get_can_view_cv(self, obj):
         return obj.has_perm("content.view_cv")
+
+    def get_can_change_cv(self, obj):
+        return obj.has_perm("content.change_cv")
+
+    def get_can_delete_cv(self, obj):
+        return obj.has_perm("content.delete_cv")
+
+    def get_can_add_countries(self, obj):
+        return obj.has_perm("content.add_countries")
 
     def get_can_view_countries(self, obj):
         return obj.has_perm("content.view_countries")
 
+    def get_can_change_countries(self, obj):
+        return obj.has_perm("content.change_countries")
+
+    def get_can_delete_countries(self, obj):
+        return obj.has_perm("content.delete_countries")
+
+    def get_can_add_media(self, obj):
+        return obj.has_perm("content.add_media")
+
     def get_can_view_media(self, obj):
         return obj.has_perm("content.view_media")
+
+    def get_can_change_media(self, obj):
+        return obj.has_perm("content.change_media")
+
+    def get_can_delete_media(self, obj):
+        return obj.has_perm("content.delete_media")
 
     def get_can_view_admin(self, obj):
         return obj.has_perm("content.view_admin")
 
-    def get_can_manage_permissions(self, obj):
-        return obj.has_perm("content.manage_permissions")
+    def get_can_add_permission(self, obj):
+        return obj.has_perm("content.add_permission")
 
-    def get_can_manage_roles(self, obj):
-        return obj.has_perm("content.manage_roles")
+    def get_can_delete_permission(self, obj):
+        return obj.has_perm("content.delete_permission")
+
+    def get_can_add_role(self, obj):
+        return obj.has_perm("content.add_role")
+
+    def get_can_change_role(self, obj):
+        return obj.has_perm("content.change_role")
+
+    def get_can_view_role(self, obj):
+        return obj.has_perm("content.view_role")
+
+    def get_can_delete_role(self, obj):
+        return obj.has_perm("content.delete_role")
 
 
 class UserRoleSerializer(serializers.ModelSerializer):

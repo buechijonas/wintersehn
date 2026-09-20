@@ -28,7 +28,7 @@
                 <select
                   class="select select-sm"
                   :value="user.role ?? ''"
-                  :disabled="!authStore.user?.can_manage_roles"
+                  :disabled="!authStore.user?.can_change_role"
                   @change="onUserRoleChange(user, $event)"
                 >
                   <option value="">Keine Rolle</option>
@@ -42,13 +42,13 @@
                   type="checkbox"
                   class="checkbox"
                   :checked="user.verified"
-                  :disabled="!authStore.user?.can_manage_roles"
+                  :disabled="!authStore.user?.can_change_role"
                   @change="onUserVerifiedChange(user, $event)"
                 />
               </td>
               <td class="text-right">
                 <DeleteButton
-                  v-if="authStore.user?.can_manage_roles && user.id !== authStore.user.id"
+                  v-if="authStore.user?.can_change_role && user.id !== authStore.user.id"
                   title="Löschen"
                   @click="onDeleteUser(user)"
                 />
@@ -70,15 +70,16 @@ import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useRbacStore } from '@/stores/rbac.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminUsersView',
   components: { BaseBreadcrumbs, BaseFooter, DeleteButton },
+  mixins: [asyncActionMixin],
   data() {
     return {
       breadcrumbs: [{ label: 'Admin', to: '/admin' }, { label: 'Nutzer' }],
       icons,
-      error: '',
     }
   },
   computed: {
@@ -89,42 +90,23 @@ export default {
       return useRbacStore()
     },
   },
-  async mounted() {
-    try {
-      await this.rbacStore.fetchAll()
-    } catch (e) {
-      this.error = e.message
-    }
+  mounted() {
+    return this.runAction(() => this.rbacStore.fetchAll())
   },
   methods: {
     avatarSrc(avatar) {
       return profiles[avatar] ?? icons.user
     },
-    async onUserRoleChange(user, event) {
-      this.error = ''
+    onUserRoleChange(user, event) {
       const value = event.target.value
-      try {
-        await this.rbacStore.setUserRole(user.id, value ? Number(value) : null)
-      } catch (e) {
-        this.error = e.message
-      }
+      return this.runAction(() => this.rbacStore.setUserRole(user.id, value ? Number(value) : null))
     },
-    async onUserVerifiedChange(user, event) {
-      this.error = ''
-      try {
-        await this.rbacStore.setUserVerified(user.id, event.target.checked)
-      } catch (e) {
-        this.error = e.message
-      }
+    onUserVerifiedChange(user, event) {
+      return this.runAction(() => this.rbacStore.setUserVerified(user.id, event.target.checked))
     },
-    async onDeleteUser(user) {
-      this.error = ''
+    onDeleteUser(user) {
       if (!confirm(`Möchtest du den Nutzer "${user.username}" wirklich löschen?`)) return
-      try {
-        await this.rbacStore.deleteUser(user.id)
-      } catch (e) {
-        this.error = e.message
-      }
+      return this.runAction(() => this.rbacStore.deleteUser(user.id))
     },
   },
 }

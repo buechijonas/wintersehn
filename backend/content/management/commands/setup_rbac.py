@@ -12,15 +12,20 @@ class Command(BaseCommand):
         parser.add_argument("--admin-username", default="Wintersehn")
 
     def handle(self, *args, **options):
-        permission = Permission.objects.get(
-            content_type__app_label="content", codename="change_sitecontent"
+        codenames = ["change_sitecontent"] + [
+            f"{verb}_{key}"
+            for key in ("about", "ethos", "cv", "countries", "media")
+            for verb in ("add", "view", "change", "delete")
+        ]
+        permissions = Permission.objects.filter(
+            content_type__app_label="content", codename__in=codenames
         )
         group, created = Group.objects.get_or_create(name="Content-Editoren")
-        group.permissions.add(permission)
+        group.permissions.add(*permissions)
         self.stdout.write(
             self.style.SUCCESS(
                 f"Group 'Content-Editoren' {'created' if created else 'already existed'}, "
-                f"has permission '{permission}'."
+                f"has {permissions.count()} content permissions."
             )
         )
 

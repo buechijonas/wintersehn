@@ -147,6 +147,8 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import SortableList from '@/components/common/SortableList.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
+import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminLegalView',
@@ -159,19 +161,15 @@ export default {
     BaseFooter,
     SortableList,
   },
+  mixins: [confirmDeleteMixin, asyncActionMixin],
   props: {
     contentKey: { type: String, required: true },
     label: { type: String, required: true },
   },
   data() {
     return {
-      error: '',
-      saving: false,
       newSectionTitle: '',
       itemDrafts: {},
-      dialogTitle: '',
-      dialogMessage: '',
-      pendingAction: null,
     }
   },
   computed: {
@@ -213,16 +211,10 @@ export default {
     },
   },
   methods: {
-    async persistData(patch) {
-      this.error = ''
-      this.saving = true
-      try {
-        await this.contentStore.saveContent(this.contentKey, { ...this.contentData, ...patch })
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persistData(patch) {
+      return this.runAction(() =>
+        this.contentStore.saveContent(this.contentKey, { ...this.contentData, ...patch }),
+      )
     },
     persist(sections) {
       return this.persistData({ sections })
@@ -248,12 +240,6 @@ export default {
           i === sectionIndex ? { ...section, address: !section.address } : section,
         ),
       )
-    },
-    confirmRemoval(title, message, action) {
-      this.dialogTitle = title
-      this.dialogMessage = message
-      this.pendingAction = action
-      this.$refs.confirmDialog?.open()
     },
     reorderSections(sections) {
       this.persist(sections)
@@ -296,9 +282,6 @@ export default {
             ),
           ),
       )
-    },
-    onConfirmDelete() {
-      this.pendingAction?.()
     },
   },
 }

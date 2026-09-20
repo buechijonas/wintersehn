@@ -39,6 +39,7 @@ import CancelButton from '@/components/common/CancelButton.vue'
 import IconPickerField from '@/components/common/IconPickerField.vue'
 import { countries } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminCountriesItemCreateView',
@@ -50,12 +51,11 @@ export default {
     CancelButton,
     IconPickerField,
   },
+  mixins: [asyncActionMixin],
   data() {
     return {
       title: '',
       selectedIcon: '',
-      error: '',
-      saving: false,
     }
   },
   computed: {
@@ -93,26 +93,19 @@ export default {
         return
       }
 
-      this.saving = true
-      try {
-        const data = this.sections.map((s, i) =>
-          i === this.sectionIndex
-            ? {
-                ...s,
-                items: [
-                  ...s.items,
-                  { icon: this.selectedIcon, label: this.title.trim(), iconSet: 'countries' },
-                ],
-              }
-            : s,
-        )
-        await this.contentStore.saveContent('countries', data)
-        this.$router.push('/admin/countries')
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+      const data = this.sections.map((s, i) =>
+        i === this.sectionIndex
+          ? {
+              ...s,
+              items: [
+                ...s.items,
+                { icon: this.selectedIcon, label: this.title.trim(), iconSet: 'countries' },
+              ],
+            }
+          : s,
+      )
+      await this.runAction(() => this.contentStore.saveContent('countries', data))
+      if (!this.error) this.$router.push('/admin/countries')
     },
   },
 }

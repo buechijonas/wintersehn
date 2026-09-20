@@ -62,6 +62,8 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import SortableList from '@/components/common/SortableList.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
+import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminArticleView',
@@ -74,17 +76,13 @@ export default {
     BaseFooter,
     SortableList,
   },
+  mixins: [confirmDeleteMixin, asyncActionMixin],
   data() {
     return {
       breadcrumbs: [
         { label: 'Admin', to: '/admin' },
         { label: 'Artikeln' },
       ],
-      error: '',
-      saving: false,
-      dialogTitle: '',
-      dialogMessage: '',
-      pendingAction: null,
     }
   },
   computed: {
@@ -105,34 +103,17 @@ export default {
     this.contentStore.fetchContent('article')
   },
   methods: {
-    async persist(posts) {
-      this.error = ''
-      this.saving = true
-      try {
-        await this.contentStore.saveContent('article', posts)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persist(posts) {
+      return this.runAction(() => this.contentStore.saveContent('article', posts))
     },
     reorderPosts(posts) {
       this.persist(posts)
-    },
-    confirmRemoval(title, message, action) {
-      this.dialogTitle = title
-      this.dialogMessage = message
-      this.pendingAction = action
-      this.$refs.confirmDialog?.open()
     },
     askRemovePost(postIndex) {
       const { title } = this.posts[postIndex]
       this.confirmRemoval('Artikel löschen', `Möchtest du "${title}" wirklich löschen?`, () =>
         this.persist(this.posts.filter((_, i) => i !== postIndex)),
       )
-    },
-    onConfirmDelete() {
-      this.pendingAction?.()
     },
   },
 }
