@@ -5,7 +5,7 @@
     size="sm"
     class="text-error"
   >
-    <AppIcon name="trash" class="size-4 icon-error" alt="" />
+    <AppIcon name="trash" class="size-4 icon-tint-error" alt="" />
     <slot />
   </BaseButton>
 </template>
@@ -27,10 +27,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-.icon-error {
-  filter: brightness(0) saturate(100%) invert(62%) sepia(21%) saturate(11611%) hue-rotate(320deg)
-    brightness(116%) contrast(109%);
-}
-</style>

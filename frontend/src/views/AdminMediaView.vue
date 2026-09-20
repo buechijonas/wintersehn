@@ -40,7 +40,7 @@
                   <AppIcon
                     :name="section.requiresAuth ? 'lock' : 'earth-europa'"
                     class="size-4"
-                    :class="{ 'icon-success': !section.requiresAuth }"
+                    :class="{ 'icon-tint-success': !section.requiresAuth }"
                     alt="Sichtbarkeit umschalten"
                   />
                 </BaseButton>
@@ -125,6 +125,8 @@ import AppIcon from '@/components/common/AppIcon.vue'
 import { social } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
+import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminMediaView',
@@ -138,18 +140,14 @@ export default {
     SortableList,
     AppIcon,
   },
+  mixins: [confirmDeleteMixin, asyncActionMixin],
   data() {
     return {
       breadcrumbs: [
         { label: 'Admin', to: '/admin' },
         { label: 'Medien' },
       ],
-      error: '',
-      saving: false,
       newSectionTitle: '',
-      dialogTitle: '',
-      dialogMessage: '',
-      pendingAction: null,
     }
   },
   computed: {
@@ -166,23 +164,15 @@ export default {
       return this.contentStore.items.media?.data ?? []
     },
     canEdit() {
-      return !!this.authStore.user?.can_edit_content
+      return !!this.authStore.user?.can_change_media
     },
   },
   mounted() {
     this.contentStore.fetchContent('media')
   },
   methods: {
-    async persist(data) {
-      this.error = ''
-      this.saving = true
-      try {
-        await this.contentStore.saveContent('media', data)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persist(data) {
+      return this.runAction(() => this.contentStore.saveContent('media', data))
     },
     addSection() {
       const title = this.newSectionTitle.trim()
@@ -213,12 +203,6 @@ export default {
         this.sections.map((section, i) => (i === sectionIndex ? { ...section, items } : section)),
       )
     },
-    confirmRemoval(title, message, action) {
-      this.dialogTitle = title
-      this.dialogMessage = message
-      this.pendingAction = action
-      this.$refs.confirmDialog?.open()
-    },
     askRemoveSection(sectionIndex) {
       const { title } = this.sections[sectionIndex]
       this.confirmRemoval('Abschnitt löschen', `Möchtest du "${title}" wirklich löschen?`, () =>
@@ -237,16 +221,6 @@ export default {
         ),
       )
     },
-    onConfirmDelete() {
-      this.pendingAction?.()
-    },
   },
 }
 </script>
-
-<style scoped>
-.icon-success {
-  filter: brightness(0) saturate(100%) invert(64%) sepia(29%) saturate(500%) hue-rotate(80deg)
-    brightness(92%) contrast(86%);
-}
-</style>

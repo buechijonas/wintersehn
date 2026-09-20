@@ -29,6 +29,8 @@ VIEW_PERMISSION_BY_KEY = {
     "countries": "content.view_countries",
 }
 
+CONTENT_CRUD_KEYS = {"about", "ethos", "cv", "countries", "media"}
+
 
 class SiteContentView(APIView):
     permission_classes = [AllowAny]
@@ -49,7 +51,15 @@ class SiteContentView(APIView):
         )
 
     def put(self, request, key):
-        if not request.user.has_perm("content.change_sitecontent"):
+        if key in CONTENT_CRUD_KEYS:
+            allowed = any(
+                request.user.has_perm(f"content.{verb}_{key}")
+                for verb in ("add", "change", "delete")
+            )
+        else:
+            allowed = request.user.has_perm("content.change_sitecontent")
+
+        if not allowed:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         content, _ = SiteContent.objects.get_or_create(key=key, defaults={"data": {}})
@@ -66,7 +76,14 @@ class ContentImageUploadView(APIView):
     parser_classes = [MultiPartParser]
 
     def post(self, request):
-        if not request.user.has_perm("content.change_sitecontent"):
+        can_write_content = request.user.has_perm(
+            "content.change_sitecontent"
+        ) or any(
+            request.user.has_perm(f"content.{verb}_{key}")
+            for key in CONTENT_CRUD_KEYS
+            for verb in ("add", "change", "delete")
+        )
+        if not can_write_content:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         upload = request.FILES.get("file")
@@ -82,13 +99,6 @@ class ContentImageUploadView(APIView):
 
         raw = upload.read()
         try:
-            # verify() only checks integrity and leaves the file unusable
-            # afterwards, so the image is re-opened to actually read it.
-            # Pillow can raise all sorts of exceptions for malformed/corrupt
-            # input here (SyntaxError, ValueError, struct.error, ...), not
-            # just UnidentifiedImageError/OSError - this is a boundary
-            # against untrusted input, so anything that fails to parse as a
-            # genuine image is rejected as a clean 400 rather than a 500.
             Image.open(io.BytesIO(raw)).verify()
             image = Image.open(io.BytesIO(raw))
             image_format = image.format
@@ -113,8 +123,6 @@ class ContentImageUploadView(APIView):
             image.save(buffer, format=image_format)
             raw = buffer.getvalue()
 
-        # The filename is generated server-side and never derived from the
-        # client-supplied name, which rules out path traversal/collisions.
         saved_path = default_storage.save(
             f"uploads/{uuid.uuid4().hex}.{extension}", ContentFile(raw)
         )
@@ -137,13 +145,13 @@ class RoleListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not request.user.has_perm("content.view_admin"):
+        if not request.user.has_perm("content.view_role"):
             return Response(status=status.HTTP_403_FORBIDDEN)
         groups = Group.objects.all().order_by("name")
         return Response(RoleSerializer(groups, many=True).data)
 
     def post(self, request):
-        if not request.user.has_perm("content.manage_roles"):
+        if not request.user.has_perm("content.add_role"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         name = (request.data.get("name") or "").strip()
@@ -171,7 +179,7 @@ class RoleDetailView(APIView):
         permissions = request.data.get("permissions")
 
         if name is not None:
-            if not request.user.has_perm("content.manage_roles"):
+            if not request.user.has_perm("content.change_role"):
                 return Response(status=status.HTTP_403_FORBIDDEN)
             name = name.strip()
             if not name:
@@ -183,14 +191,20 @@ class RoleDetailView(APIView):
             group.save(update_fields=["name"])
 
         if permissions is not None:
-            if not request.user.has_perm("content.manage_permissions"):
+            current = set(group.permissions.values_list("codename", flat=True))
+            desired = set(permissions)
+            added = desired - current
+            removed = current - desired
+            if added and not request.user.has_perm("content.add_permission"):
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            if removed and not request.user.has_perm("content.delete_permission"):
                 return Response(status=status.HTTP_403_FORBIDDEN)
             set_role_permissions(group, permissions)
 
         return Response(RoleSerializer(group).data)
 
     def delete(self, request, pk):
-        if not request.user.has_perm("content.manage_roles"):
+        if not request.user.has_perm("content.delete_role"):
             return Response(status=status.HTTP_403_FORBIDDEN)
         group = get_object_or_404(Group, pk=pk)
         group.delete()

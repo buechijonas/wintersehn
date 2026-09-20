@@ -8,14 +8,14 @@
         v-model="text"
         rows="24"
         spellcheck="false"
-        :readonly="!authStore.user?.can_edit_content"
+        :readonly="!canEdit"
         class="textarea w-full font-mono text-xs"
       ></textarea>
 
       <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
       <p v-if="saved" class="text-success text-sm mt-2">Gespeichert.</p>
 
-      <div v-if="authStore.user?.can_edit_content" class="flex gap-4 mt-4">
+      <div v-if="canEdit" class="flex gap-4 mt-4">
         <input
           ref="fileInput"
           type="file"
@@ -38,6 +38,7 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 const SECTION_LABELS = {
   about: 'Über mich',
@@ -52,15 +53,22 @@ const SECTION_LABELS = {
   disclaimer: 'Haftungsausschluss',
 }
 
+const CHANGE_PERMISSION_BY_KEY = {
+  about: 'can_change_about',
+  ethos: 'can_change_ethos',
+  cv: 'can_change_cv',
+  countries: 'can_change_countries',
+  media: 'can_change_media',
+}
+
 export default {
   name: 'AdminContentView',
   components: { BaseBreadcrumbs, BaseFooter, BaseButton },
+  mixins: [asyncActionMixin],
   data() {
     return {
       text: '',
-      error: '',
       saved: false,
-      saving: false,
     }
   },
   computed: {
@@ -75,6 +83,10 @@ export default {
     },
     label() {
       return SECTION_LABELS[this.key] ?? this.key
+    },
+    canEdit() {
+      const flag = CHANGE_PERMISSION_BY_KEY[this.key]
+      return flag ? !!this.authStore.user?.[flag] : !!this.authStore.user?.can_edit_content
     },
     breadcrumbs() {
       return [{ label: 'Admin', to: '/admin' }, { label: this.label }]
@@ -122,7 +134,6 @@ export default {
       this.text = content
     },
     async save() {
-      this.error = ''
       this.saved = false
 
       let data
@@ -133,15 +144,8 @@ export default {
         return
       }
 
-      this.saving = true
-      try {
-        await this.contentStore.saveContent(this.key, data)
-        this.saved = true
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+      await this.runAction(() => this.contentStore.saveContent(this.key, data))
+      if (!this.error) this.saved = true
     },
   },
 }

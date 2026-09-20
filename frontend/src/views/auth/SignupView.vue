@@ -50,7 +50,7 @@
 
       <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
-      <BaseButton type="submit" variant="primary" block class="mt-6" :disabled="loading">
+      <BaseButton type="submit" variant="primary" block class="mt-6" :disabled="saving">
         Registrieren
       </BaseButton>
     </form>
@@ -78,18 +78,18 @@ import { RouterLink } from 'vue-router'
 import AuthPage from '@/components/layout/AuthPage.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'SignupView',
   components: { RouterLink, AuthPage, BaseButton },
+  mixins: [asyncActionMixin],
   data() {
     return {
       username: '',
       email: '',
       password: '',
       passwordConfirm: '',
-      error: '',
-      loading: false,
     }
   },
   computed: {
@@ -99,8 +99,6 @@ export default {
   },
   methods: {
     async onSubmit() {
-      this.error = ''
-
       if (this.password !== this.passwordConfirm) {
         this.error = 'Die Passwörter stimmen nicht überein.'
         return
@@ -112,20 +110,15 @@ export default {
         return
       }
 
-      this.loading = true
-      try {
-        await this.authStore.signup({
+      await this.runAction(() =>
+        this.authStore.signup({
           username: this.username,
           email: this.email,
           password: this.password,
           altcha,
-        })
-        this.$router.push('/')
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.loading = false
-      }
+        }),
+      )
+      if (!this.error) this.$router.push('/')
     },
   },
 }

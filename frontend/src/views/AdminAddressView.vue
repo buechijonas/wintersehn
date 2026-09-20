@@ -53,6 +53,7 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import SortableList from '@/components/common/SortableList.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminAddressView',
@@ -64,14 +65,13 @@ export default {
     BaseFooter,
     SortableList,
   },
+  mixins: [asyncActionMixin],
   data() {
     return {
       breadcrumbs: [
         { label: 'Admin', to: '/admin' },
         { label: 'Adresse' },
       ],
-      error: '',
-      saving: false,
       newLine: '',
     }
   },
@@ -93,16 +93,8 @@ export default {
     this.contentStore.fetchContent('address')
   },
   methods: {
-    async persist(lines) {
-      this.error = ''
-      this.saving = true
-      try {
-        await this.contentStore.saveContent('address', { lines })
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persist(lines) {
+      return this.runAction(() => this.contentStore.saveContent('address', { lines }))
     },
     addLine() {
       const line = this.newLine.trim()

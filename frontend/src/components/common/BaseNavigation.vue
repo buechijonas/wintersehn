@@ -135,17 +135,6 @@ export default {
 }
 
 .nav-item.active .nav-icon {
-  filter: brightness(0) saturate(100%) invert(24%) sepia(55%) saturate(2090%) hue-rotate(303deg)
-    brightness(86%) contrast(85%);
-}
-[data-theme='dark'] .nav-item.active .nav-icon {
-  filter: brightness(0) saturate(100%) invert(53%) sepia(25%) saturate(700%) hue-rotate(295deg)
-    brightness(100%) contrast(95%);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .nav-item.active .nav-icon {
-    filter: brightness(0) saturate(100%) invert(53%) sepia(25%) saturate(700%) hue-rotate(295deg)
-      brightness(100%) contrast(95%);
-  }
+  filter: var(--icon-tint-primary);
 }
 </style>

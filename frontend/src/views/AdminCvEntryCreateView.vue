@@ -68,6 +68,7 @@ import DeleteButton from '@/components/common/DeleteButton.vue'
 import IconPickerField from '@/components/common/IconPickerField.vue'
 import { flats, flatCategories } from '@/assets/images.js'
 import { useContentStore } from '@/stores/content.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminCvEntryCreateView',
@@ -80,6 +81,7 @@ export default {
     DeleteButton,
     IconPickerField,
   },
+  mixins: [asyncActionMixin],
   data() {
     return {
       year: '',
@@ -87,8 +89,6 @@ export default {
       description: '',
       selectedIcon: '',
       links: [],
-      error: '',
-      saving: false,
     }
   },
   computed: {
@@ -146,37 +146,30 @@ export default {
         return
       }
 
-      this.saving = true
-      try {
-        const timeline = this.section.timeline ?? []
-        const links = this.links.filter((link) => link.label.trim() && link.url.trim())
-        const entry = {
-          side: timeline.length % 2 === 0 ? 'start' : 'end',
-          year: this.year.trim(),
-          title: this.title.trim(),
-          description: this.description.trim(),
-          ...(this.selectedIcon ? { icon: this.selectedIcon } : {}),
-          ...(links.length ? { links } : {}),
-        }
-
-        const { categoryIndex, itemIndex } = this.location
-        const categories = this.categories.map((category, ci) =>
-          ci !== categoryIndex
-            ? category
-            : {
-                ...category,
-                items: category.items.map((item, ii) =>
-                  ii !== itemIndex ? item : { ...item, timeline: [...timeline, entry] },
-                ),
-              },
-        )
-        await this.contentStore.saveContent('cv', categories)
-        this.$router.push(`/admin/cv/${this.key}`)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
+      const timeline = this.section.timeline ?? []
+      const links = this.links.filter((link) => link.label.trim() && link.url.trim())
+      const entry = {
+        side: timeline.length % 2 === 0 ? 'start' : 'end',
+        year: this.year.trim(),
+        title: this.title.trim(),
+        description: this.description.trim(),
+        ...(this.selectedIcon ? { icon: this.selectedIcon } : {}),
+        ...(links.length ? { links } : {}),
       }
+
+      const { categoryIndex, itemIndex } = this.location
+      const categories = this.categories.map((category, ci) =>
+        ci !== categoryIndex
+          ? category
+          : {
+              ...category,
+              items: category.items.map((item, ii) =>
+                ii !== itemIndex ? item : { ...item, timeline: [...timeline, entry] },
+              ),
+            },
+      )
+      await this.runAction(() => this.contentStore.saveContent('cv', categories))
+      if (!this.error) this.$router.push(`/admin/cv/${this.key}`)
     },
   },
 }

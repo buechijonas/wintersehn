@@ -155,3 +155,60 @@
     border-color: color-mix(in srgb, var(--color-error) 80%, white);
   }
 }
+
+/*
+  Shared black -> theme-color icon tints. SVG icon assets are plain black,
+  so recoloring them for use outside <img> currentColor contexts goes
+  through a calibrated CSS filter chain instead. Each value maps pure
+  black to the exact sRGB of the named theme color, computed the same way
+  the color-mix() based contrast borders are: never guessed by eye.
+*/
+:root {
+  --icon-tint-primary: brightness(0) saturate(100%) invert(24%) sepia(55%) saturate(2090%)
+    hue-rotate(303deg) brightness(86%) contrast(85%);
+  --icon-tint-success: brightness(0) saturate(100%) invert(46%) sepia(87%) saturate(400%)
+    hue-rotate(116deg) brightness(96%) contrast(188%);
+  --icon-tint-warning: brightness(0) saturate(100%) invert(52%) sepia(89%) saturate(379%)
+    hue-rotate(6deg) brightness(107%) contrast(136%);
+  --icon-tint-error: brightness(0) saturate(100%) invert(49%) sepia(49%) saturate(676%)
+    hue-rotate(307deg) brightness(111%) contrast(237%);
+  --icon-tint-neutral: brightness(0) saturate(100%) invert(3%) sepia(17%) saturate(245%)
+    hue-rotate(205deg) brightness(165%) contrast(105%);
+  /* Matches the fixed #a8b3bf fill baked into the footer's cookie-lock icon. */
+  --icon-tint-slate: brightness(0) saturate(100%) invert(56%) sepia(13%) saturate(324%)
+    hue-rotate(171deg) brightness(141%) contrast(63%);
+}
+
+[data-theme="dark"] {
+  --icon-tint-primary: brightness(0) saturate(100%) invert(53%) sepia(25%) saturate(700%)
+    hue-rotate(295deg) brightness(100%) contrast(95%);
+  /* --color-neutral is near-black, so it's inverted to white instead in dark mode. */
+  --icon-tint-neutral: brightness(0) invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --icon-tint-primary: brightness(0) saturate(100%) invert(53%) sepia(25%) saturate(700%)
+      hue-rotate(295deg) brightness(100%) contrast(95%);
+    --icon-tint-neutral: brightness(0) invert(1);
+  }
+}
+
+.icon-tint-primary {
+  filter: var(--icon-tint-primary);
+}
+.icon-tint-success {
+  filter: var(--icon-tint-success);
+}
+.icon-tint-warning {
+  filter: var(--icon-tint-warning);
+}
+.icon-tint-error {
+  filter: var(--icon-tint-error);
+}
+.icon-tint-neutral {
+  filter: var(--icon-tint-neutral);
+}
+.icon-tint-slate {
+  filter: var(--icon-tint-slate);
+}

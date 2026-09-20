@@ -88,6 +88,7 @@ import CancelButton from '@/components/common/CancelButton.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 const AVATAR_LABELS = {
   bee: 'Biene',
@@ -145,6 +146,7 @@ const AVATAR_LABELS = {
 export default {
   name: 'AccountEditView',
   components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, CancelButton },
+  mixins: [asyncActionMixin],
   data() {
     const authStore = useAuthStore()
     return {
@@ -157,8 +159,6 @@ export default {
       username: authStore.user.username,
       email: authStore.user.email,
       selectedAvatar: authStore.user.avatar ?? '',
-      error: '',
-      saving: false,
     }
   },
   computed: {
@@ -183,20 +183,14 @@ export default {
       this.$refs.avatarMenu?.hidePopover()
     },
     async save() {
-      this.error = ''
-      this.saving = true
-      try {
-        await this.authStore.updateProfile({
+      await this.runAction(() =>
+        this.authStore.updateProfile({
           username: this.username,
           email: this.email,
           avatar: this.selectedAvatar,
-        })
-        this.$router.push('/settings')
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+        }),
+      )
+      if (!this.error) this.$router.push('/settings')
     },
   },
 }

@@ -72,6 +72,8 @@ import SortableList from '@/components/common/SortableList.vue'
 import { flats } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
+import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminCvSectionView',
@@ -83,15 +85,7 @@ export default {
     BaseFooter,
     SortableList,
   },
-  data() {
-    return {
-      error: '',
-      saving: false,
-      dialogTitle: '',
-      dialogMessage: '',
-      pendingAction: null,
-    }
-  },
+  mixins: [confirmDeleteMixin, asyncActionMixin],
   computed: {
     authStore() {
       return useAuthStore()
@@ -125,7 +119,7 @@ export default {
       return this.section?.timeline ?? []
     },
     canEdit() {
-      return !!this.authStore.user?.can_edit_content
+      return !!this.authStore.user?.can_change_cv
     },
     breadcrumbs() {
       return [
@@ -139,27 +133,19 @@ export default {
     this.contentStore.fetchContent('cv')
   },
   methods: {
-    async persistTimeline(newTimeline) {
-      this.error = ''
-      this.saving = true
-      try {
-        const { categoryIndex, itemIndex } = this.location
-        const categories = this.categories.map((category, ci) =>
-          ci !== categoryIndex
-            ? category
-            : {
-                ...category,
-                items: category.items.map((item, ii) =>
-                  ii !== itemIndex ? item : { ...item, timeline: newTimeline },
-                ),
-              },
-        )
-        await this.contentStore.saveContent('cv', categories)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persistTimeline(newTimeline) {
+      const { categoryIndex, itemIndex } = this.location
+      const categories = this.categories.map((category, ci) =>
+        ci !== categoryIndex
+          ? category
+          : {
+              ...category,
+              items: category.items.map((item, ii) =>
+                ii !== itemIndex ? item : { ...item, timeline: newTimeline },
+              ),
+            },
+      )
+      return this.runAction(() => this.contentStore.saveContent('cv', categories))
     },
     reorderTimeline(entries) {
       this.persistTimeline(
@@ -168,14 +154,9 @@ export default {
     },
     askRemoveEntry(entryIndex) {
       const { title } = this.timeline[entryIndex]
-      this.dialogTitle = 'Eintrag löschen'
-      this.dialogMessage = `Möchtest du "${title}" wirklich löschen?`
-      this.pendingAction = () =>
-        this.persistTimeline(this.timeline.filter((_, i) => i !== entryIndex))
-      this.$refs.confirmDialog?.open()
-    },
-    onConfirmDelete() {
-      this.pendingAction?.()
+      this.confirmRemoval('Eintrag löschen', `Möchtest du "${title}" wirklich löschen?`, () =>
+        this.persistTimeline(this.timeline.filter((_, i) => i !== entryIndex)),
+      )
     },
   },
 }

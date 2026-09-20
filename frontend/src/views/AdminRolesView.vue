@@ -13,38 +13,87 @@
               <th>Berechtigung</th>
               <th v-for="role in rbacStore.roles" :key="role.id" class="min-w-40">
                 <div class="flex flex-col gap-1">
-                  <input
-                    type="text"
-                    class="input input-sm w-full"
-                    :value="role.name"
-                    :disabled="!authStore.user?.can_manage_roles"
-                    @change="renameRole(role, $event)"
-                  />
-                  <DeleteButton v-if="authStore.user?.can_manage_roles" @click="removeRole(role)">
-                    Löschen
-                  </DeleteButton>
+                  <template v-if="isEditingRole(role.id)">
+                    <input
+                      type="text"
+                      class="input input-sm w-full"
+                      :value="role.name"
+                      :disabled="!authStore.user?.can_change_role"
+                      @change="renameRole(role, $event)"
+                    />
+                    <div class="flex gap-1">
+                      <BaseButton size="sm" class="flex-1" @click="stopEditingRole(role.id)">
+                        Fertig
+                      </BaseButton>
+                      <DeleteButton
+                        v-if="authStore.user?.can_delete_role"
+                        shape="square"
+                        @click="removeRole(role)"
+                      />
+                    </div>
+                  </template>
+                  <template v-else>
+                    <span class="font-medium truncate">{{ role.name }}</span>
+                    <BaseButton
+                      size="sm"
+                      :disabled="isOwnRole(role)"
+                      :title="isOwnRole(role) ? 'Du kannst deine eigene aktuelle Rolle nicht bearbeiten.' : ''"
+                      @click="startEditingRole(role.id)"
+                    >
+                      Bearbeiten
+                    </BaseButton>
+                  </template>
                 </div>
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="permission in rbacStore.permissions" :key="permission.codename">
-              <td class="text-wntrs-slate">{{ permission.name }}</td>
-              <td v-for="role in rbacStore.roles" :key="role.id" class="text-center">
-                <input
-                  type="checkbox"
-                  class="checkbox"
-                  :checked="hasPermission(role, permission.codename)"
-                  :disabled="!authStore.user?.can_manage_permissions"
-                  @change="togglePermission(role, permission.codename)"
-                />
-              </td>
-            </tr>
+            <template v-for="(permission, index) in sortedPermissions" :key="permission.codename">
+              <tr v-if="isNewGroup(index)">
+                <td
+                  :colspan="1 + rbacStore.roles.length"
+                  class="bg-base-200 text-xs uppercase tracking-wide text-wntrs-muted font-medium"
+                >
+                  {{ permissionGroupLabel(permission.codename) }}
+                </td>
+              </tr>
+              <tr>
+                <td class="text-wntrs-slate">
+                  <div class="flex items-center gap-2">
+                    <img
+                      v-if="permissionMeta(permission.codename)"
+                      :src="icons[permissionMeta(permission.codename).icon]"
+                      alt=""
+                      class="size-4 shrink-0"
+                      :class="permissionMeta(permission.codename).iconFilterClass"
+                    />
+                    <span>{{ permissionLabel(permission) }}</span>
+                  </div>
+                </td>
+                <td v-for="role in rbacStore.roles" :key="role.id" class="text-center">
+                  <input
+                    v-if="isEditingRole(role.id)"
+                    type="checkbox"
+                    class="checkbox"
+                    :checked="hasPermission(role, permission.codename)"
+                    :disabled="!canTogglePermissions"
+                    @change="togglePermission(role, permission.codename)"
+                  />
+                  <img
+                    v-else
+                    :src="hasPermission(role, permission.codename) ? icons['check-circle'] : icons.circle"
+                    alt=""
+                    class="size-4 inline-block"
+                    :class="hasPermission(role, permission.codename) ? 'icon-tint-success' : 'icon-tint-slate'"
+                  />
+                </td>
+              </tr>
+            </template>
           </tbody>
         </table>
       </div>
 
-      <div v-if="authStore.user?.can_manage_roles" class="flex gap-4 mt-6">
+      <div v-if="authStore.user?.can_add_role" class="flex gap-4 mt-6">
         <input
           v-model="newRoleName"
           type="text"
@@ -66,18 +115,55 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useRbacStore } from '@/stores/rbac.js'
+import { icons } from '@/assets/icons.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
+
+const PERMISSION_META = {
+  add: { icon: 'add', iconFilterClass: 'icon-tint-success' },
+  view: { icon: 'circle-book-open', iconFilterClass: 'icon-tint-neutral' },
+  change: { icon: 'pen-circle', iconFilterClass: 'icon-tint-warning' },
+  delete: { icon: 'circle-trash', iconFilterClass: 'icon-tint-error' },
+}
+
+const VERB_ORDER = ['add', 'view', 'change', 'delete']
+
+const RESOURCE_ORDER = [
+  'about',
+  'ethos',
+  'cv',
+  'countries',
+  'media',
+  'role',
+  'permission',
+  'admin',
+  'sitecontent',
+]
+
+const RESOURCE_LABELS = {
+  about: 'Über mich',
+  ethos: 'Ethos',
+  cv: 'Lebenslauf',
+  countries: 'Länder',
+  media: 'Medien',
+  role: 'Rollen',
+  permission: 'Berechtigungen',
+  admin: 'Admin',
+  sitecontent: 'Inhalte (allgemein)',
+}
 
 export default {
   name: 'AdminRolesView',
   components: { BaseBreadcrumbs, BaseFooter, BaseButton, DeleteButton },
+  mixins: [asyncActionMixin],
   data() {
     return {
+      icons,
       breadcrumbs: [
         { label: 'Admin', to: '/admin' },
         { label: 'Rollen & Rechte' },
       ],
-      error: '',
       newRoleName: '',
+      editingRoleIds: [],
     }
   },
   computed: {
@@ -87,58 +173,89 @@ export default {
     rbacStore() {
       return useRbacStore()
     },
+    canTogglePermissions() {
+      return !!(this.authStore.user?.can_add_permission || this.authStore.user?.can_delete_permission)
+    },
+    sortedPermissions() {
+      return [...this.rbacStore.permissions].sort((a, b) => {
+        const [verbA, resourceA] = a.codename.split('_')
+        const [verbB, resourceB] = b.codename.split('_')
+        const resourceDiff = this.resourceIndex(resourceA) - this.resourceIndex(resourceB)
+        if (resourceDiff !== 0) return resourceDiff
+        return this.verbIndex(verbA) - this.verbIndex(verbB)
+      })
+    },
   },
-  async mounted() {
-    try {
-      await this.rbacStore.fetchAll()
-    } catch (e) {
-      this.error = e.message
-    }
+  mounted() {
+    return this.runAction(() => this.rbacStore.fetchAll())
   },
   methods: {
+    permissionMeta(codename) {
+      const verb = codename.split('_')[0]
+      // "manage" permissions are treated the same as "change" until they're
+      // split into granular add/change/delete/view permissions server-side.
+      return PERMISSION_META[verb] ?? (verb === 'manage' ? PERMISSION_META.change : null)
+    },
+    permissionLabel(permission) {
+      if (!this.permissionMeta(permission.codename)) return permission.name
+      return permission.name.replace(/^Can\s+\S+\s+/i, '')
+    },
+    resourceOf(codename) {
+      return codename.split('_').slice(1).join('_')
+    },
+    resourceIndex(resource) {
+      const index = RESOURCE_ORDER.indexOf(resource)
+      return index === -1 ? RESOURCE_ORDER.length : index
+    },
+    verbIndex(verb) {
+      const index = VERB_ORDER.indexOf(verb)
+      return index === -1 ? VERB_ORDER.length : index
+    },
+    permissionGroupLabel(codename) {
+      const resource = this.resourceOf(codename)
+      return RESOURCE_LABELS[resource] ?? resource
+    },
+    isNewGroup(index) {
+      if (index === 0) return true
+      const current = this.resourceOf(this.sortedPermissions[index].codename)
+      const previous = this.resourceOf(this.sortedPermissions[index - 1].codename)
+      return current !== previous
+    },
+    isOwnRole(role) {
+      return role.name === this.authStore.user?.role
+    },
+    isEditingRole(roleId) {
+      return this.editingRoleIds.includes(roleId)
+    },
+    startEditingRole(roleId) {
+      if (!this.isEditingRole(roleId)) this.editingRoleIds.push(roleId)
+    },
+    stopEditingRole(roleId) {
+      this.editingRoleIds = this.editingRoleIds.filter((id) => id !== roleId)
+    },
     hasPermission(role, codename) {
       return role.permissions.includes(codename)
     },
-    async togglePermission(role, codename) {
-      this.error = ''
+    togglePermission(role, codename) {
       const next = this.hasPermission(role, codename)
         ? role.permissions.filter((p) => p !== codename)
         : [...role.permissions, codename]
-      try {
-        await this.rbacStore.setRolePermissions(role.id, next)
-      } catch (e) {
-        this.error = e.message
-      }
+      return this.runAction(() => this.rbacStore.setRolePermissions(role.id, next))
     },
     async addRole() {
-      this.error = ''
       const name = this.newRoleName.trim()
       if (!name) return
-      try {
-        await this.rbacStore.createRole(name)
-        this.newRoleName = ''
-      } catch (e) {
-        this.error = e.message
-      }
+      await this.runAction(() => this.rbacStore.createRole(name))
+      if (!this.error) this.newRoleName = ''
     },
-    async removeRole(role) {
-      this.error = ''
-      try {
-        await this.rbacStore.deleteRole(role.id)
-      } catch (e) {
-        this.error = e.message
-      }
+    removeRole(role) {
+      return this.runAction(() => this.rbacStore.deleteRole(role.id))
     },
-    async renameRole(role, event) {
+    renameRole(role, event) {
       const name = event.target.value.trim()
       event.target.value = name
       if (!name || name === role.name) return
-      this.error = ''
-      try {
-        await this.rbacStore.renameRole(role.id, name)
-      } catch (e) {
-        this.error = e.message
-      }
+      return this.runAction(() => this.rbacStore.renameRole(role.id, name))
     },
   },
 }

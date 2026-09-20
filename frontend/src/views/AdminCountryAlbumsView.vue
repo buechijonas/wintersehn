@@ -56,15 +56,14 @@ import BaseFooter from '@/components/common/BaseFooter.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import countryAlbumRouteMixin from '@/mixins/countryAlbumRouteMixin.js'
 import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminCountryAlbumsView',
   components: { BaseBreadcrumbs, BaseButton, AlbumCard, DeleteButton, ConfirmDialog, BaseFooter },
-  mixins: [countryAlbumRouteMixin, confirmDeleteMixin],
+  mixins: [countryAlbumRouteMixin, confirmDeleteMixin, asyncActionMixin],
   data() {
     return {
-      error: '',
-      saving: false,
       newAlbumTitle: '',
     }
   },
@@ -76,7 +75,7 @@ export default {
       return this.country?.albums ?? []
     },
     canEdit() {
-      return !!this.authStore.user?.can_edit_content
+      return !!this.authStore.user?.can_change_countries
     },
     breadcrumbs() {
       return [
@@ -87,26 +86,18 @@ export default {
     },
   },
   methods: {
-    async persist(albums) {
-      this.error = ''
-      this.saving = true
-      try {
-        const data = this.sections.map((section, sIndex) =>
-          sIndex === this.sectionIndex
-            ? {
-                ...section,
-                items: section.items.map((item, iIndex) =>
-                  iIndex === this.itemIndex ? { ...item, albums } : item,
-                ),
-              }
-            : section,
-        )
-        await this.contentStore.saveContent('countries', data)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persist(albums) {
+      const data = this.sections.map((section, sIndex) =>
+        sIndex === this.sectionIndex
+          ? {
+              ...section,
+              items: section.items.map((item, iIndex) =>
+                iIndex === this.itemIndex ? { ...item, albums } : item,
+              ),
+            }
+          : section,
+      )
+      return this.runAction(() => this.contentStore.saveContent('countries', data))
     },
     addAlbum() {
       const title = this.newAlbumTitle.trim()

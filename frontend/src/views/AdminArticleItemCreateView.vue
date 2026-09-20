@@ -44,6 +44,7 @@ import ImageUploadField from '@/components/common/ImageUploadField.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 import { uniqueSlug } from '@/lib/slug.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminArticleItemCreateView',
@@ -55,13 +56,12 @@ export default {
     CancelButton,
     ImageUploadField,
   },
+  mixins: [asyncActionMixin],
   data() {
     return {
       title: '',
       description: '',
       thumbnail: '',
-      error: '',
-      saving: false,
       breadcrumbs: [
         { label: 'Admin', to: '/admin' },
         { label: 'Artikeln', to: '/admin/article' },
@@ -94,27 +94,20 @@ export default {
         return
       }
 
-      this.saving = true
-      try {
-        const existingSlugs = new Set(this.posts.map((post) => post.slug))
-        const slug = uniqueSlug(this.title.trim(), existingSlugs)
-        const post = {
-          slug,
-          title: this.title.trim(),
-          description: this.description.trim(),
-          thumbnail: this.thumbnail,
-          author: this.authStore.user?.username ?? '',
-          authorAvatar: this.authStore.user?.avatar ?? '',
-          publishedAt: new Date().toISOString(),
-          sections: [],
-        }
-        await this.contentStore.saveContent('article', [...this.posts, post])
-        this.$router.push(`/admin/article/${slug}`)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
+      const existingSlugs = new Set(this.posts.map((post) => post.slug))
+      const slug = uniqueSlug(this.title.trim(), existingSlugs)
+      const post = {
+        slug,
+        title: this.title.trim(),
+        description: this.description.trim(),
+        thumbnail: this.thumbnail,
+        author: this.authStore.user?.username ?? '',
+        authorAvatar: this.authStore.user?.avatar ?? '',
+        publishedAt: new Date().toISOString(),
+        sections: [],
       }
+      await this.runAction(() => this.contentStore.saveContent('article', [...this.posts, post]))
+      if (!this.error) this.$router.push(`/admin/article/${slug}`)
     },
   },
 }

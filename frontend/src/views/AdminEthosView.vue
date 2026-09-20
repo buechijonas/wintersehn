@@ -104,6 +104,8 @@ import SortableList from '@/components/common/SortableList.vue'
 import { flats } from '@/assets/images.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
+import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
+import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminEthosView',
@@ -116,18 +118,14 @@ export default {
     BaseFooter,
     SortableList,
   },
+  mixins: [confirmDeleteMixin, asyncActionMixin],
   data() {
     return {
       breadcrumbs: [
         { label: 'Admin', to: '/admin' },
         { label: 'Ethos' },
       ],
-      error: '',
-      saving: false,
       newSectionTitle: '',
-      dialogTitle: '',
-      dialogMessage: '',
-      pendingAction: null,
     }
   },
   computed: {
@@ -144,23 +142,15 @@ export default {
       return this.contentStore.items.ethos?.data ?? []
     },
     canEdit() {
-      return !!this.authStore.user?.can_edit_content
+      return !!this.authStore.user?.can_change_ethos
     },
   },
   mounted() {
     this.contentStore.fetchContent('ethos')
   },
   methods: {
-    async persist(data) {
-      this.error = ''
-      this.saving = true
-      try {
-        await this.contentStore.saveContent('ethos', data)
-      } catch (e) {
-        this.error = e.message
-      } finally {
-        this.saving = false
-      }
+    persist(data) {
+      return this.runAction(() => this.contentStore.saveContent('ethos', data))
     },
     addSection() {
       const title = this.newSectionTitle.trim()
@@ -175,12 +165,6 @@ export default {
       this.persist(
         this.sections.map((section, i) => (i === sectionIndex ? { ...section, title } : section)),
       )
-    },
-    confirmRemoval(title, message, action) {
-      this.dialogTitle = title
-      this.dialogMessage = message
-      this.pendingAction = action
-      this.$refs.confirmDialog?.open()
     },
     reorderSections(sections) {
       this.persist(sections)
@@ -207,9 +191,6 @@ export default {
           ),
         ),
       )
-    },
-    onConfirmDelete() {
-      this.pendingAction?.()
     },
   },
 }
