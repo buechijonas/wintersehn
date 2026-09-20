@@ -3,6 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 import HomeView from '@/views/HomeView.vue'
 import MediaView from '@/views/MediaView.vue'
+import ArticleView from '@/views/ArticleView.vue'
+import ArticlePostView from '@/views/ArticlePostView.vue'
 import AboutView from '@/views/AboutView.vue'
 import EthosView from '@/views/EthosView.vue'
 import CvView from '@/views/CvView.vue'
@@ -36,6 +38,9 @@ import AdminAlbumEditView from '@/views/AdminAlbumEditView.vue'
 import AdminCvView from '@/views/AdminCvView.vue'
 import AdminCvSectionView from '@/views/AdminCvSectionView.vue'
 import AdminCvEntryCreateView from '@/views/AdminCvEntryCreateView.vue'
+import AdminArticleView from '@/views/AdminArticleView.vue'
+import AdminArticleItemCreateView from '@/views/AdminArticleItemCreateView.vue'
+import AdminArticlePostView from '@/views/AdminArticlePostView.vue'
 import AdminMediaView from '@/views/AdminMediaView.vue'
 import AdminMediaItemCreateView from '@/views/AdminMediaItemCreateView.vue'
 import AdminRolesView from '@/views/AdminRolesView.vue'
@@ -56,6 +61,18 @@ const router = createRouter({
       name: 'media',
       component: MediaView,
       meta: { activeNavigation: 'media' },
+    },
+    {
+      path: '/article',
+      name: 'article',
+      component: ArticleView,
+      meta: { activeNavigation: 'article' },
+    },
+    {
+      path: '/article/:slug',
+      name: 'article-post',
+      component: ArticlePostView,
+      meta: { activeNavigation: 'article' },
     },
     {
       path: '/about',
@@ -256,6 +273,24 @@ const router = createRouter({
       path: '/admin/cv/:key',
       name: 'admin-cv-section',
       component: AdminCvSectionView,
+      meta: { requiresAuth: true, permission: 'can_view_admin', activeNavigation: 'admin' },
+    },
+    {
+      path: '/admin/article',
+      name: 'admin-article',
+      component: AdminArticleView,
+      meta: { requiresAuth: true, permission: 'can_view_admin', activeNavigation: 'admin' },
+    },
+    {
+      path: '/admin/article/create',
+      name: 'admin-article-item-create',
+      component: AdminArticleItemCreateView,
+      meta: { requiresAuth: true, permission: 'can_view_admin', activeNavigation: 'admin' },
+    },
+    {
+      path: '/admin/article/:slug',
+      name: 'admin-article-post',
+      component: AdminArticlePostView,
       meta: { requiresAuth: true, permission: 'can_view_admin', activeNavigation: 'admin' },
     },
     {

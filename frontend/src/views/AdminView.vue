@@ -39,6 +39,7 @@ export default {
             { icon: 'integrity', label: 'Ethos', to: '/admin/ethos' },
             { icon: 'cover-letter', label: 'Lebenslauf', to: '/admin/cv' },
             { icon: 'destination', label: 'Länder', to: '/admin/countries' },
+            { icon: 'job_resume/application', label: 'Artikeln', to: '/admin/article' },
             { icon: 'social-media', label: 'Medien', to: '/admin/media' },
           ],
         },
