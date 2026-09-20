@@ -3,9 +3,15 @@
     :tag="to ? 'router-link' : 'div'"
     :to="to"
     class="size-40 shrink-0 relative overflow-hidden block"
+    :class="{ 'hover:bg-base-200 group': to }"
   >
     <template v-if="thumbnail">
-      <img class="size-full object-cover" :src="thumbnail" :alt="title" />
+      <img
+        class="size-full object-cover"
+        :class="{ 'group-hover:opacity-80 transition-opacity': to }"
+        :src="thumbnail"
+        :alt="title"
+      />
       <div
         class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pt-6 pb-2"
       >

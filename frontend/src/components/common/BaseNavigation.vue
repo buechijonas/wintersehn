@@ -1,5 +1,5 @@
 <template>
-  <div class="app-nav col-start-2 row-start-1 hidden h-12 w-[330px] items-center pl-8 lg:flex">
+  <div class="app-nav col-start-2 row-start-1 hidden h-12 w-80 items-center pl-8 lg:flex">
     <h1 class="text-[1.2rem]">{{ displayName }}</h1>
   </div>
   <div class="col-start-2 row-start-1 drawer drawer-end lg:drawer-open">
@@ -136,5 +136,22 @@ export default {
 
 .nav-item.active .nav-icon {
   filter: var(--icon-tint-primary);
+}
+
+/*
+  `drawer-end` is needed so the mobile overlay slides in from the right
+  (the toggle sits at the right of the header) - but it also flips the
+  drawer's internal grid column order. At desktop, where the sidebar is
+  permanently open via `lg:drawer-open`, that reversed order gives the
+  empty `.drawer-content` placeholder the "auto" track, which then
+  soaks up whatever width `.drawer-side` doesn't use, pushing the
+  sidebar a few pixels away from the left accent bar. Pinning the
+  columns to 0/max-content at that breakpoint removes that gap without
+  touching the mobile slide-in behavior.
+*/
+@media (width >= 1024px) {
+  .drawer.drawer-end.lg\:drawer-open {
+    grid-template-columns: 0 max-content;
+  }
 }
 </style>
