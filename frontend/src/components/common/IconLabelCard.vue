@@ -3,6 +3,7 @@
     :tag="to ? 'router-link' : 'div'"
     :to="to"
     class="size-40 shrink-0 flex items-center justify-center p-4"
+    :class="{ 'hover:bg-base-200': to }"
   >
     <div class="flex flex-col items-center text-center gap-4 w-full">
       <div class="relative size-16 shrink-0">
