@@ -174,9 +174,9 @@
     hue-rotate(307deg) brightness(111%) contrast(237%);
   --icon-tint-neutral: brightness(0) saturate(100%) invert(3%) sepia(17%) saturate(245%)
     hue-rotate(205deg) brightness(165%) contrast(105%);
-  /* Matches the fixed #a8b3bf fill baked into the footer's cookie-lock icon. */
-  --icon-tint-slate: brightness(0) saturate(100%) invert(56%) sepia(13%) saturate(324%)
-    hue-rotate(171deg) brightness(141%) contrast(63%);
+  /* Matches the fixed #6c829c fill baked into the footer's icon SVGs. */
+  --icon-tint-slate: brightness(0) saturate(100%) invert(40%) sepia(13%) saturate(340%)
+    hue-rotate(172deg) brightness(121%) contrast(212%);
 }
 
 [data-theme="dark"] {
