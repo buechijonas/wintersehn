@@ -1,9 +1,9 @@
 <template>
   <BaseCard
-    :tag="to ? 'router-link' : 'div'"
-    :to="to"
+    :tag="path(to) ? 'router-link' : 'div'"
+    :to="path(to)"
     class="size-40 shrink-0 flex items-center justify-center p-4"
-    :class="{ 'hover:bg-base-200': to }"
+    :class="{ 'hover:bg-base-200': path(to) }"
   >
     <div class="flex flex-col items-center text-center gap-4 w-full">
       <div class="relative size-16 shrink-0">
@@ -25,6 +25,7 @@
 import BaseCard from '@/components/common/BaseCard.vue'
 import { flats, countries } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
+import { path } from '@/lib/link.js'
 
 export default {
   name: 'IconLabelCard',
@@ -32,11 +33,14 @@ export default {
   props: {
     icon: { type: String, required: true },
     label: { type: String, required: true },
-    to: { type: [String, Object], default: null },
+    to: { type: String, default: null },
     iconSet: { type: String, default: 'flats' },
   },
   data() {
     return { sources: { flats, icons, countries }, imgLoaded: false }
+  },
+  methods: {
+    path,
   },
 }
 </script>
