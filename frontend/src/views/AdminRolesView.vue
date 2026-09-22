@@ -36,8 +36,8 @@
                     <span class="font-medium truncate">{{ role.name }}</span>
                     <BaseButton
                       size="sm"
-                      :disabled="isOwnRole(role)"
-                      :title="isOwnRole(role) ? 'Du kannst deine eigene aktuelle Rolle nicht bearbeiten.' : ''"
+                      :disabled="!!editRoleBlockedReason(role)"
+                      :title="editRoleBlockedReason(role)"
                       @click="startEditingRole(role.id)"
                     >
                       Bearbeiten
@@ -76,7 +76,7 @@
                     type="checkbox"
                     class="checkbox"
                     :checked="hasPermission(role, permission.codename)"
-                    :disabled="!canTogglePermissions"
+                    :disabled="!canTogglePermission(role, permission.codename)"
                     @change="togglePermission(role, permission.codename)"
                   />
                   <img
@@ -123,9 +123,10 @@ const PERMISSION_META = {
   view: { icon: 'circle-book-open', iconFilterClass: 'icon-tint-neutral' },
   change: { icon: 'pen-circle', iconFilterClass: 'icon-tint-warning' },
   delete: { icon: 'circle-trash', iconFilterClass: 'icon-tint-error' },
+  assign: { icon: 'crown', iconFilterClass: 'icon-tint-warning' },
 }
 
-const VERB_ORDER = ['add', 'view', 'change', 'delete']
+const VERB_ORDER = ['add', 'view', 'change', 'assign', 'delete']
 
 const RESOURCE_ORDER = [
   'about',
@@ -135,6 +136,7 @@ const RESOURCE_ORDER = [
   'media',
   'role',
   'permission',
+  'user',
   'admin',
   'sitecontent',
 ]
@@ -147,6 +149,7 @@ const RESOURCE_LABELS = {
   media: 'Medien',
   role: 'Rollen',
   permission: 'Berechtigungen',
+  user: 'Nutzer',
   admin: 'Admin',
   sitecontent: 'Inhalte (allgemein)',
 }
@@ -172,9 +175,6 @@ export default {
     },
     rbacStore() {
       return useRbacStore()
-    },
-    canTogglePermissions() {
-      return !!(this.authStore.user?.can_add_permission || this.authStore.user?.can_delete_permission)
     },
     sortedPermissions() {
       return [...this.rbacStore.permissions].sort((a, b) => {
@@ -223,6 +223,17 @@ export default {
     },
     isOwnRole(role) {
       return role.name === this.authStore.user?.role
+    },
+    editRoleBlockedReason(role) {
+      if (!this.authStore.user?.can_change_role) return 'Du hast keine Berechtigung, Rollen zu bearbeiten.'
+      if (this.isOwnRole(role)) return 'Du kannst deine eigene aktuelle Rolle nicht bearbeiten.'
+      return ''
+    },
+    canTogglePermission(role, codename) {
+      const user = this.authStore.user
+      if (!user?.can_change_role) return false
+      if (this.hasPermission(role, codename)) return !!user.can_delete_permission
+      return !!user.can_add_permission && !!user.permissions?.includes(codename)
     },
     isEditingRole(roleId) {
       return this.editingRoleIds.includes(roleId)

@@ -28,11 +28,17 @@
                 <select
                   class="select select-sm"
                   :value="user.role ?? ''"
-                  :disabled="!authStore.user?.can_change_role"
+                  :disabled="!!roleChangeBlockedReason(user)"
+                  :title="roleChangeBlockedReason(user)"
                   @change="onUserRoleChange(user, $event)"
                 >
                   <option value="">Keine Rolle</option>
-                  <option v-for="role in rbacStore.roles" :key="role.id" :value="role.id">
+                  <option
+                    v-for="role in rbacStore.roles"
+                    :key="role.id"
+                    :value="role.id"
+                    :disabled="!canAssignRole(role)"
+                  >
                     {{ role.name }}
                   </option>
                 </select>
@@ -42,13 +48,13 @@
                   type="checkbox"
                   class="checkbox"
                   :checked="user.verified"
-                  :disabled="!authStore.user?.can_change_role"
+                  :disabled="!authStore.user?.can_change_user"
                   @change="onUserVerifiedChange(user, $event)"
                 />
               </td>
               <td class="text-right">
                 <DeleteButton
-                  v-if="authStore.user?.can_change_role && user.id !== authStore.user.id"
+                  v-if="authStore.user?.can_delete_user || user.id === authStore.user?.id"
                   title="Löschen"
                   @click="onDeleteUser(user)"
                 />
@@ -97,6 +103,19 @@ export default {
     avatarSrc(avatar) {
       return profiles[avatar] ?? icons.user
     },
+    roleChangeBlockedReason(user) {
+      if (user.id === this.authStore.user?.id) return 'Du kannst deine eigene Rolle nicht ändern.'
+      if (!this.authStore.user?.can_assign_user) return 'Du hast keine Berechtigung, Rollen zuzuweisen.'
+      const currentRole = this.rbacStore.roles.find((role) => role.id === user.role)
+      if (currentRole && !this.canAssignRole(currentRole)) {
+        return 'Du kannst die Rolle dieses Nutzers nicht ändern, da sie Rechte enthält, die du nicht besitzt.'
+      }
+      return ''
+    },
+    canAssignRole(role) {
+      const ownPermissions = this.authStore.user?.permissions ?? []
+      return role.permissions.every((codename) => ownPermissions.includes(codename))
+    },
     onUserRoleChange(user, event) {
       const value = event.target.value
       return this.runAction(() => this.rbacStore.setUserRole(user.id, value ? Number(value) : null))
@@ -104,9 +123,17 @@ export default {
     onUserVerifiedChange(user, event) {
       return this.runAction(() => this.rbacStore.setUserVerified(user.id, event.target.checked))
     },
-    onDeleteUser(user) {
-      if (!confirm(`Möchtest du den Nutzer "${user.username}" wirklich löschen?`)) return
-      return this.runAction(() => this.rbacStore.deleteUser(user.id))
+    async onDeleteUser(user) {
+      const isSelf = user.id === this.authStore.user?.id
+      const question = isSelf
+        ? 'Möchtest du dein eigenes Konto wirklich löschen?'
+        : `Möchtest du den Nutzer "${user.username}" wirklich löschen?`
+      if (!confirm(question)) return
+      await this.runAction(() => this.rbacStore.deleteUser(user.id))
+      if (isSelf && !this.error) {
+        this.authStore.user = null
+        this.$router.push('/')
+      }
     },
   },
 }
