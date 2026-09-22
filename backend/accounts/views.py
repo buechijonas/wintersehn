@@ -23,6 +23,7 @@ from .serializers import (
     UserRoleSerializer,
     UserSerializer,
 )
+from .throttles import LoginIpRateThrottle, LoginThrottled, LoginUsernameRateThrottle
 
 CONSENT_FIELDS = {"privacy", "terms", "disclaimer"}
 User = get_user_model()
@@ -69,6 +70,10 @@ class SignupView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [LoginIpRateThrottle, LoginUsernameRateThrottle]
+
+    def throttled(self, request, wait):
+        raise LoginThrottled(wait)
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
