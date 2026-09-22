@@ -16,6 +16,9 @@ MANAGED_PERMISSIONS = [
     "change_role",
     "view_role",
     "delete_role",
+    "change_user",
+    "assign_user",
+    "delete_user",
 ]
 
 
@@ -31,3 +34,12 @@ def set_role_permissions(group, codenames):
     group.permissions.set(
         managed_permissions_queryset().filter(codename__in=valid_codenames)
     )
+
+
+def user_permissions(user):
+    return [codename for codename in MANAGED_PERMISSIONS if user.has_perm(f"content.{codename}")]
+
+
+def can_grant_permissions(user, codenames):
+    valid_codenames = set(codenames) & set(MANAGED_PERMISSIONS)
+    return valid_codenames <= set(user_permissions(user))

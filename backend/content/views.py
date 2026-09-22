@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import SiteContent
-from .rbac import managed_permissions_queryset, set_role_permissions
+from .rbac import can_grant_permissions, managed_permissions_queryset, set_role_permissions
 from .rbac_serializers import PermissionSerializer, RoleSerializer
 from .serializers import SiteContentSerializer
 
@@ -154,6 +154,15 @@ class RoleListCreateView(APIView):
         if not request.user.has_perm("content.add_role"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+        permissions = request.data.get("permissions") or []
+        if permissions and not request.user.has_perm("content.add_permission"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        if not can_grant_permissions(request.user, permissions):
+            return Response(
+                {"detail": "Du kannst nur Berechtigungen vergeben, die du selbst besitzt."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         name = (request.data.get("name") or "").strip()
         if not name:
             return Response(
@@ -166,7 +175,7 @@ class RoleListCreateView(APIView):
             )
 
         group = Group.objects.create(name=name)
-        set_role_permissions(group, request.data.get("permissions", []))
+        set_role_permissions(group, permissions)
         return Response(RoleSerializer(group).data, status=status.HTTP_201_CREATED)
 
 
@@ -174,21 +183,20 @@ class RoleDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
+        if not request.user.has_perm("content.change_role"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
         group = get_object_or_404(Group, pk=pk)
         name = request.data.get("name")
         permissions = request.data.get("permissions")
 
         if name is not None:
-            if not request.user.has_perm("content.change_role"):
-                return Response(status=status.HTTP_403_FORBIDDEN)
             name = name.strip()
             if not name:
                 return Response(
                     {"detail": "Name ist erforderlich."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            group.name = name
-            group.save(update_fields=["name"])
 
         if permissions is not None:
             current = set(group.permissions.values_list("codename", flat=True))
@@ -199,6 +207,16 @@ class RoleDetailView(APIView):
                 return Response(status=status.HTTP_403_FORBIDDEN)
             if removed and not request.user.has_perm("content.delete_permission"):
                 return Response(status=status.HTTP_403_FORBIDDEN)
+            if not can_grant_permissions(request.user, added):
+                return Response(
+                    {"detail": "Du kannst nur Berechtigungen vergeben, die du selbst besitzt."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        if name is not None:
+            group.name = name
+            group.save(update_fields=["name"])
+        if permissions is not None:
             set_role_permissions(group, permissions)
 
         return Response(RoleSerializer(group).data)

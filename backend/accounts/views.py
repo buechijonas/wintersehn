@@ -11,6 +11,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from content.rbac import can_grant_permissions
+
 from .models import UserConsent, get_or_create_profile
 from .serializers import (
     ConsentSerializer,
@@ -120,13 +122,32 @@ class UserRoleView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
-        if not request.user.has_perm("content.change_role"):
+        if not request.user.has_perm("content.assign_user"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+        if int(pk) == request.user.pk:
+            return Response(
+                {"detail": "Du kannst deine eigene Rolle nicht ändern."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         user = get_object_or_404(User, pk=pk)
+        current_permissions = user.groups.values_list("permissions__codename", flat=True)
+        if not can_grant_permissions(request.user, current_permissions):
+            return Response(
+                {"detail": "Du kannst die Rolle dieses Nutzers nicht ändern, da sie Rechte enthält, die du nicht besitzt."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         role_id = request.data.get("role")
         if role_id:
             group = get_object_or_404(Group, pk=role_id)
+            role_permissions = group.permissions.values_list("codename", flat=True)
+            if not can_grant_permissions(request.user, role_permissions):
+                return Response(
+                    {"detail": "Du kannst nur Rollen zuweisen, deren Rechte du selbst besitzt."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
             user.groups.set([group])
         else:
             user.groups.clear()
@@ -137,16 +158,14 @@ class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, pk):
-        if not request.user.has_perm("content.change_role"):
+        # Deleting your own account never requires a permission.
+        is_self = int(pk) == request.user.pk
+        if not is_self and not request.user.has_perm("content.delete_user"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        if int(pk) == request.user.pk:
-            return Response(
-                {"detail": "Du kannst dich nicht selbst löschen."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
         user = get_object_or_404(User, pk=pk)
+        if is_self:
+            logout(request)
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -155,7 +174,7 @@ class UserVerifyView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, pk):
-        if not request.user.has_perm("content.change_role"):
+        if not request.user.has_perm("content.change_user"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         user = get_object_or_404(User, pk=pk)

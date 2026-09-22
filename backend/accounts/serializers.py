@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
+from content.rbac import user_permissions
+
 from .models import AVATAR_CHOICES, UserConsent, get_or_create_profile
 
 User = get_user_model()
@@ -18,6 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
     verified = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
     can_edit_content = serializers.SerializerMethodField()
     can_add_about = serializers.SerializerMethodField()
     can_view_about = serializers.SerializerMethodField()
@@ -46,6 +49,9 @@ class UserSerializer(serializers.ModelSerializer):
     can_change_role = serializers.SerializerMethodField()
     can_view_role = serializers.SerializerMethodField()
     can_delete_role = serializers.SerializerMethodField()
+    can_change_user = serializers.SerializerMethodField()
+    can_assign_user = serializers.SerializerMethodField()
+    can_delete_user = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -57,6 +63,7 @@ class UserSerializer(serializers.ModelSerializer):
             "avatar",
             "verified",
             "role",
+            "permissions",
             "can_edit_content",
             "can_add_about",
             "can_view_about",
@@ -85,6 +92,9 @@ class UserSerializer(serializers.ModelSerializer):
             "can_change_role",
             "can_view_role",
             "can_delete_role",
+            "can_change_user",
+            "can_assign_user",
+            "can_delete_user",
         ]
 
     def get_consent(self, obj):
@@ -100,6 +110,9 @@ class UserSerializer(serializers.ModelSerializer):
     def get_role(self, obj):
         group = obj.groups.first()
         return group.name if group else None
+
+    def get_permissions(self, obj):
+        return user_permissions(obj)
 
     def get_can_edit_content(self, obj):
         return obj.has_perm("content.change_sitecontent")
@@ -184,6 +197,15 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_can_delete_role(self, obj):
         return obj.has_perm("content.delete_role")
+
+    def get_can_change_user(self, obj):
+        return obj.has_perm("content.change_user")
+
+    def get_can_assign_user(self, obj):
+        return obj.has_perm("content.assign_user")
+
+    def get_can_delete_user(self, obj):
+        return obj.has_perm("content.delete_user")
 
 
 class UserRoleSerializer(serializers.ModelSerializer):
