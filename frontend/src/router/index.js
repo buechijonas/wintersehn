@@ -19,12 +19,10 @@ import TermsView from '@/views/legal/TermsView.vue'
 import DisclaimerView from '@/views/legal/DisclaimerView.vue'
 import CookieView from '@/views/legal/CookieView.vue'
 import LoginView from '@/views/auth/LoginView.vue'
-import SignupView from '@/views/auth/SignupView.vue'
 import LogoutView from '@/views/auth/LogoutView.vue'
 import VerifyPendingView from '@/views/auth/VerifyPendingView.vue'
 import SettingsView from '@/views/SettingsView.vue'
 import AccountEditView from '@/views/AccountEditView.vue'
-import PasswordEditView from '@/views/PasswordEditView.vue'
 import AdminView from '@/views/AdminView.vue'
 import AdminContentView from '@/views/AdminContentView.vue'
 import AdminLegalView from '@/views/AdminLegalView.vue'
@@ -165,11 +163,6 @@ const router = createRouter({
       component: LoginView,
     },
     {
-      path: '/signup',
-      name: 'signup',
-      component: SignupView,
-    },
-    {
       path: '/logout',
       name: 'logout',
       component: LogoutView,
@@ -189,12 +182,6 @@ const router = createRouter({
       path: '/settings/account',
       name: 'settings-account',
       component: AccountEditView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: '/settings/password',
-      name: 'settings-password',
-      component: PasswordEditView,
       meta: { requiresAuth: true },
     },
     {

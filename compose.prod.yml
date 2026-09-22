@@ -35,6 +35,11 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      GOVEX_PUBLIC_URL: ${GOVEX_PUBLIC_URL}
+      GOVEX_CLIENT_ID: ${GOVEX_CLIENT_ID}
+      GOVEX_CLIENT_SECRET: ${GOVEX_CLIENT_SECRET}
+      GOVEX_REDIRECT_URI: https://${DOMAIN}/api/auth/oidc/callback/
+      FRONTEND_URL: https://${DOMAIN}
 
     volumes:
       - backend_media:/app/media

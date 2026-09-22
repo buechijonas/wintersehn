@@ -34,8 +34,8 @@
         <div class="mb-10">
           <h3 class="text-xl my-4">Passwort</h3>
           <BaseCard class="p-6 flex items-center justify-between gap-4">
-            <p class="text-wntrs-muted">Passwort ändern oder zurücksetzen.</p>
-            <BaseButton to="/settings/password">Ändern</BaseButton>
+            <p class="text-wntrs-muted">Passwort ändern oder zurücksetzen (bei govex).</p>
+            <BaseButton @click="authStore.openGovexAccount()">Ändern</BaseButton>
           </BaseCard>
         </div>
       </template>
