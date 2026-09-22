@@ -49,6 +49,7 @@ services:
       # govex runs as its own compose stack (../govex). The browser reaches it
       # via its Vite dev server, this container via the host-exposed backend.
       GOVEX_PUBLIC_URL: http://localhost:5174
+      GOVEX_ACCOUNT_URL: http://localhost:5174/account
       GOVEX_INTERNAL_URL: http://host.docker.internal:8001
       GOVEX_CLIENT_ID: wintersehn-dev
       GOVEX_CLIENT_SECRET: wintersehn-dev-secret

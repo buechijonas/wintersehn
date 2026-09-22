@@ -50,18 +50,26 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 # govex is the identity provider (OIDC). GOVEX_PUBLIC_URL is where the browser
 # is sent to log in; GOVEX_INTERNAL_URL is where this backend reaches govex for
 # the token/userinfo exchange. They only differ in local Docker dev, where
-# "localhost" inside this container isn't the host.
+# "localhost" inside this container isn't the host. GOVEX_ACCOUNT_URL is where
+# users change their password, username and email.
 GOVEX_PUBLIC_URL = os.getenv("GOVEX_PUBLIC_URL")
+GOVEX_ACCOUNT_URL = os.getenv("GOVEX_ACCOUNT_URL")
 GOVEX_INTERNAL_URL = os.getenv("GOVEX_INTERNAL_URL", GOVEX_PUBLIC_URL)
 GOVEX_CLIENT_ID = os.getenv("GOVEX_CLIENT_ID")
 GOVEX_CLIENT_SECRET = os.getenv("GOVEX_CLIENT_SECRET")
 GOVEX_REDIRECT_URI = os.getenv("GOVEX_REDIRECT_URI")
 if not DEBUG and not all(
-    [GOVEX_PUBLIC_URL, GOVEX_CLIENT_ID, GOVEX_CLIENT_SECRET, GOVEX_REDIRECT_URI]
+    [
+        GOVEX_PUBLIC_URL,
+        GOVEX_ACCOUNT_URL,
+        GOVEX_CLIENT_ID,
+        GOVEX_CLIENT_SECRET,
+        GOVEX_REDIRECT_URI,
+    ]
 ):
     raise ImproperlyConfigured(
-        "GOVEX_PUBLIC_URL, GOVEX_CLIENT_ID, GOVEX_CLIENT_SECRET and GOVEX_REDIRECT_URI "
-        "must be set in the environment when DJANGO_DEBUG=false."
+        "GOVEX_PUBLIC_URL, GOVEX_ACCOUNT_URL, GOVEX_CLIENT_ID, GOVEX_CLIENT_SECRET and "
+        "GOVEX_REDIRECT_URI must be set in the environment when DJANGO_DEBUG=false."
     )
 
 # Caddy terminates TLS and talks plain HTTP to this container, marking the

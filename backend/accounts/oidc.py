@@ -45,7 +45,7 @@ def govex_login(request):
 
 
 def govex_account(request):
-    return HttpResponseRedirect(f"{settings.GOVEX_PUBLIC_URL}/account")
+    return HttpResponseRedirect(settings.GOVEX_ACCOUNT_URL)
 
 
 def fetch_userinfo(code, code_verifier):
