@@ -1,65 +1,35 @@
 <template>
   <AuthPage title="Anmelden" breadcrumb-label="Anmelden">
-    <form class="fieldset" @submit.prevent="onSubmit">
-      <label class="label" for="login-username">Benutzername</label>
-      <input
-        id="login-username"
-        v-model="username"
-        type="text"
-        autocomplete="username"
-        class="input w-full"
-        required
-      />
-
-      <label class="label mt-2" for="login-password">Passwort</label>
-      <input
-        id="login-password"
-        v-model="password"
-        type="password"
-        autocomplete="current-password"
-        class="input w-full"
-        required
-      />
-
-      <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
-
-      <BaseButton type="submit" variant="primary" block class="mt-6" :disabled="saving">
-        Anmelden
-      </BaseButton>
-    </form>
-    <p class="text-sm mt-4 text-center text-wntrs-muted">
-      Noch kein Konto?
-      <RouterLink to="/signup" class="link link-primary">Registrieren</RouterLink>
+    <p class="font-light mb-6">
+      wintersehn nutzt govex für die Anmeldung. Benutzername und Passwort verwaltest du dort.
     </p>
+    <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
+    <BaseButton variant="primary" block @click="authStore.startGovexLogin()">
+      Mit govex anmelden
+    </BaseButton>
   </AuthPage>
 </template>
 
 <script>
-import { RouterLink } from 'vue-router'
 import AuthPage from '@/components/layout/AuthPage.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
-import asyncActionMixin from '@/mixins/asyncActionMixin.js'
+
+const ERROR_MESSAGES = {
+  oidc_failed: 'Die Anmeldung über govex ist fehlgeschlagen. Bitte versuche es erneut.',
+}
 
 export default {
   name: 'LoginView',
-  components: { RouterLink, AuthPage, BaseButton },
-  mixins: [asyncActionMixin],
+  components: { AuthPage, BaseButton },
   data() {
     return {
-      username: '',
-      password: '',
+      error: ERROR_MESSAGES[this.$route.query.error] ?? '',
     }
   },
   computed: {
     authStore() {
       return useAuthStore()
-    },
-  },
-  methods: {
-    async onSubmit() {
-      await this.runAction(() => this.authStore.login(this.username, this.password))
-      if (!this.error) this.$router.push('/')
     },
   },
 }

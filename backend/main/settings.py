@@ -37,10 +37,6 @@ if not SECRET_KEY:
         )
     SECRET_KEY = "django-insecure-9u0u(7ytdpu4fycdcbahos%w2-828t$ggq16*-+xllgv$6j5q@"
 
-# Signs ALTCHA proof-of-work challenges (signup form). Falls back to
-# SECRET_KEY so no extra configuration is required to get started.
-ALTCHA_HMAC_SECRET = os.getenv("ALTCHA_HMAC_SECRET", SECRET_KEY)
-
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,backend").split(
     ","
 )
@@ -48,6 +44,25 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1,backend")
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "DJANGO_CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
 ).split(",")
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+# govex is the identity provider (OIDC). GOVEX_PUBLIC_URL is where the browser
+# is sent to log in; GOVEX_INTERNAL_URL is where this backend reaches govex for
+# the token/userinfo exchange. They only differ in local Docker dev, where
+# "localhost" inside this container isn't the host.
+GOVEX_PUBLIC_URL = os.getenv("GOVEX_PUBLIC_URL")
+GOVEX_INTERNAL_URL = os.getenv("GOVEX_INTERNAL_URL", GOVEX_PUBLIC_URL)
+GOVEX_CLIENT_ID = os.getenv("GOVEX_CLIENT_ID")
+GOVEX_CLIENT_SECRET = os.getenv("GOVEX_CLIENT_SECRET")
+GOVEX_REDIRECT_URI = os.getenv("GOVEX_REDIRECT_URI")
+if not DEBUG and not all(
+    [GOVEX_PUBLIC_URL, GOVEX_CLIENT_ID, GOVEX_CLIENT_SECRET, GOVEX_REDIRECT_URI]
+):
+    raise ImproperlyConfigured(
+        "GOVEX_PUBLIC_URL, GOVEX_CLIENT_ID, GOVEX_CLIENT_SECRET and GOVEX_REDIRECT_URI "
+        "must be set in the environment when DJANGO_DEBUG=false."
+    )
 
 # Caddy terminates TLS and talks plain HTTP to this container, marking the
 # original scheme in this header so Django knows the outer request was HTTPS.
@@ -77,10 +92,6 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
-    "DEFAULT_THROTTLE_RATES": {
-        "login_ip": "10/min",
-        "login_username": "20/hour",
-    },
 }
 
 CACHES = {

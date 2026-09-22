@@ -6,25 +6,10 @@
 
       <BaseCard class="p-6">
         <form class="fieldset" @submit.prevent="save">
-          <label class="label" for="account-username">Benutzername</label>
-          <input
-            id="account-username"
-            v-model="username"
-            type="text"
-            autocomplete="username"
-            class="input w-full"
-            required
-          />
-
-          <label class="label mt-2" for="account-email">E-Mail</label>
-          <input
-            id="account-email"
-            v-model="email"
-            type="email"
-            autocomplete="email"
-            class="input w-full"
-            required
-          />
+          <p class="text-wntrs-muted text-sm">
+            Benutzername und E-Mail verwaltest du auf
+            <a href="/api/auth/oidc/account/" class="link link-primary">govex</a>.
+          </p>
 
           <label class="label mt-4">Profilbild</label>
           <div class="flex items-center gap-4">
@@ -156,8 +141,6 @@ export default {
         { label: 'Einstellungen', to: '/settings' },
         { label: 'Konto bearbeiten' },
       ],
-      username: authStore.user.username,
-      email: authStore.user.email,
       selectedAvatar: authStore.user.avatar ?? '',
     }
   },
@@ -184,11 +167,7 @@ export default {
     },
     async save() {
       await this.runAction(() =>
-        this.authStore.updateProfile({
-          username: this.username,
-          email: this.email,
-          avatar: this.selectedAvatar,
-        }),
+        this.authStore.updateProfile({ avatar: this.selectedAvatar }),
       )
       if (!this.error) this.$router.push('/settings')
     },

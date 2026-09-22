@@ -17,30 +17,12 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function login(username, password) {
-    const response = await apiFetch('/api/auth/login/', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    })
-    const data = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(extractErrorMessage(data, 'Anmeldung fehlgeschlagen.'))
-    }
-    user.value = data
-    return data
+  function startGovexLogin() {
+    window.location.href = '/api/auth/oidc/login/'
   }
 
-  async function signup({ username, email, password, altcha }) {
-    const response = await apiFetch('/api/auth/signup/', {
-      method: 'POST',
-      body: JSON.stringify({ username, email, password, altcha }),
-    })
-    const data = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(extractErrorMessage(data, 'Registrierung fehlgeschlagen.'))
-    }
-    user.value = data
-    return data
+  function openGovexAccount() {
+    window.location.href = '/api/auth/oidc/account/'
   }
 
   async function logout() {
@@ -74,27 +56,15 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
-  async function changePassword(currentPassword, newPassword) {
-    const response = await apiFetch('/api/auth/password/', {
-      method: 'POST',
-      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-    })
-    if (!response.ok) {
-      const data = await response.json().catch(() => null)
-      throw new Error(extractErrorMessage(data, 'Passwort ändern fehlgeschlagen.'))
-    }
-  }
-
   return {
     user,
     ready,
     isAuthenticated,
     fetchMe,
-    login,
-    signup,
+    startGovexLogin,
+    openGovexAccount,
     logout,
     acceptConsent,
     updateProfile,
-    changePassword,
   }
 })

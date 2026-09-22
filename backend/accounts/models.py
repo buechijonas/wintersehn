@@ -63,6 +63,8 @@ class UserProfile(models.Model):
         max_length=20, blank=True, default="", choices=[(a, a) for a in AVATAR_CHOICES]
     )
     verified = models.BooleanField(default=False)
+    # The `sub` claim of this user's govex identity.
+    govex_id = models.PositiveBigIntegerField(unique=True, null=True, blank=True)
 
     def __str__(self):
         return f"Profile({self.user})"
