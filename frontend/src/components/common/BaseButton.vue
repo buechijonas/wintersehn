@@ -1,5 +1,5 @@
 <template>
-  <a v-if="href" :href="href" :target="target" :rel="rel" :class="classes">
+  <a v-if="url(href)" :href="url(href)" :target="target" :rel="rel" :class="classes">
     <slot />
   </a>
   <RouterLink v-else-if="to" :to="to" :class="classes">
@@ -12,6 +12,7 @@
 
 <script>
 import { RouterLink } from 'vue-router'
+import { url } from '@/lib/link.js'
 
 const VARIANT_CLASSES = {
   neutral: '',
@@ -57,6 +58,9 @@ export default {
         this.block ? 'w-full' : '',
       ]
     },
+  },
+  methods: {
+    url,
   },
 }
 </script>
