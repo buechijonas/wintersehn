@@ -6,6 +6,9 @@ urlpatterns = [
     path("oidc/login/", oidc.govex_login, name="govex-login"),
     path("oidc/callback/", oidc.govex_callback, name="govex-callback"),
     path("oidc/account/", oidc.govex_account, name="govex-account"),
+    path(
+        "oidc/account-deleted/", oidc.govex_account_deleted, name="govex-account-deleted"
+    ),
     path("logout/", views.LogoutView.as_view(), name="logout"),
     path("me/", views.MeView.as_view(), name="me"),
     path(

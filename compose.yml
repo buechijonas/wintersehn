@@ -47,14 +47,16 @@ services:
       ADMIN_EMAIL: admin@wintersehn.ch
       ADMIN_PASSWORD: admin
       # govex runs as its own compose stack (../govex). The browser reaches it
-      # via its Vite dev server, this container via the host-exposed backend.
+      # via its Vite dev server, this container authentik directly.
       GOVEX_PUBLIC_URL: http://localhost:5174
       GOVEX_ACCOUNT_URL: http://localhost:5174/account
-      GOVEX_INTERNAL_URL: http://host.docker.internal:8001
+      # authentik's port, published on the host by govex's compose.yml.
+      GOVEX_INTERNAL_URL: http://host.docker.internal:9000
       GOVEX_CLIENT_ID: wintersehn-dev
       GOVEX_CLIENT_SECRET: wintersehn-dev-secret
       GOVEX_REDIRECT_URI: http://localhost:8000/api/auth/oidc/callback/
       FRONTEND_URL: http://localhost:5173
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,host.docker.internal
 
     depends_on:
       db:
