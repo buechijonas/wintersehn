@@ -9,7 +9,7 @@ from urllib.parse import urlencode
 import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
-from django.db import IntegrityError
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -86,15 +86,23 @@ def create_user(govex_sub, username, email):
     # Never link to an existing local account by email: govex doesn't verify
     # email addresses, so that would let anyone claim e.g. the admin account.
     # Pre-govex accounts are linked explicitly with `manage.py link_govex_user`.
-    user = User(username=username, email=email)
-    user.set_unusable_password()
-    try:
+    with transaction.atomic():
+        release_username(username)
+        user = User(username=username, email=email)
+        user.set_unusable_password()
         user.save()
-    except IntegrityError:
-        user.username = f"{username}-{govex_sub[:8]}"
-        user.save()
-    UserProfile.objects.create(user=user, govex_sub=govex_sub)
+        UserProfile.objects.create(user=user, govex_sub=govex_sub)
     return user
+
+
+def release_username(username, owner=None):
+    """govex decides who a username belongs to. A different local account
+    still holding it (unlinked, or stale because a rename never reached us)
+    is moved to a fallback name so the govex identity can take it."""
+    holder = User.objects.filter(username=username).exclude(pk=getattr(owner, "pk", None)).first()
+    if holder is not None:
+        holder.username = f"{holder.username[:140]}-{holder.pk}"
+        holder.save(update_fields=["username"])
 
 
 def find_profile(govex_sub, legacy_govex_id):
@@ -123,11 +131,11 @@ def find_profile(govex_sub, legacy_govex_id):
 def sync_user(user, username, email):
     if user.username == username and user.email == email:
         return
-    user.username, user.email = username, email
-    try:
+    with transaction.atomic():
+        if user.username != username:
+            release_username(username, owner=user)
+        user.username, user.email = username, email
         user.save(update_fields=["username", "email"])
-    except IntegrityError:
-        user.refresh_from_db()
 
 
 def govex_callback(request):
@@ -198,4 +206,25 @@ def govex_account_deleted(request):
         ]
     for user in users:
         user.delete()
+    return HttpResponse(status=204)
+
+
+@csrf_exempt
+@require_POST
+def govex_account_updated(request):
+    """Takes over a username or email change made in govex.
+
+    Updates the existing user in place, so the user stays signed in: Django
+    ties a session to the user id and password hash, neither changes here.
+    """
+    if not valid_govex_signature(request):
+        return HttpResponse(status=403)
+    try:
+        payload = json.loads(request.body)
+    except ValueError:
+        return HttpResponse(status=400)
+
+    profile = find_profile(payload.get("sub"), payload.get("govex_id"))
+    if profile is not None and payload.get("username"):
+        sync_user(profile.user, payload["username"], payload.get("email") or "")
     return HttpResponse(status=204)
