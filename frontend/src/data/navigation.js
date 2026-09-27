@@ -34,5 +34,6 @@ export const navigationItems = [
   },
   { key: 'projects', label: 'Projekte', icon: 'box-open-full', to: '/projects', disabled: true },
   { key: 'article', label: 'Artikeln', icon: 'blog-text', to: '/article' },
+  { key: 'news', label: 'Informationsblase', icon: 'newspaper', to: '/news' },
   { key: 'media', label: 'Medien', icon: 'network-analytic', to: '/media' },
 ]
