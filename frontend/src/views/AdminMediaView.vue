@@ -26,7 +26,7 @@
                 <BaseButton
                   type="button"
                   variant="neutral"
-                  shape="circle"
+                  shape="square"
                   size="sm"
                   :class="{ 'text-success': !section.requiresAuth }"
                   :disabled="saving"
@@ -44,9 +44,7 @@
                     alt="Sichtbarkeit umschalten"
                   />
                 </BaseButton>
-                <DeleteButton :disabled="saving" @click="askRemoveSection(sectionIndex)">
-                  Abschnitt löschen
-                </DeleteButton>
+                <DeleteButton :disabled="saving" @click="askRemoveSection(sectionIndex)" />
               </div>
             </div>
 

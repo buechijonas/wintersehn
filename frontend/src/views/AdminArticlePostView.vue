@@ -70,7 +70,6 @@
                   </BaseButton>
                 </div>
                 <DeleteButton
-                  shape="square"
                   :disabled="saving"
                   @click="askRemoveSection(sectionIndex)"
                 />

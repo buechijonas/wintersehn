@@ -14,51 +14,52 @@
       >
         <template #default="{ item: section, index: sectionIndex }">
           <BaseCard class="p-6">
-            <button
-              v-if="canEdit"
-              type="button"
-              class="badge badge-sm mb-2"
-              :class="section.address ? 'badge-primary' : 'badge-outline'"
-              :disabled="saving"
-              :title="
-                section.address
-                  ? 'Enthält den Adressblock – klicken zum Entfernen'
-                  : 'Adressblock zu diesem Abschnitt hinzufügen'
-              "
-              @click="toggleAddress(sectionIndex)"
+            <div
+              v-if="canEdit || section.address"
+              class="flex items-center justify-between gap-4 mb-2"
             >
-              Adressblock
-            </button>
-            <span v-else-if="section.address" class="badge badge-primary badge-sm mb-2">
-              Adressblock
-            </span>
-            <div class="flex items-start justify-between gap-4 mb-4">
-              <div class="flex flex-col gap-2 w-full max-w-120">
-                <input
-                  type="text"
-                  placeholder="Titel (optional)"
-                  class="input input-sm w-full"
-                  :value="section.title"
-                  :disabled="!canEdit"
-                  @change="updateSection(sectionIndex, 'title', $event.target.value)"
-                />
-                <input
-                  type="text"
-                  placeholder="Untertitel (optional)"
-                  class="input input-sm w-full"
-                  :value="section.subtitle"
-                  :disabled="!canEdit"
-                  @change="updateSection(sectionIndex, 'subtitle', $event.target.value)"
-                />
-              </div>
+              <button
+                v-if="canEdit"
+                type="button"
+                class="badge badge-sm"
+                :class="section.address ? 'badge-primary' : 'badge-outline'"
+                :disabled="saving"
+                :title="
+                  section.address
+                    ? 'Enthält den Adressblock – klicken zum Entfernen'
+                    : 'Adressblock zu diesem Abschnitt hinzufügen'
+                "
+                @click="toggleAddress(sectionIndex)"
+              >
+                Adressblock
+              </button>
+              <span v-else-if="section.address" class="badge badge-primary badge-sm">
+                Adressblock
+              </span>
               <DeleteButton
                 v-if="canEdit"
                 class="shrink-0"
                 :disabled="saving"
                 @click="askRemoveSection(sectionIndex)"
-              >
-                Abschnitt löschen
-              </DeleteButton>
+              />
+            </div>
+            <div class="flex flex-col gap-2 w-full max-w-120 mb-4">
+              <input
+                type="text"
+                placeholder="Titel (optional)"
+                class="input input-sm w-full"
+                :value="section.title"
+                :disabled="!canEdit"
+                @change="updateSection(sectionIndex, 'title', $event.target.value)"
+              />
+              <input
+                type="text"
+                placeholder="Untertitel (optional)"
+                class="input input-sm w-full"
+                :value="section.subtitle"
+                :disabled="!canEdit"
+                @change="updateSection(sectionIndex, 'subtitle', $event.target.value)"
+              />
             </div>
 
             <textarea
