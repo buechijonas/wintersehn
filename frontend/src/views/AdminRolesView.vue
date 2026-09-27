@@ -1,8 +1,30 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
-    <div class="mx-auto w-full max-w-200">
-      <h2 class="text-xl my-4">Rollen &amp; Rechte</h2>
+  <div class="flex flex-col pb-8 px-8 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <div class="w-full">
+      <div class="flex items-center justify-between gap-4 my-4">
+        <h2 class="text-xl">Rollen &amp; Rechte</h2>
+        <BaseButton
+          v-if="authStore.user?.can_add_role"
+          variant="primary"
+          to="/admin/roles/create"
+          class="hidden lg:inline-flex"
+        >
+          <AppIcon name="plus" />
+          Rolle hinzufügen
+        </BaseButton>
+      </div>
+
+      <BaseButton
+        v-if="authStore.user?.can_add_role"
+        variant="primary"
+        shape="circle"
+        to="/admin/roles/create"
+        title="Rolle hinzufügen"
+        class="fixed bottom-18 right-6 z-5 size-14 lg:hidden"
+      >
+        <AppIcon name="plus" alt="Rolle hinzufügen" />
+      </BaseButton>
 
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
@@ -11,37 +33,32 @@
           <thead>
             <tr>
               <th>Berechtigung</th>
-              <th v-for="role in rbacStore.roles" :key="role.id" class="min-w-40">
+              <th v-for="role in rbacStore.roles" :key="role.id" class="w-56 min-w-56">
                 <div class="flex flex-col gap-1">
-                  <template v-if="isEditingRole(role.id)">
+                  <div v-if="isEditingRole(role.id)" class="flex items-center gap-1">
                     <input
                       type="text"
-                      class="input input-sm w-full"
+                      class="input input-sm w-full min-w-0"
                       :value="role.name"
                       :disabled="!authStore.user?.can_change_role"
                       @change="renameRole(role, $event)"
                     />
-                    <div class="flex gap-1">
-                      <BaseButton size="sm" class="flex-1" @click="stopEditingRole(role.id)">
-                        Fertig
-                      </BaseButton>
-                      <DeleteButton
-                        v-if="authStore.user?.can_delete_role"
-                        @click="removeRole(role)"
-                      />
-                    </div>
-                  </template>
-                  <template v-else>
+                    <SaveButton class="shrink-0" @click="stopEditingRole(role.id)" />
+                    <DeleteButton
+                      v-if="authStore.user?.can_delete_role"
+                      class="shrink-0"
+                      @click="removeRole(role)"
+                    />
+                  </div>
+                  <div v-else class="flex items-center justify-between gap-2">
                     <span class="font-medium truncate">{{ role.name }}</span>
-                    <BaseButton
-                      size="sm"
+                    <EditButton
+                      class="shrink-0"
                       :disabled="!!editRoleBlockedReason(role)"
-                      :title="editRoleBlockedReason(role)"
+                      :title="editRoleBlockedReason(role) || 'Bearbeiten'"
                       @click="startEditingRole(role.id)"
-                    >
-                      Bearbeiten
-                    </BaseButton>
-                  </template>
+                    />
+                  </div>
                 </div>
               </th>
             </tr>
@@ -73,34 +90,24 @@
                   <input
                     v-if="isEditingRole(role.id)"
                     type="checkbox"
-                    class="checkbox"
+                    class="checkbox align-middle"
                     :checked="hasPermission(role, permission.codename)"
                     :disabled="!canTogglePermission(role, permission.codename)"
                     @change="togglePermission(role, permission.codename)"
                   />
-                  <img
-                    v-else
-                    :src="hasPermission(role, permission.codename) ? icons['check-circle'] : icons.circle"
-                    alt=""
-                    class="size-4 inline-block"
-                    :class="hasPermission(role, permission.codename) ? 'icon-tint-success' : 'icon-tint-slate'"
-                  />
+                  <span v-else class="inline-flex size-6 items-center justify-center align-middle">
+                    <img
+                      :src="hasPermission(role, permission.codename) ? icons['check-circle'] : icons.circle"
+                      alt=""
+                      class="size-4"
+                      :class="hasPermission(role, permission.codename) ? 'icon-tint-success' : 'icon-tint-slate'"
+                    />
+                  </span>
                 </td>
               </tr>
             </template>
           </tbody>
         </table>
-      </div>
-
-      <div v-if="authStore.user?.can_add_role" class="flex gap-4 mt-6">
-        <input
-          v-model="newRoleName"
-          type="text"
-          placeholder="Neue Rolle"
-          class="input flex-1"
-          @keyup.enter="addRole"
-        />
-        <BaseButton variant="primary" @click="addRole">Rolle hinzufügen</BaseButton>
       </div>
     </div>
   </div>
@@ -112,6 +119,9 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
+import EditButton from '@/components/common/EditButton.vue'
+import SaveButton from '@/components/common/SaveButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useRbacStore } from '@/stores/rbac.js'
 import { icons } from '@/assets/icons.js'
@@ -155,7 +165,7 @@ const RESOURCE_LABELS = {
 
 export default {
   name: 'AdminRolesView',
-  components: { BaseBreadcrumbs, BaseFooter, BaseButton, DeleteButton },
+  components: { BaseBreadcrumbs, BaseFooter, BaseButton, DeleteButton, EditButton, SaveButton, AppIcon },
   mixins: [asyncActionMixin],
   data() {
     return {
@@ -164,7 +174,6 @@ export default {
         { label: 'Admin', to: '/admin' },
         { label: 'Rollen & Rechte' },
       ],
-      newRoleName: '',
       editingRoleIds: [],
     }
   },
@@ -251,12 +260,6 @@ export default {
         ? role.permissions.filter((p) => p !== codename)
         : [...role.permissions, codename]
       return this.runAction(() => this.rbacStore.setRolePermissions(role.id, next))
-    },
-    async addRole() {
-      const name = this.newRoleName.trim()
-      if (!name) return
-      await this.runAction(() => this.rbacStore.createRole(name))
-      if (!this.error) this.newRoleName = ''
     },
     removeRole(role) {
       return this.runAction(() => this.rbacStore.deleteRole(role.id))

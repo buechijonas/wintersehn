@@ -1,6 +1,6 @@
 <template>
-  <BaseButton variant="neutral" shape="square" size="sm" class="text-error" title="Löschen">
-    <AppIcon name="trash" alt="Löschen" />
+  <BaseButton variant="neutral" shape="square" size="sm" title="Speichern">
+    <AppIcon name="disk" alt="Speichern" />
   </BaseButton>
 </template>
 
@@ -9,7 +9,7 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 
 export default {
-  name: 'DeleteButton',
+  name: 'SaveButton',
   components: { BaseButton, AppIcon },
 }
 </script>

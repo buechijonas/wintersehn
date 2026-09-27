@@ -1,5 +1,11 @@
 <template>
-  <img :src="icons[name]" :alt="alt" class="app-icon" />
+  <span
+    role="img"
+    :aria-label="alt || null"
+    :aria-hidden="alt ? null : 'true'"
+    class="app-icon inline-block size-4 shrink-0 bg-current"
+    :style="{ maskImage }"
+  />
 </template>
 
 <script>
@@ -11,21 +17,18 @@ export default {
     name: { type: String, required: true },
     alt: { type: String, default: '' },
   },
-  data() {
-    return { icons }
+  computed: {
+    maskImage() {
+      return `url("${icons[this.name]}")`
+    },
   },
 }
 </script>
 
 <style scoped>
-:where([data-theme='dark'])
-  .app-icon:not([class*="icon-tint-"]) {
-  filter: invert(1);
-}
-@media (prefers-color-scheme: dark) {
-  :where(:root:not([data-theme]))
-    .app-icon:not([class*="icon-tint-"]) {
-    filter: invert(1);
-  }
+.app-icon {
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
 }
 </style>

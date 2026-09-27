@@ -39,8 +39,6 @@
                 >
                   <AppIcon
                     :name="section.requiresAuth ? 'lock' : 'earth-europa'"
-                    class="size-4"
-                    :class="{ 'icon-tint-success': !section.requiresAuth }"
                     alt="Sichtbarkeit umschalten"
                   />
                 </BaseButton>

@@ -45,8 +45,6 @@
             >
               <AppIcon
                 :name="album.thumbnail === image ? 'graphic-style' : 'picture'"
-                class="size-4"
-                :class="{ 'icon-tint-primary': album.thumbnail === image }"
                 alt="Als Thumbnail verwenden"
               />
             </BaseButton>
