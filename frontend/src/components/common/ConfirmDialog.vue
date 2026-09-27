@@ -24,8 +24,8 @@ export default {
   computed: {
     buttons() {
       return [
-        { value: 'cancel', label: this.cancelLabel },
-        { value: 'confirm', label: this.confirmLabel, variant: 'error' },
+        { value: 'cancel', label: this.cancelLabel, icon: 'cross' },
+        { value: 'confirm', label: this.confirmLabel, variant: 'error', outline: true, icon: 'trash' },
       ]
     },
   },

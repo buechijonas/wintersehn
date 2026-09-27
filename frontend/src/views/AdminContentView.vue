@@ -15,7 +15,7 @@
       <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
       <p v-if="saved" class="text-success text-sm mt-2">Gespeichert.</p>
 
-      <div v-if="canEdit" class="flex gap-4 mt-4">
+      <div v-if="canEdit" class="flex justify-end gap-4 mt-4">
         <input
           ref="fileInput"
           type="file"
@@ -23,9 +23,18 @@
           class="hidden"
           @change="onFileSelected"
         />
-        <BaseButton @click="pickFile">Datei hochladen</BaseButton>
-        <BaseButton @click="downloadBackup">Als Datei sichern</BaseButton>
-        <BaseButton variant="primary" :disabled="saving" @click="save">Speichern</BaseButton>
+        <BaseButton @click="pickFile">
+          <AppIcon name="upload" />
+          Datei hochladen
+        </BaseButton>
+        <BaseButton @click="downloadBackup">
+          <AppIcon name="download" />
+          Als Datei sichern
+        </BaseButton>
+        <BaseButton variant="primary" :disabled="saving" @click="save">
+          <AppIcon name="disk" />
+          Speichern
+        </BaseButton>
       </div>
     </div>
   </div>
@@ -36,6 +45,7 @@
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
 import asyncActionMixin from '@/mixins/asyncActionMixin.js'
@@ -63,7 +73,7 @@ const CHANGE_PERMISSION_BY_KEY = {
 
 export default {
   name: 'AdminContentView',
-  components: { BaseBreadcrumbs, BaseFooter, BaseButton },
+  components: { BaseBreadcrumbs, BaseFooter, BaseButton, AppIcon },
   mixins: [asyncActionMixin],
   data() {
     return {

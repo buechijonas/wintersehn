@@ -37,6 +37,7 @@ export default {
   components: { RouterLink },
   props: {
     variant: { type: String, default: 'neutral' },
+    outline: { type: Boolean, default: false },
     size: { type: String, default: 'md' },
     shape: { type: String, default: null },
     block: { type: Boolean, default: false },
@@ -54,6 +55,7 @@ export default {
         'shadow-none',
         'gap-2',
         VARIANT_CLASSES[this.variant],
+        this.outline ? 'btn-outline' : '',
         SIZE_CLASSES[this.size],
         this.shape ? SHAPE_CLASSES[this.shape] : '',
         this.block ? 'w-full' : '',
