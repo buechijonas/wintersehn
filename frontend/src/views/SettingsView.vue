@@ -4,41 +4,18 @@
     <div class="mx-auto w-full max-w-150">
       <h2 class="text-xl font-light my-4">Einstellungen</h2>
 
-      <template v-if="authStore.isAuthenticated">
-        <div class="flex flex-col items-center gap-4 mb-10 sm:flex-row sm:items-start">
-          <div class="flex flex-col items-center shrink-0">
-            <h3 class="text-xl my-4">Profilbild</h3>
-            <BaseCard class="size-24 shrink-0 flex items-center justify-center p-2">
-              <img class="size-14" :src="avatarSrc" alt="" />
-            </BaseCard>
-          </div>
-
-          <div class="flex-1 flex flex-col min-w-0 w-full sm:w-auto">
-            <h3 class="text-xl my-4">Konto</h3>
-            <BaseCard class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div class="flex flex-col gap-1 min-w-0">
-                <p class="flex flex-wrap gap-1 min-w-0">
-                  <span class="text-wntrs-muted shrink-0">Benutzername:</span>
-                  <span class="truncate min-w-0">{{ authStore.user.username }}</span>
-                </p>
-                <p class="flex flex-wrap gap-1 min-w-0">
-                  <span class="text-wntrs-muted shrink-0">E-Mail:</span>
-                  <span class="truncate min-w-0">{{ authStore.user.email }}</span>
-                </p>
-              </div>
-              <EditButton to="/settings/account" class="shrink-0" />
-            </BaseCard>
-          </div>
-        </div>
-
-        <div class="mb-10">
-          <h3 class="text-xl my-4">Passwort</h3>
-          <BaseCard class="p-6 flex items-center justify-between gap-4">
-            <p class="text-wntrs-muted">Passwort ändern oder zurücksetzen (bei govex).</p>
-            <EditButton class="shrink-0" @click="authStore.openGovexAccount()" />
-          </BaseCard>
-        </div>
-      </template>
+      <div v-if="authStore.isAuthenticated" class="mb-10">
+        <h3 class="text-xl my-4">Konto</h3>
+        <BaseCard class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <p class="text-wntrs-muted min-w-0">
+            Profil, Profilbild, Passwort und Sicherheit verwaltest du im govex Account Center.
+          </p>
+          <BaseButton class="shrink-0" @click="authStore.openGovexAccount()">
+            <AppIcon name="share-square" />
+            Zum Account Center
+          </BaseButton>
+        </BaseCard>
+      </div>
 
       <div class="mb-10">
         <h3 class="text-xl my-4">Darstellung</h3>
@@ -107,9 +84,6 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
-import EditButton from '@/components/common/EditButton.vue'
-import { profiles } from '@/assets/images.js'
-import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { themeMode } from '@/lib/theme.js'
 import { dyslexiaFont } from '@/lib/dyslexia.js'
@@ -117,10 +91,9 @@ import { contrastMode } from '@/lib/contrast.js'
 
 export default {
   name: 'SettingsView',
-  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon, EditButton },
+  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon },
   data() {
     return {
-      icons,
       breadcrumbs: [{ label: 'Einstellungen', to: '/' }],
       themeOptions: [
         { value: 'auto', icon: 'laptop', label: 'Auto' },
@@ -140,9 +113,6 @@ export default {
   computed: {
     authStore() {
       return useAuthStore()
-    },
-    avatarSrc() {
-      return profiles[this.authStore.user?.avatar] ?? icons.user
     },
     themeMode: {
       get() {

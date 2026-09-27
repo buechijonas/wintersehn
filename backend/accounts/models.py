@@ -63,6 +63,7 @@ class UserProfile(models.Model):
         max_length=20, blank=True, default="", choices=[(a, a) for a in AVATAR_CHOICES]
     )
     verified = models.BooleanField(default=False)
+    birthdate = models.DateField(null=True, blank=True)
     # The `sub` claim of this user's govex identity (authentik user UUID).
     govex_sub = models.CharField(max_length=64, unique=True, null=True, blank=True)
     # The user's id in govex before it moved to authentik. authentik hands it

@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from content.rbac import user_permissions
 
-from .models import AVATAR_CHOICES, UserConsent, get_or_create_profile
+from .models import UserConsent, get_or_create_profile
 
 User = get_user_model()
 
@@ -16,7 +16,9 @@ class ConsentSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     consent = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
     avatar = serializers.SerializerMethodField()
+    birthdate = serializers.SerializerMethodField()
     verified = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
@@ -57,6 +59,10 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "username",
             "email",
+            "first_name",
+            "last_name",
+            "display_name",
+            "birthdate",
             "consent",
             "avatar",
             "verified",
@@ -98,8 +104,14 @@ class UserSerializer(serializers.ModelSerializer):
         consent, _ = UserConsent.objects.get_or_create(user=obj)
         return ConsentSerializer(consent).data
 
+    def get_display_name(self, obj):
+        return obj.get_full_name() or obj.username
+
     def get_avatar(self, obj):
         return get_or_create_profile(obj).avatar
+
+    def get_birthdate(self, obj):
+        return get_or_create_profile(obj).birthdate
 
     def get_verified(self, obj):
         return get_or_create_profile(obj).verified
@@ -221,15 +233,3 @@ class UserRoleSerializer(serializers.ModelSerializer):
     def get_verified(self, obj):
         return get_or_create_profile(obj).verified
 
-
-class ProfileUpdateSerializer(serializers.Serializer):
-    # Username and email are owned by govex and re-synced on every login.
-    avatar = serializers.ChoiceField(choices=AVATAR_CHOICES, required=False, allow_blank=True)
-
-    def save(self):
-        user = self.instance
-        if "avatar" in self.validated_data:
-            profile = get_or_create_profile(user)
-            profile.avatar = self.validated_data["avatar"]
-            profile.save(update_fields=["avatar"])
-        return user

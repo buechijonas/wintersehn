@@ -11,15 +11,17 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.db import transaction
 from django.http import HttpResponse, HttpResponseRedirect
+from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import UserProfile
+from .models import AVATAR_CHOICES, UserProfile, get_or_create_profile
 
 User = get_user_model()
 
-# `govex` carries the pre-authentik govex user id of migrated accounts.
-SCOPE = "openid profile email govex"
+# `govex` carries the pre-authentik govex user id of migrated accounts,
+# `govex_meta` the name, birthdate and avatar managed in govex.
+SCOPE = "openid profile email govex govex_meta"
 
 MAX_CLOCK_SKEW_SECONDS = 300
 
@@ -138,6 +140,26 @@ def sync_user(user, username, email):
         user.save(update_fields=["username", "email"])
 
 
+def sync_meta(user, meta):
+    """Takes over name, birthdate and avatar managed in govex, which is the
+    only source for them: a key govex doesn't send is cleared here.
+
+    `meta` is None when govex didn't hand out the `govex_meta` scope; then
+    nothing is touched. Avatars picked in wintersehn before govex managed them
+    are copied over once with `manage.py push_avatars_to_govex`.
+    """
+    if meta is None:
+        return
+    profile = get_or_create_profile(user)
+    user.first_name = (meta.get("first_name") or "")[:150]
+    user.last_name = (meta.get("last_name") or "")[:150]
+    user.save(update_fields=["first_name", "last_name"])
+    profile.birthdate = parse_date(meta.get("birthdate") or "")
+    avatar = meta.get("avatar") or ""
+    profile.avatar = avatar if avatar in AVATAR_CHOICES else ""
+    profile.save(update_fields=["birthdate", "avatar"])
+
+
 def govex_callback(request):
     """Exchanges the code with govex server-to-server and logs the matching
     local user in, creating it on first login."""
@@ -161,6 +183,7 @@ def govex_callback(request):
     else:
         user = profile.user
         sync_user(user, username, email)
+    sync_meta(user, userinfo.get("meta"))
 
     login(request, user)
     return redirect_to_frontend("/")
@@ -212,7 +235,7 @@ def govex_account_deleted(request):
 @csrf_exempt
 @require_POST
 def govex_account_updated(request):
-    """Takes over a username or email change made in govex.
+    """Takes over a username, email or meta change made in govex.
 
     Updates the existing user in place, so the user stays signed in: Django
     ties a session to the user id and password hash, neither changes here.
@@ -227,4 +250,6 @@ def govex_account_updated(request):
     profile = find_profile(payload.get("sub"), payload.get("govex_id"))
     if profile is not None and payload.get("username"):
         sync_user(profile.user, payload["username"], payload.get("email") or "")
+    if profile is not None:
+        sync_meta(profile.user, payload.get("meta"))
     return HttpResponse(status=204)
