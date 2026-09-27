@@ -27,7 +27,7 @@
           </component>
         </li>
         <template v-if="authStore.user?.can_view_admin">
-          <li><hr class="my-2 border-wntrs-border" /></li>
+          <div class="my-2 h-px bg-wntrs-border pointer-events-none"></div>
           <li>
             <RouterLink
               to="/admin"
