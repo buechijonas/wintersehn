@@ -392,10 +392,10 @@ const CONSENT_GATES = [
   { field: 'disclaimer', path: '/disclaimer' },
 ]
 
-router.beforeEach(async (to) => {
+router.beforeEach((to) => {
   const authStore = useAuthStore()
   if (!authStore.ready) {
-    await authStore.fetchMe()
+    return true
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {

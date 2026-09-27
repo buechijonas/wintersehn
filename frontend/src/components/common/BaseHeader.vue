@@ -3,10 +3,12 @@
     <div
       class="lg:hidden flex items-center justify-center size-12 shrink-0 bg-base-100 text-base-content text-[1.2rem] font-normal"
     >
-      {{ brandInitial }}
+      <div v-if="!authStore.ready" class="skeleton size-5"></div>
+      <template v-else>{{ brandInitial }}</template>
     </div>
     <div class="flex items-center gap-3 ml-auto px-6">
-      <span v-if="authStore.isAuthenticated" class="text-white text-sm">
+      <span v-if="!authStore.ready" class="skeleton h-4 w-24"></span>
+      <span v-else-if="authStore.isAuthenticated" class="text-white text-sm">
         {{ authStore.user.display_name }}
       </span>
       <BaseButton variant="ghost" shape="square" size="sm" to="/settings">
