@@ -31,7 +31,7 @@
               v-if="canEdit"
               type="button"
               variant="neutral"
-              shape="circle"
+              shape="square"
               size="sm"
               class="absolute bottom-2 left-2"
               :class="{ 'text-primary': album.thumbnail === image }"

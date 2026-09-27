@@ -27,9 +27,7 @@
                 class="shrink-0"
                 :disabled="saving"
                 @click="askRemoveSection(sectionIndex)"
-              >
-                Abschnitt löschen
-              </DeleteButton>
+              />
             </div>
 
             <SortableList

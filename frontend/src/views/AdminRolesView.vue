@@ -27,7 +27,6 @@
                       </BaseButton>
                       <DeleteButton
                         v-if="authStore.user?.can_delete_role"
-                        shape="square"
                         @click="removeRole(role)"
                       />
                     </div>
