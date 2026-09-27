@@ -43,19 +43,6 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = { ...user.value, consent: data }
   }
 
-  async function updateProfile(fields) {
-    const response = await apiFetch('/api/auth/me/', {
-      method: 'PATCH',
-      body: JSON.stringify(fields),
-    })
-    const data = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(extractErrorMessage(data, 'Speichern fehlgeschlagen.'))
-    }
-    user.value = data
-    return data
-  }
-
   return {
     user,
     ready,
@@ -65,6 +52,5 @@ export const useAuthStore = defineStore('auth', () => {
     openGovexAccount,
     logout,
     acceptConsent,
-    updateProfile,
   }
 })

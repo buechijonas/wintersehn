@@ -22,7 +22,6 @@ import LoginView from '@/views/auth/LoginView.vue'
 import LogoutView from '@/views/auth/LogoutView.vue'
 import VerifyPendingView from '@/views/auth/VerifyPendingView.vue'
 import SettingsView from '@/views/SettingsView.vue'
-import AccountEditView from '@/views/AccountEditView.vue'
 import AdminView from '@/views/AdminView.vue'
 import AdminContentView from '@/views/AdminContentView.vue'
 import AdminLegalView from '@/views/AdminLegalView.vue'
@@ -178,12 +177,6 @@ const router = createRouter({
       path: '/settings',
       name: 'settings',
       component: SettingsView,
-    },
-    {
-      path: '/settings/account',
-      name: 'settings-account',
-      component: AccountEditView,
-      meta: { requiresAuth: true },
     },
     {
       path: '/admin',

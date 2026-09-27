@@ -12,7 +12,6 @@ from content.rbac import can_grant_permissions
 from .models import UserConsent, get_or_create_profile
 from .serializers import (
     ConsentSerializer,
-    ProfileUpdateSerializer,
     UserRoleSerializer,
     UserSerializer,
 )
@@ -109,14 +108,4 @@ class MeView(APIView):
         if request.user.is_authenticated:
             return Response({"user": UserSerializer(request.user).data})
         return Response({"user": None})
-
-    def patch(self, request):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-        serializer = ProfileUpdateSerializer(
-            request.user, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        return Response(UserSerializer(user).data)
 
