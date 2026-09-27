@@ -50,7 +50,6 @@ class UserSerializer(serializers.ModelSerializer):
     can_delete_role = serializers.SerializerMethodField()
     can_change_user = serializers.SerializerMethodField()
     can_assign_user = serializers.SerializerMethodField()
-    can_delete_user = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -93,7 +92,6 @@ class UserSerializer(serializers.ModelSerializer):
             "can_delete_role",
             "can_change_user",
             "can_assign_user",
-            "can_delete_user",
         ]
 
     def get_consent(self, obj):
@@ -202,9 +200,6 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_can_assign_user(self, obj):
         return obj.has_perm("content.assign_user")
-
-    def get_can_delete_user(self, obj):
-        return obj.has_perm("content.delete_user")
 
 
 class UserRoleSerializer(serializers.ModelSerializer):

@@ -87,22 +87,6 @@ class UserRoleView(APIView):
         return Response(UserRoleSerializer(user).data)
 
 
-class UserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, pk):
-        # Deleting your own account never requires a permission.
-        is_self = int(pk) == request.user.pk
-        if not is_self and not request.user.has_perm("content.delete_user"):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        user = get_object_or_404(User, pk=pk)
-        if is_self:
-            logout(request)
-        user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
 class UserVerifyView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -18,7 +18,6 @@ MANAGED_PERMISSIONS = [
     "delete_role",
     "change_user",
     "assign_user",
-    "delete_user",
 ]
 
 

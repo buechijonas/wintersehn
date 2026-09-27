@@ -38,7 +38,6 @@ class SiteContent(models.Model):
             ("delete_role", "Can delete roles"),
             ("change_user", "Can update user verification"),
             ("assign_user", "Can assign user roles"),
-            ("delete_user", "Can delete users"),
         ]
 
     def __str__(self):

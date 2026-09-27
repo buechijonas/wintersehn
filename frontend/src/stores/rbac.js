@@ -49,15 +49,6 @@ export const useRbacStore = defineStore('rbac', () => {
     return data
   }
 
-  async function deleteUser(userId) {
-    const response = await apiFetch(`/api/auth/users/${userId}/`, { method: 'DELETE' })
-    if (!response.ok) {
-      const data = await response.json().catch(() => null)
-      throw new Error(extractErrorMessage(data, 'Nutzer konnte nicht gelöscht werden.'))
-    }
-    users.value = users.value.filter((u) => u.id !== userId)
-  }
-
   async function createRole(name) {
     const response = await apiFetch('/api/content/roles/', {
       method: 'POST',
@@ -119,6 +110,5 @@ export const useRbacStore = defineStore('rbac', () => {
     deleteRole,
     setUserRole,
     setUserVerified,
-    deleteUser,
   }
 })
