@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth.js'
 import HomeView from '@/views/HomeView.vue'
 import MediaView from '@/views/MediaView.vue'
 import ArticleView from '@/views/ArticleView.vue'
+import NewsView from '@/views/NewsView.vue'
 import ArticlePostView from '@/views/ArticlePostView.vue'
 import AboutView from '@/views/AboutView.vue'
 import EthosView from '@/views/EthosView.vue'
@@ -71,6 +72,12 @@ const router = createRouter({
       name: 'article-post',
       component: ArticlePostView,
       meta: { activeNavigation: 'article' },
+    },
+    {
+      path: '/news',
+      name: 'news',
+      component: NewsView,
+      meta: { activeNavigation: 'news' },
     },
     {
       path: '/about',
@@ -341,6 +348,7 @@ const PAGE_TITLES = {
   media: 'Medien',
   article: 'Artikeln',
   'article-post': 'Artikel',
+  news: 'News',
   about: 'Über mich',
   ethos: 'Ethos',
   cv: 'Lebenslauf',
