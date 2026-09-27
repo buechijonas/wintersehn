@@ -1,12 +1,12 @@
 <template>
-  <BaseDialog ref="dialog" title="Link einfügen">
-    <label class="label" for="link-dialog-url">URL</label>
+  <BaseDialog ref="dialog" title="Abschnitt hinzufügen">
+    <label class="label" for="section-dialog-title">Titel</label>
     <input
-      id="link-dialog-url"
+      id="section-dialog-title"
       ref="input"
-      v-model="url"
-      type="url"
-      placeholder="https://..."
+      v-model="title"
+      type="text"
+      placeholder="Neuer Abschnitt"
       class="input w-full"
       @keyup.enter="confirm"
     />
@@ -17,8 +17,8 @@
         Abbrechen
       </BaseButton>
       <BaseButton variant="primary" @click="confirm">
-        <AppIcon name="disk" />
-        Speichern
+        <AppIcon name="plus" />
+        Hinzufügen
       </BaseButton>
     </template>
   </BaseDialog>
@@ -30,20 +30,20 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 
 export default {
-  name: 'LinkDialog',
+  name: 'SectionDialog',
   components: { BaseDialog, BaseButton, AppIcon },
   emits: ['confirm'],
   data() {
-    return { url: '' }
+    return { title: '' }
   },
   methods: {
     open() {
-      this.url = ''
+      this.title = ''
       this.$refs.dialog?.open()
       this.$nextTick(() => this.$refs.input?.focus())
     },
     confirm() {
-      const value = this.url.trim()
+      const value = this.title.trim()
       if (!value) return
       this.$refs.dialog?.close()
       this.$emit('confirm', value)

@@ -2,7 +2,14 @@
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
     <div class="mx-auto w-full max-w-200">
-      <h2 class="text-xl my-4">Medien</h2>
+      <div class="flex items-center justify-between gap-4 my-4">
+        <h2 class="text-xl">Medien</h2>
+        <AddButton
+          v-if="canEdit"
+          label="Abschnitt hinzufügen"
+          @click="$refs.sectionDialog.open()"
+        />
+      </div>
 
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
@@ -85,17 +92,6 @@
           </BaseCard>
         </template>
       </SortableList>
-
-      <div v-if="canEdit" class="flex gap-4 mt-6">
-        <input
-          v-model="newSectionTitle"
-          type="text"
-          placeholder="Neuer Abschnitt"
-          class="input flex-1"
-          @keyup.enter="addSection"
-        />
-        <BaseButton variant="primary" @click="addSection">Abschnitt hinzufügen</BaseButton>
-      </div>
     </div>
   </div>
 
@@ -105,6 +101,8 @@
     :message="dialogMessage"
     @confirm="onConfirmDelete"
   />
+
+  <SectionDialog ref="sectionDialog" @confirm="addSection" />
 
   <BaseFooter />
 </template>
@@ -116,6 +114,8 @@ import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import AddButton from '@/components/common/AddButton.vue'
+import SectionDialog from '@/components/common/SectionDialog.vue'
 import SortableList from '@/components/common/SortableList.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
 import { social } from '@/assets/images.js'
@@ -135,6 +135,8 @@ export default {
     BaseFooter,
     SortableList,
     AppIcon,
+    AddButton,
+    SectionDialog,
   },
   mixins: [confirmDeleteMixin, asyncActionMixin],
   data() {
@@ -143,7 +145,6 @@ export default {
         { label: 'Admin', to: '/admin' },
         { label: 'Medien' },
       ],
-      newSectionTitle: '',
     }
   },
   computed: {
@@ -170,10 +171,7 @@ export default {
     persist(data) {
       return this.runAction(() => this.contentStore.saveContent('media', data))
     },
-    addSection() {
-      const title = this.newSectionTitle.trim()
-      if (!title) return
-      this.newSectionTitle = ''
+    addSection(title) {
       this.persist([...this.sections, { title, items: [] }])
     },
     renameSection(sectionIndex, event) {

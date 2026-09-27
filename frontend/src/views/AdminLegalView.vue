@@ -2,7 +2,14 @@
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
     <div class="mx-auto w-full max-w-200">
-      <h2 class="text-xl my-4">{{ label }}</h2>
+      <div class="flex items-center justify-between gap-4 my-4">
+        <h2 class="text-xl">{{ label }}</h2>
+        <AddButton
+          v-if="canEdit"
+          label="Abschnitt hinzufügen"
+          @click="$refs.sectionDialog.open()"
+        />
+      </div>
 
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
@@ -100,31 +107,23 @@
                   v-model="itemDrafts[sectionIndex].listtitle"
                   type="text"
                   placeholder="Listentitel"
-                  class="input input-sm flex-1"
+                  class="input input-sm w-full sm:flex-1"
                 />
                 <input
                   v-model="itemDrafts[sectionIndex].texttitle"
                   type="text"
                   placeholder="Text"
-                  class="input input-sm flex-1"
+                  class="input input-sm w-full sm:flex-1"
                 />
-                <BaseButton size="sm" @click="addItem(sectionIndex)">Eintrag hinzufügen</BaseButton>
+                <BaseButton size="sm" @click="addItem(sectionIndex)">
+                  <AppIcon name="plus" size="sm" />
+                  Eintrag hinzufügen
+                </BaseButton>
               </div>
             </div>
           </BaseCard>
         </template>
       </SortableList>
-
-      <div v-if="canEdit" class="flex gap-4 mt-6">
-        <input
-          v-model="newSectionTitle"
-          type="text"
-          placeholder="Neuer Abschnitt"
-          class="input flex-1"
-          @keyup.enter="addSection"
-        />
-        <BaseButton variant="primary" @click="addSection">Abschnitt hinzufügen</BaseButton>
-      </div>
     </div>
   </div>
 
@@ -135,6 +134,8 @@
     @confirm="onConfirmDelete"
   />
 
+  <SectionDialog ref="sectionDialog" @confirm="addSection" />
+
   <BaseFooter />
 </template>
 
@@ -142,9 +143,12 @@
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import AddButton from '@/components/common/AddButton.vue'
+import SectionDialog from '@/components/common/SectionDialog.vue'
 import SortableList from '@/components/common/SortableList.vue'
 import { useAuthStore } from '@/stores/auth.js'
 import { useContentStore } from '@/stores/content.js'
@@ -157,10 +161,13 @@ export default {
     BaseBreadcrumbs,
     BaseCard,
     BaseButton,
+    AppIcon,
     DeleteButton,
     ConfirmDialog,
     BaseFooter,
     SortableList,
+    AddButton,
+    SectionDialog,
   },
   mixins: [confirmDeleteMixin, asyncActionMixin],
   props: {
@@ -169,7 +176,6 @@ export default {
   },
   data() {
     return {
-      newSectionTitle: '',
       itemDrafts: {},
     }
   },
@@ -220,10 +226,7 @@ export default {
     persist(sections) {
       return this.persistData({ sections })
     },
-    addSection() {
-      const title = this.newSectionTitle.trim()
-      if (!title) return
-      this.newSectionTitle = ''
+    addSection(title) {
       this.persist([...this.sections, { title, subtitle: '', text: '', items: [] }])
     },
     updateSection(sectionIndex, field, value) {

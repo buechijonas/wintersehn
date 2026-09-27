@@ -2,7 +2,14 @@
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
     <div class="mx-auto w-full max-w-200">
-      <h2 class="text-xl my-4">{{ post?.title ?? '…' }}</h2>
+      <div class="flex items-center justify-between gap-4 my-4">
+        <h2 class="text-xl">{{ post?.title ?? '…' }}</h2>
+        <AddButton
+          v-if="canEdit && post"
+          label="Abschnitt hinzufügen"
+          @click="$refs.sectionDialog.open()"
+        />
+      </div>
 
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
@@ -105,17 +112,6 @@
             </BaseCard>
           </template>
         </SortableList>
-
-        <div v-if="canEdit" class="flex gap-4 mt-6">
-          <input
-            v-model="newSectionTitle"
-            type="text"
-            placeholder="Neuer Abschnitt"
-            class="input flex-1"
-            @keyup.enter="addSection"
-          />
-          <BaseButton variant="primary" @click="addSection">Abschnitt hinzufügen</BaseButton>
-        </div>
       </template>
     </div>
   </div>
@@ -129,6 +125,8 @@
 
   <LinkDialog ref="linkDialog" @confirm="onLinkConfirm" />
 
+  <SectionDialog ref="sectionDialog" @confirm="addSection" />
+
   <BaseFooter />
 </template>
 
@@ -141,6 +139,8 @@ import DeleteButton from '@/components/common/DeleteButton.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import LinkDialog from '@/components/common/LinkDialog.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
+import AddButton from '@/components/common/AddButton.vue'
+import SectionDialog from '@/components/common/SectionDialog.vue'
 import SortableList from '@/components/common/SortableList.vue'
 import ImageUploadField from '@/components/common/ImageUploadField.vue'
 import { useAuthStore } from '@/stores/auth.js'
@@ -161,11 +161,12 @@ export default {
     BaseFooter,
     SortableList,
     ImageUploadField,
+    AddButton,
+    SectionDialog,
   },
   mixins: [confirmDeleteMixin, asyncActionMixin],
   data() {
     return {
-      newSectionTitle: '',
       sectionTextareas: {},
       linkDialogSectionIndex: null,
       linkDialogSelection: null,
@@ -224,10 +225,7 @@ export default {
     persistSections(sections) {
       return this.persistPost({ sections })
     },
-    addSection() {
-      const title = this.newSectionTitle.trim()
-      if (!title) return
-      this.newSectionTitle = ''
+    addSection(title) {
       this.persistSections([...this.sections, { title, subtitle: '', text: '' }])
     },
     updateSection(sectionIndex, field, value) {

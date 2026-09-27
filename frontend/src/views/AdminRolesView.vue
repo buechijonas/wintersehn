@@ -4,27 +4,12 @@
     <div class="w-full">
       <div class="flex items-center justify-between gap-4 my-4">
         <h2 class="text-xl">Rollen &amp; Rechte</h2>
-        <BaseButton
+        <AddButton
           v-if="authStore.user?.can_add_role"
-          variant="primary"
+          label="Rolle hinzufügen"
           to="/admin/roles/create"
-          class="hidden lg:inline-flex"
-        >
-          <AppIcon name="plus" />
-          Rolle hinzufügen
-        </BaseButton>
+        />
       </div>
-
-      <BaseButton
-        v-if="authStore.user?.can_add_role"
-        variant="primary"
-        shape="circle"
-        to="/admin/roles/create"
-        title="Rolle hinzufügen"
-        class="fixed bottom-18 right-6 z-5 size-14 lg:hidden"
-      >
-        <AppIcon name="plus" alt="Rolle hinzufügen" />
-      </BaseButton>
 
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
@@ -117,9 +102,8 @@
 <script>
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
-import AppIcon from '@/components/common/AppIcon.vue'
+import AddButton from '@/components/common/AddButton.vue'
 import EditButton from '@/components/common/EditButton.vue'
 import SaveButton from '@/components/common/SaveButton.vue'
 import { useAuthStore } from '@/stores/auth.js'
@@ -165,7 +149,14 @@ const RESOURCE_LABELS = {
 
 export default {
   name: 'AdminRolesView',
-  components: { BaseBreadcrumbs, BaseFooter, BaseButton, DeleteButton, EditButton, SaveButton, AppIcon },
+  components: {
+    BaseBreadcrumbs,
+    BaseFooter,
+    DeleteButton,
+    EditButton,
+    SaveButton,
+    AddButton,
+  },
   mixins: [asyncActionMixin],
   data() {
     return {

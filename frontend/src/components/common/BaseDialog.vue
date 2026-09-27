@@ -20,8 +20,10 @@
             v-for="button in buttons"
             :key="button.value"
             :variant="button.variant ?? 'neutral'"
+            :outline="button.outline"
             @click="handleClick(button)"
           >
+            <AppIcon v-if="button.icon" :name="button.icon" />
             {{ button.label }}
           </BaseButton>
         </slot>
@@ -34,11 +36,12 @@
 </template>
 
 <script>
+import AppIcon from '@/components/common/AppIcon.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 
 export default {
   name: 'BaseDialog',
-  components: { BaseButton },
+  components: { AppIcon, BaseButton },
   props: {
     title: { type: String, default: '' },
     description: { type: String, default: '' },

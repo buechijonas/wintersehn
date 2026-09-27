@@ -19,9 +19,12 @@
 
           <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
 
-          <div class="flex gap-4 mt-4">
+          <div class="flex justify-end gap-4 mt-4">
             <CancelButton to="/admin/countries" />
-            <BaseButton type="submit" variant="primary" :disabled="saving">Speichern</BaseButton>
+            <BaseButton type="submit" variant="primary" :disabled="saving">
+              <AppIcon name="disk" />
+              Speichern
+            </BaseButton>
           </div>
         </form>
       </BaseCard>
@@ -35,6 +38,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import CancelButton from '@/components/common/CancelButton.vue'
 import IconPickerField from '@/components/common/IconPickerField.vue'
 import { countries } from '@/assets/images.js'
@@ -48,6 +52,7 @@ export default {
     BaseCard,
     BaseFooter,
     BaseButton,
+    AppIcon,
     CancelButton,
     IconPickerField,
   },
