@@ -14,7 +14,6 @@
               <th>E-Mail</th>
               <th>Rolle</th>
               <th>Verifiziert</th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -52,13 +51,6 @@
                   @change="onUserVerifiedChange(user, $event)"
                 />
               </td>
-              <td class="text-right">
-                <DeleteButton
-                  v-if="authStore.user?.can_delete_user || user.id === authStore.user?.id"
-                  title="Löschen"
-                  @click="onDeleteUser(user)"
-                />
-              </td>
             </tr>
           </tbody>
         </table>
@@ -71,7 +63,6 @@
 <script>
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
-import DeleteButton from '@/components/common/DeleteButton.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -80,7 +71,7 @@ import asyncActionMixin from '@/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminUsersView',
-  components: { BaseBreadcrumbs, BaseFooter, DeleteButton },
+  components: { BaseBreadcrumbs, BaseFooter },
   mixins: [asyncActionMixin],
   data() {
     return {
@@ -122,18 +113,6 @@ export default {
     },
     onUserVerifiedChange(user, event) {
       return this.runAction(() => this.rbacStore.setUserVerified(user.id, event.target.checked))
-    },
-    async onDeleteUser(user) {
-      const isSelf = user.id === this.authStore.user?.id
-      const question = isSelf
-        ? 'Möchtest du dein eigenes Konto wirklich löschen?'
-        : `Möchtest du den Nutzer "${user.username}" wirklich löschen?`
-      if (!confirm(question)) return
-      await this.runAction(() => this.rbacStore.deleteUser(user.id))
-      if (isSelf && !this.error) {
-        this.authStore.user = null
-        this.$router.push('/')
-      }
     },
   },
 }

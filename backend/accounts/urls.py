@@ -18,7 +18,6 @@ urlpatterns = [
         "consent/<str:field>/", views.ConsentAcceptView.as_view(), name="consent-accept"
     ),
     path("users/", views.UserListView.as_view(), name="user-list"),
-    path("users/<int:pk>/", views.UserDetailView.as_view(), name="user-detail"),
     path("users/<int:pk>/role/", views.UserRoleView.as_view(), name="user-role"),
     path("users/<int:pk>/verify/", views.UserVerifyView.as_view(), name="user-verify"),
 ]
