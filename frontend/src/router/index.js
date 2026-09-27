@@ -42,6 +42,7 @@ import AdminArticlePostView from '@/views/AdminArticlePostView.vue'
 import AdminMediaView from '@/views/AdminMediaView.vue'
 import AdminMediaItemCreateView from '@/views/AdminMediaItemCreateView.vue'
 import AdminRolesView from '@/views/AdminRolesView.vue'
+import AdminRoleCreateView from '@/views/AdminRoleCreateView.vue'
 import AdminUsersView from '@/views/AdminUsersView.vue'
 
 const router = createRouter({
@@ -201,6 +202,12 @@ const router = createRouter({
       name: 'admin-roles',
       component: AdminRolesView,
       meta: { requiresAuth: true, permission: 'can_view_admin', activeNavigation: 'admin' },
+    },
+    {
+      path: '/admin/roles/create',
+      name: 'admin-role-create',
+      component: AdminRoleCreateView,
+      meta: { requiresAuth: true, permission: 'can_add_role', activeNavigation: 'admin' },
     },
     {
       path: '/admin/users',

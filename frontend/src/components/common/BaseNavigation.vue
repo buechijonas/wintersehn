@@ -53,10 +53,10 @@
           to="/login"
           @click="isNavDrawerOpen = false"
         >
-          <img :src="icons.enter" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Anmelden
+          <AppIcon name="enter" />Anmelden
         </BaseButton>
         <BaseButton v-else variant="primary" block to="/logout" @click="isNavDrawerOpen = false">
-          <img :src="icons.exit" alt="" class="nav-icon mr-2 size-5 shrink-0 invert" />Abmelden
+          <AppIcon name="exit" />Abmelden
         </BaseButton>
       </div>
     </div>
@@ -66,6 +66,7 @@
 <script>
 import { RouterLink } from 'vue-router'
 import BaseButton from '@/components/common/BaseButton.vue'
+import AppIcon from '@/components/common/AppIcon.vue'
 import { icons } from '@/assets/icons.js'
 import { navigationItems } from '@/data/navigation.js'
 import { isNavDrawerOpen } from '@/lib/navDrawer.js'
@@ -74,7 +75,7 @@ import packageJson from '../../../package.json'
 
 export default {
   name: 'BaseNavigation',
-  components: { RouterLink, BaseButton },
+  components: { RouterLink, BaseButton, AppIcon },
   props: {
     activeNavigation: {
       type: String,

@@ -57,7 +57,7 @@
                     title="Verlinken"
                     @click="addLink(sectionIndex)"
                   >
-                    <AppIcon name="link-alt" class="size-4" alt="Verlinken" />
+                    <AppIcon name="link-alt" alt="Verlinken" />
                   </BaseButton>
                   <BaseButton
                     type="button"
@@ -66,7 +66,7 @@
                     title="Entlinken"
                     @click="removeLink(sectionIndex)"
                   >
-                    <AppIcon name="link-slash-alt" class="size-4" alt="Entlinken" />
+                    <AppIcon name="link-slash-alt" alt="Entlinken" />
                   </BaseButton>
                 </div>
                 <DeleteButton

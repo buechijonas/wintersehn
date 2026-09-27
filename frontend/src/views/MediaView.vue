@@ -18,7 +18,7 @@
             <div class="my-auto">{{ item.name }}</div>
           </div>
           <BaseButton variant="ghost" shape="square" :href="item.url">
-            <AppIcon class="size-[1.2em]" alt="open" name="share-square" />
+            <AppIcon name="share-square" alt="open" />
           </BaseButton>
         </li>
       </BaseCard>

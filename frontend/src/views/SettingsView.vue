@@ -26,7 +26,7 @@
                   <span class="truncate min-w-0">{{ authStore.user.email }}</span>
                 </p>
               </div>
-              <BaseButton to="/settings/account" class="shrink-0">Bearbeiten</BaseButton>
+              <EditButton to="/settings/account" class="shrink-0" />
             </BaseCard>
           </div>
         </div>
@@ -35,7 +35,7 @@
           <h3 class="text-xl my-4">Passwort</h3>
           <BaseCard class="p-6 flex items-center justify-between gap-4">
             <p class="text-wntrs-muted">Passwort ändern oder zurücksetzen (bei govex).</p>
-            <BaseButton @click="authStore.openGovexAccount()">Ändern</BaseButton>
+            <EditButton class="shrink-0" @click="authStore.openGovexAccount()" />
           </BaseCard>
         </div>
       </template>
@@ -56,12 +56,7 @@
               :variant="themeMode === option.value ? 'primary' : 'neutral'"
               @click="themeMode = option.value"
             >
-              <AppIcon
-                :name="option.icon"
-                class="size-4"
-                :class="{ invert: themeMode === option.value }"
-                alt=""
-              />
+              <AppIcon :name="option.icon" />
               {{ option.label }}
             </BaseButton>
           </div>
@@ -112,6 +107,7 @@ import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import AppIcon from '@/components/common/AppIcon.vue'
+import EditButton from '@/components/common/EditButton.vue'
 import { profiles } from '@/assets/images.js'
 import { icons } from '@/assets/icons.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -121,7 +117,7 @@ import { contrastMode } from '@/lib/contrast.js'
 
 export default {
   name: 'SettingsView',
-  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon },
+  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon, EditButton },
   data() {
     return {
       icons,
