@@ -3,7 +3,14 @@
   <div class="flex h-[calc(100dvh-192px)] px-6">
     <div class="flex flex-col mx-auto my-32">
       <h1 class="text-title my-8 text-center font-light">Herzlich Willkommen</h1>
-      <div v-if="authStore.isAuthenticated" class="flex items-center gap-4 mx-auto mb-8">
+      <div v-if="!authStore.ready" class="flex items-center gap-4 mx-auto mb-8">
+        <div class="skeleton size-16 rounded-full"></div>
+        <div class="flex flex-col gap-2">
+          <div class="skeleton h-4 w-20"></div>
+          <div class="skeleton h-4 w-28"></div>
+        </div>
+      </div>
+      <div v-else-if="authStore.isAuthenticated" class="flex items-center gap-4 mx-auto mb-8">
         <img class="size-16" :src="avatarSrc" alt="" />
         <div class="flex flex-col gap-1 items-start">
           <span class="badge badge-primary badge-sm">{{ authStore.user.role ?? 'Keine Rolle' }}</span>

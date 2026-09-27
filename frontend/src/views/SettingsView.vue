@@ -4,7 +4,11 @@
     <div class="mx-auto w-full max-w-150">
       <h2 class="text-xl font-light my-4">Einstellungen</h2>
 
-      <div v-if="authStore.isAuthenticated" class="mb-10">
+      <div v-if="!authStore.ready" class="mb-10">
+        <div class="skeleton my-5 h-5 w-24"></div>
+        <div class="skeleton h-24 w-full rounded-box"></div>
+      </div>
+      <div v-else-if="authStore.isAuthenticated" class="mb-10">
         <h3 class="text-xl my-4">Konto</h3>
         <BaseCard class="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <p class="text-wntrs-muted min-w-0">

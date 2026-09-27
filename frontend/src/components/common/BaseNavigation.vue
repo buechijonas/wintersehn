@@ -1,6 +1,7 @@
 <template>
   <div class="app-nav col-start-2 row-start-1 hidden h-12 w-80 items-center pl-8 lg:flex">
-    <h1 class="text-[1.2rem]">{{ displayName }}</h1>
+    <div v-if="!authStore.ready" class="skeleton h-5 w-40"></div>
+    <h1 v-else class="text-[1.2rem]">{{ displayName }}</h1>
   </div>
   <div class="col-start-2 row-start-1 drawer drawer-end lg:drawer-open">
     <input id="my-drawer-3" v-model="isNavDrawerOpen" type="checkbox" class="drawer-toggle" />
@@ -9,7 +10,15 @@
       class="app-nav drawer-side flex flex-col overflow-y-auto bg-base-100 top-12 h-[calc(100dvh-48px)]"
     >
       <label for="my-drawer-3" aria-label="close sidebar" class="drawer-overlay"></label>
-      <ul class="menu w-full lg:w-80 p-4 gap-2">
+      <ul v-if="!authStore.ready" class="menu w-full lg:w-80 p-4 gap-2">
+        <li v-for="item in navigationItems" :key="item.key">
+          <div class="flex items-center gap-3 p-4">
+            <div class="skeleton size-5 shrink-0"></div>
+            <div class="skeleton h-4 w-28"></div>
+          </div>
+        </li>
+      </ul>
+      <ul v-else class="menu w-full lg:w-80 p-4 gap-2">
         <li v-for="item in navigationItems" :key="item.key">
           <component
             :is="isLocked(item) ? 'span' : RouterLink"
@@ -41,7 +50,12 @@
           </li>
         </template>
       </ul>
-      <div class="mt-auto p-4 w-full">
+      <div v-if="!authStore.ready" class="mt-auto flex w-full flex-col gap-1 p-4">
+        <div class="skeleton h-3 w-20"></div>
+        <div class="skeleton mb-4 h-3 w-32"></div>
+        <div class="skeleton h-10 w-full"></div>
+      </div>
+      <div v-else class="mt-auto p-4 w-full">
         <div class="mb-4 text-xs text-wntrs-muted font-light">
           <div>Version {{ version }}</div>
           <div>Created by Wintersehn</div>
