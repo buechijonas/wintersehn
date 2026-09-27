@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from content.rbac import can_grant_permissions
 
+from .consent import CONSENT_FIELDS, push_to_govex
 from .models import UserConsent, get_or_create_profile
 from .serializers import (
     ConsentSerializer,
@@ -16,7 +17,6 @@ from .serializers import (
     UserSerializer,
 )
 
-CONSENT_FIELDS = {"privacy", "terms", "disclaimer"}
 User = get_user_model()
 
 
@@ -37,6 +37,7 @@ class ConsentAcceptView(APIView):
         consent, _ = UserConsent.objects.get_or_create(user=request.user)
         setattr(consent, field, True)
         consent.save(update_fields=[field])
+        push_to_govex(request.user)
         return Response(ConsentSerializer(consent).data)
 
 

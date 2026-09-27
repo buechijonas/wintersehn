@@ -11,7 +11,7 @@ User = get_user_model()
 class ConsentSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserConsent
-        fields = ["privacy", "terms", "disclaimer"]
+        fields = ["privacy", "terms", "disclaimer", "cookies"]
 
 
 class UserSerializer(serializers.ModelSerializer):

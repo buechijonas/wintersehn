@@ -72,6 +72,14 @@ if not DEBUG and not all(
         "GOVEX_REDIRECT_URI must be set in the environment when DJANGO_DEBUG=false."
     )
 
+# Signs the consent status handed to govex (see accounts/consent.py). An EC
+# P-256 private key in PEM; generate one with `manage.py consent_signing_key`.
+CONSENT_PRIVATE_KEY = os.getenv("CONSENT_PRIVATE_KEY", "").replace("\\n", "\n")
+if not DEBUG and not CONSENT_PRIVATE_KEY:
+    raise ImproperlyConfigured(
+        "CONSENT_PRIVATE_KEY must be set in the environment when DJANGO_DEBUG=false."
+    )
+
 # Caddy terminates TLS and talks plain HTTP to this container, marking the
 # original scheme in this header so Django knows the outer request was HTTPS.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

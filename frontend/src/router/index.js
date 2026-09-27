@@ -390,6 +390,7 @@ const CONSENT_GATES = [
   { field: 'privacy', path: '/privacy' },
   { field: 'terms', path: '/terms' },
   { field: 'disclaimer', path: '/disclaimer' },
+  { field: 'cookies', path: '/cookies' },
 ]
 
 router.beforeEach((to) => {
