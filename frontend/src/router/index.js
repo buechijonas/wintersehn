@@ -336,6 +336,56 @@ const router = createRouter({
   ],
 })
 
+const PAGE_TITLES = {
+  home: 'Dashboard',
+  media: 'Medien',
+  article: 'Artikeln',
+  'article-post': 'Artikel',
+  about: 'Über mich',
+  ethos: 'Ethos',
+  cv: 'Lebenslauf',
+  'cv-section': 'Lebenslauf',
+  countries: 'Länder',
+  'country-detail': 'Länder',
+  'album-detail': 'Länder',
+  projects: 'Projekte',
+  impressum: 'Impressum',
+  privacy: 'Datenschutzerklärung',
+  terms: 'Nutzungsrichtlinien',
+  disclaimer: 'Haftungsausschluss',
+  cookies: 'Cookierichtlinien',
+  login: 'Anmelden',
+  logout: 'Abmelden',
+  'verify-pending': 'Verifizierung ausstehend',
+  settings: 'Einstellungen',
+  'settings-account': 'Konto bearbeiten',
+  admin: 'Admin',
+  'admin-address': 'Adresse',
+  'admin-roles': 'Rollen & Rechte',
+  'admin-role-create': 'Neue Rolle',
+  'admin-users': 'Nutzer',
+  'admin-ethos': 'Ethos',
+  'admin-ethos-item-create': 'Neuer Eintrag',
+  'admin-countries': 'Länder',
+  'admin-countries-item-create': 'Neuer Eintrag',
+  'admin-country-albums': 'Alben',
+  'admin-album-edit': 'Album',
+  'admin-cv': 'Lebenslauf',
+  'admin-cv-entry-create': 'Neuer Eintrag',
+  'admin-cv-section': 'Lebenslauf',
+  'admin-article': 'Artikeln',
+  'admin-article-item-create': 'Neuer Artikel',
+  'admin-article-post': 'Artikel',
+  'admin-media': 'Medien',
+  'admin-media-item-create': 'Neuer Eintrag',
+  'admin-impressum': 'Impressum',
+  'admin-privacy': 'Datenschutzerklärung',
+  'admin-cookies': 'Cookierichtlinien',
+  'admin-terms': 'Nutzungsrichtlinien',
+  'admin-disclaimer': 'Haftungsausschluss',
+  'admin-content': 'Admin',
+}
+
 const CONSENT_GATES = [
   { field: 'privacy', path: '/privacy' },
   { field: 'terms', path: '/terms' },
@@ -376,6 +426,11 @@ router.beforeEach(async (to) => {
   }
 
   return true
+})
+
+router.afterEach((to) => {
+  const title = PAGE_TITLES[to.name]
+  document.title = title ? `${title} – Wintersehn` : 'Wintersehn'
 })
 
 export default router
