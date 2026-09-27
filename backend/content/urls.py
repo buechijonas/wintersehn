@@ -9,5 +9,8 @@ urlpatterns = [
     path(
         "uploads/", views.ContentImageUploadView.as_view(), name="content-image-upload"
     ),
+    path(
+        "images/<str:name>/", views.ImageThumbnailView.as_view(), name="content-image-thumbnail"
+    ),
     path("<slug:key>/", views.SiteContentView.as_view(), name="site-content"),
 ]

@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import Group
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404
 from PIL import Image
 from rest_framework import status
@@ -13,6 +14,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .images import THUMBNAIL_SIZES, UPLOAD_NAME, build_thumbnail, thumbnail_path
 from .models import SiteContent
 from .rbac import can_grant_permissions, managed_permissions_queryset, set_role_permissions
 from .rbac_serializers import PermissionSerializer, RoleSerializer
@@ -129,6 +131,32 @@ class ContentImageUploadView(APIView):
         return Response(
             {"url": f"{settings.MEDIA_URL}{saved_path}"}, status=status.HTTP_201_CREATED
         )
+
+
+class ImageThumbnailView(APIView):
+    """Square WebP thumbnail of an upload, built on first request and cached."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, name):
+        try:
+            size = int(request.query_params.get("size", ""))
+        except ValueError:
+            raise Http404
+        if not UPLOAD_NAME.match(name) or size not in THUMBNAIL_SIZES:
+            raise Http404
+
+        source = settings.MEDIA_ROOT / "uploads" / name
+        if not source.is_file():
+            raise Http404
+
+        target = thumbnail_path(name, size)
+        if not target.is_file():
+            build_thumbnail(source, target, size)
+
+        response = FileResponse(target.open("rb"), content_type="image/webp")
+        response["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
 
 
 class PermissionListView(APIView):

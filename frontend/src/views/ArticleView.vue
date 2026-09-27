@@ -15,7 +15,7 @@
           <RouterLink :to="`/article/${post.slug}`" class="flex items-center gap-4 p-4 hover:bg-base-200">
             <img
               v-if="post.thumbnail"
-              :src="post.thumbnail"
+              v-bind="squareImage(post.thumbnail, 64)"
               alt=""
               class="size-16 rounded-box object-cover shrink-0"
             />
@@ -37,6 +37,7 @@ import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import { useContentStore } from '@/stores/content.js'
+import { squareImage } from '@/lib/image.js'
 
 export default {
   name: 'ArticleView',
@@ -59,6 +60,9 @@ export default {
   },
   mounted() {
     this.contentStore.fetchContent('article')
+  },
+  methods: {
+    squareImage,
   },
 }
 </script>
