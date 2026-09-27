@@ -94,6 +94,12 @@ class UserVerifyView(APIView):
         if not request.user.has_perm("content.change_user"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
+        if int(pk) == request.user.pk:
+            return Response(
+                {"detail": "Du kannst deine eigene Verifizierung nicht ändern."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         user = get_object_or_404(User, pk=pk)
         profile = get_or_create_profile(user)
         profile.verified = bool(request.data.get("verified"))

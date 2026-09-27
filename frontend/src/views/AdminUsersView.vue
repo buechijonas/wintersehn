@@ -47,7 +47,8 @@
                   type="checkbox"
                   class="checkbox"
                   :checked="user.verified"
-                  :disabled="!authStore.user?.can_change_user"
+                  :disabled="!!verifiedChangeBlockedReason(user)"
+                  :title="verifiedChangeBlockedReason(user)"
                   @change="onUserVerifiedChange(user, $event)"
                 />
               </td>
@@ -101,6 +102,11 @@ export default {
       if (currentRole && !this.canAssignRole(currentRole)) {
         return 'Du kannst die Rolle dieses Nutzers nicht ändern, da sie Rechte enthält, die du nicht besitzt.'
       }
+      return ''
+    },
+    verifiedChangeBlockedReason(user) {
+      if (user.id === this.authStore.user?.id) return 'Du kannst deine eigene Verifizierung nicht ändern.'
+      if (!this.authStore.user?.can_change_user) return 'Du hast keine Berechtigung, Nutzer zu verifizieren.'
       return ''
     },
     canAssignRole(role) {

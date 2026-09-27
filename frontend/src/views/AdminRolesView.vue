@@ -28,12 +28,12 @@
                       :disabled="!authStore.user?.can_change_role"
                       @change="renameRole(role, $event)"
                     />
-                    <SaveButton class="shrink-0" @click="stopEditingRole(role.id)" />
                     <DeleteButton
                       v-if="authStore.user?.can_delete_role"
                       class="shrink-0"
-                      @click="removeRole(role)"
+                      @click="askRemoveRole(role)"
                     />
+                    <SaveButton class="shrink-0" @click="stopEditingRole(role.id)" />
                   </div>
                   <div v-else class="flex items-center justify-between gap-2">
                     <span class="font-medium truncate">{{ role.name }}</span>
@@ -96,6 +96,13 @@
       </div>
     </div>
   </div>
+  <ConfirmDialog
+    ref="confirmDialog"
+    :title="dialogTitle"
+    :message="dialogMessage"
+    @confirm="onConfirmDelete"
+  />
+
   <BaseFooter />
 </template>
 
@@ -103,6 +110,7 @@
 import BaseBreadcrumbs from '@/components/common/BaseBreadcrumbs.vue'
 import BaseFooter from '@/components/common/BaseFooter.vue'
 import DeleteButton from '@/components/common/DeleteButton.vue'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
 import AddButton from '@/components/common/AddButton.vue'
 import EditButton from '@/components/common/EditButton.vue'
 import SaveButton from '@/components/common/SaveButton.vue'
@@ -110,6 +118,7 @@ import { useAuthStore } from '@/stores/auth.js'
 import { useRbacStore } from '@/stores/rbac.js'
 import { icons } from '@/assets/icons.js'
 import asyncActionMixin from '@/mixins/asyncActionMixin.js'
+import confirmDeleteMixin from '@/mixins/confirmDeleteMixin.js'
 
 const PERMISSION_META = {
   add: { icon: 'add', iconFilterClass: 'icon-tint-success' },
@@ -153,11 +162,12 @@ export default {
     BaseBreadcrumbs,
     BaseFooter,
     DeleteButton,
+    ConfirmDialog,
     EditButton,
     SaveButton,
     AddButton,
   },
-  mixins: [asyncActionMixin],
+  mixins: [confirmDeleteMixin, asyncActionMixin],
   data() {
     return {
       icons,
@@ -252,8 +262,10 @@ export default {
         : [...role.permissions, codename]
       return this.runAction(() => this.rbacStore.setRolePermissions(role.id, next))
     },
-    removeRole(role) {
-      return this.runAction(() => this.rbacStore.deleteRole(role.id))
+    askRemoveRole(role) {
+      this.confirmRemoval('Rolle löschen', `Möchtest du "${role.name}" wirklich löschen?`, () =>
+        this.runAction(() => this.rbacStore.deleteRole(role.id)),
+      )
     },
     renameRole(role, event) {
       const name = event.target.value.trim()
