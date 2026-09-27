@@ -89,6 +89,7 @@ class UserConsent(models.Model):
     privacy = models.BooleanField(default=False)
     terms = models.BooleanField(default=False)
     disclaimer = models.BooleanField(default=False)
+    cookies = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Consent({self.user})"

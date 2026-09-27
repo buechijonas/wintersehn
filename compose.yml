@@ -56,6 +56,8 @@ services:
       GOVEX_CLIENT_SECRET: wintersehn-dev-secret
       GOVEX_REDIRECT_URI: http://localhost:8000/api/auth/oidc/callback/
       FRONTEND_URL: http://localhost:5173
+      # Dev-only key; production gets its own via CONSENT_PRIVATE_KEY in .env.
+      CONSENT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgpVJv0m39Ji0/wT/7\n37xarFQG3pV4fyrLw5BsQtekk2yhRANCAAQ3GaiyE0qkvPAeC4KfXCz9b3d1DakQ\n+bimnAbswixpvoxKACFN8M2DOjwDDJxSEd2O7hKELM98RG2hZHZ4E7dP\n-----END PRIVATE KEY-----"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,host.docker.internal
 
     depends_on:

@@ -15,12 +15,14 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from .consent import attested_consent, consent_of, push_to_govex
 from .models import AVATAR_CHOICES, UserProfile, get_or_create_profile
 
 User = get_user_model()
 
 # `govex` carries the pre-authentik govex user id of migrated accounts,
-# `govex_meta` the name, birthdate and avatar managed in govex.
+# `govex_meta` the name, birthdate and avatar managed in govex, plus the
+# consent status govex last got from us.
 SCOPE = "openid profile email govex govex_meta"
 
 MAX_CLOCK_SKEW_SECONDS = 300
@@ -186,6 +188,10 @@ def govex_callback(request):
     sync_meta(user, userinfo.get("meta"))
 
     login(request, user)
+    current = consent_of(user)
+    attested = attested_consent(userinfo.get("attestations", {}).get("wintersehn"))
+    if attested != current and any(current.values()):
+        push_to_govex(user)
     return redirect_to_frontend("/")
 
 
