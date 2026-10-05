@@ -55,7 +55,7 @@ const SECTION_LABELS = {
   ethos: 'Ethos',
   cv: 'Lebenslauf',
   countries: 'Länder',
-  media: 'Medien',
+  media: 'Kanäle',
   impressum: 'Impressum',
   privacy: 'Datenschutzerklärung',
   cookies: 'Cookierichtlinien',

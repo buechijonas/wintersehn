@@ -3,7 +3,7 @@
   <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
     <div class="mx-auto w-full max-w-200">
       <div class="flex items-center justify-between gap-4 my-4">
-        <h2 class="text-xl">Medien</h2>
+        <h2 class="text-xl">Kanäle</h2>
         <AddButton
           v-if="canEdit"
           label="Abschnitt hinzufügen"
@@ -143,7 +143,7 @@ export default {
     return {
       breadcrumbs: [
         { label: 'Admin', to: '/admin' },
-        { label: 'Medien' },
+        { label: 'Kanäle' },
       ],
     }
   },

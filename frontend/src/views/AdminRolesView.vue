@@ -148,7 +148,7 @@ const RESOURCE_LABELS = {
   ethos: 'Ethos',
   cv: 'Lebenslauf',
   countries: 'Länder',
-  media: 'Medien',
+  media: 'Kanäle',
   role: 'Rollen',
   permission: 'Berechtigungen',
   user: 'Nutzer',

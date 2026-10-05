@@ -96,7 +96,7 @@ export default {
     breadcrumbs() {
       return [
         { label: 'Admin', to: '/admin' },
-        { label: 'Medien', to: '/admin/media' },
+        { label: 'Kanäle', to: '/admin/media' },
         { label: this.section?.title ?? '…' },
       ]
     },
