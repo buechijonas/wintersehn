@@ -1,0 +1,19 @@
+# Security policy for wintersehn.ch (RFC 9116)
+#
+# We welcome responsible security research (ethical hacking) on
+# wintersehn.ch. We will not pursue legal action against anyone who searches
+# for vulnerabilities in good faith and follows the rules below.
+#
+# Rules:
+#  - Report findings promptly to security@wintersehn.ch and give us
+#    reasonable time (90 days) to fix them before any public disclosure.
+#  - Only access, modify or delete data as far as needed to demonstrate the
+#    issue; never touch other users' data and delete anything you obtained.
+#  - No denial of service, spam, social engineering or physical attacks.
+#  - Use your own test accounts; do not degrade the service for others.
+#  - Include steps to reproduce, affected URLs and the potential impact.
+
+Contact: mailto:security@wintersehn.ch
+Expires: 2027-10-05T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://wintersehn.ch/.well-known/security.txt
