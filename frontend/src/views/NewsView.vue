@@ -4,7 +4,7 @@
     class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1"
   >
     <div class="mx-auto w-full max-w-150">
-      <h2 class="text-xl font-light mt-4 mb-1">Informationsblase</h2>
+      <h2 class="text-xl font-light mt-4 mb-1">Medien</h2>
       <p class="text-wntrs-muted text-sm">
         Die Medien, denen ich vertraue und die ich regelmässig konsumiere.
       </p>
@@ -47,7 +47,7 @@ export default {
   components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon },
   data() {
     return {
-      breadcrumbs: [{ label: 'News', to: '/' }],
+      breadcrumbs: [{ label: 'Medien', to: '/' }],
     }
   },
   computed: {

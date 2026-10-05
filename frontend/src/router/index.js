@@ -345,10 +345,10 @@ const router = createRouter({
 
 const PAGE_TITLES = {
   home: 'Dashboard',
-  media: 'Medien',
+  media: 'Kanäle',
   article: 'Artikeln',
   'article-post': 'Artikel',
-  news: 'News',
+  news: 'Medien',
   about: 'Über mich',
   ethos: 'Ethos',
   cv: 'Lebenslauf',
@@ -384,7 +384,7 @@ const PAGE_TITLES = {
   'admin-article': 'Artikeln',
   'admin-article-item-create': 'Neuer Artikel',
   'admin-article-post': 'Artikel',
-  'admin-media': 'Medien',
+  'admin-media': 'Kanäle',
   'admin-media-item-create': 'Neuer Eintrag',
   'admin-impressum': 'Impressum',
   'admin-privacy': 'Datenschutzerklärung',

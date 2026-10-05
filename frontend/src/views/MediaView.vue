@@ -43,7 +43,7 @@ export default {
   data() {
     return {
       social,
-      breadcrumbs: [{ label: 'Medien', to: '/' }],
+      breadcrumbs: [{ label: 'Kanäle', to: '/' }],
     }
   },
   computed: {
