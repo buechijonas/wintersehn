@@ -13,7 +13,7 @@
       <ul v-if="!authStore.ready" class="menu w-full lg:w-80 p-4 gap-2">
         <li v-for="item in navigationItems" :key="item.key">
           <div class="flex items-center gap-3 p-4">
-            <div class="skeleton size-5 shrink-0"></div>
+            <div class="skeleton size-6 lg:size-5 shrink-0"></div>
             <div class="skeleton h-4 w-28"></div>
           </div>
         </li>
@@ -30,7 +30,7 @@
             }"
             @click="isNavDrawerOpen = false"
           >
-            <img :src="icons[item.icon]" alt="" class="nav-icon size-5 shrink-0" />
+            <img :src="icons[item.icon]" alt="" class="nav-icon size-6 lg:size-5 shrink-0" />
             <span>{{ item.label }}</span>
             <img v-if="isLocked(item)" :src="icons.lock" alt="" class="lock-icon size-3 shrink-0" />
           </component>
@@ -44,7 +44,7 @@
               :class="{ 'active bg-wntrs-highlight text-primary': activeNavigation === 'admin' }"
               @click="isNavDrawerOpen = false"
             >
-              <img :src="icons.crown" alt="" class="nav-icon size-5 shrink-0" />
+              <img :src="icons.crown" alt="" class="nav-icon size-6 lg:size-5 shrink-0" />
               <span>Admin</span>
             </RouterLink>
           </li>

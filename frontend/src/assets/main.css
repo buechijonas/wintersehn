@@ -25,6 +25,10 @@
   --text-title: 2.5rem;
 }
 
+:root {
+  --footer-height: calc(3.5rem + env(safe-area-inset-bottom));
+}
+
 [data-theme="dark"] {
   --color-wntrs-muted: #8b96a3;
   --color-wntrs-slate: #a7b6c8;
@@ -128,10 +132,6 @@
 
 [data-contrast="on"] .app-topbar {
   border-bottom: 1px solid var(--wntrs-contrast-primary-border);
-}
-
-[data-contrast="on"] .app-topbar .btn {
-  border-color: var(--wntrs-contrast-primary-border);
 }
 
 [data-contrast="on"] .app-nav-accent {
