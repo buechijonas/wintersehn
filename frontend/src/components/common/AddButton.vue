@@ -8,10 +8,10 @@
     shape="circle"
     :to="to"
     :title="label"
-    class="fixed bottom-18 right-6 z-5 size-14 lg:hidden"
+    class="fixed bottom-[calc(var(--footer-height)+1.5rem)] right-6 z-5 size-14 lg:hidden"
     @click="$emit('click')"
   >
-    <AppIcon name="plus" :alt="label" />
+    <AppIcon name="plus" :alt="label" class="size-6!" />
   </BaseButton>
 </template>
 
