@@ -10,25 +10,15 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 
 from django.core.exceptions import ImproperlyConfigured
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# The fallback below is committed to the repo, so it is public - fine for local
-# dev, but refuse to start with it once DEBUG is off, instead of silently
-# running production with a secret key anyone can read on GitHub.
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
     if not DEBUG:
@@ -46,18 +36,18 @@ CSRF_TRUSTED_ORIGINS = os.getenv(
 ).split(",")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+MONOLITH_URL = os.getenv("MONOLITH_URL", "http://localhost:5172")
 
-# govex is the identity provider (OIDC). GOVEX_PUBLIC_URL is where the browser
-# is sent to log in; GOVEX_INTERNAL_URL is where this backend reaches govex for
-# the token/userinfo exchange. They only differ in local Docker dev, where
-# "localhost" inside this container isn't the host. GOVEX_ACCOUNT_URL is where
-# users change their password, username and email.
 GOVEX_PUBLIC_URL = os.getenv("GOVEX_PUBLIC_URL")
 GOVEX_ACCOUNT_URL = os.getenv("GOVEX_ACCOUNT_URL")
 GOVEX_INTERNAL_URL = os.getenv("GOVEX_INTERNAL_URL", GOVEX_PUBLIC_URL)
 GOVEX_CLIENT_ID = os.getenv("GOVEX_CLIENT_ID")
 GOVEX_CLIENT_SECRET = os.getenv("GOVEX_CLIENT_SECRET")
 GOVEX_REDIRECT_URI = os.getenv("GOVEX_REDIRECT_URI")
+GOVEX_API_TOKEN = os.getenv("GOVEX_API_TOKEN")
+SWISSFY_INTERNAL_URL = os.getenv("SWISSFY_INTERNAL_URL")
+SWISSFY_API_TOKEN = os.getenv("SWISSFY_API_TOKEN")
+SWISSFY_PUBLIC_URL = os.getenv("SWISSFY_PUBLIC_URL")
 if not DEBUG and not all(
     [
         GOVEX_PUBLIC_URL,
@@ -72,22 +62,25 @@ if not DEBUG and not all(
         "GOVEX_REDIRECT_URI must be set in the environment when DJANGO_DEBUG=false."
     )
 
-# Signs the consent status handed to govex (see accounts/consent.py). An EC
-# P-256 private key in PEM; generate one with `manage.py consent_signing_key`.
 CONSENT_PRIVATE_KEY = os.getenv("CONSENT_PRIVATE_KEY", "").replace("\\n", "\n")
 if not DEBUG and not CONSENT_PRIVATE_KEY:
     raise ImproperlyConfigured(
         "CONSENT_PRIVATE_KEY must be set in the environment when DJANGO_DEBUG=false."
     )
 
-# Caddy terminates TLS and talks plain HTTP to this container, marking the
-# original scheme in this header so Django knows the outer request was HTTPS.
+MONOLITH_ENCRYPTION_KEYS = [
+    key for key in os.getenv("MONOLITH_ENCRYPTION_KEYS", "").split(",") if key
+]
+MONOLITH_HASH_KEY = os.getenv("MONOLITH_HASH_KEY", "")
+if not DEBUG and not (MONOLITH_ENCRYPTION_KEYS and MONOLITH_HASH_KEY):
+    raise ImproperlyConfigured(
+        "MONOLITH_ENCRYPTION_KEYS and MONOLITH_HASH_KEY must be set in the environment "
+        "when DJANGO_DEBUG=false."
+    )
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
-
-
-# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -97,8 +90,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "accounts",
-    "content",
+    "wintersehn.accounts",
+    "wintersehn.content",
+    "monolith",
 ]
 
 REST_FRAMEWORK = {
@@ -108,6 +102,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_THROTTLE_RATES": {
+        "share_link_ip": "10/min",
+        "share_link": "60/hour",
+    },
 }
 
 CACHES = {
@@ -124,6 +122,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "monolith.middleware.AuditMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -147,10 +146,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "main.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -163,10 +158,6 @@ DATABASES = {
         "CONN_HEALTH_CHECKS": True,
     }
 }
-
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -183,10 +174,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
@@ -194,10 +181,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"

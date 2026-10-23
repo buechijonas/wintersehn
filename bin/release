@@ -1,14 +1,4 @@
 #!/usr/bin/env bash
-# Interactively cuts a release: asks for the bump type (patch/minor/
-# major), bumps frontend/package.json accordingly, builds and pushes
-# the production Docker images to Docker Hub, and creates a GitHub
-# release whose title carries the bump type and whose body lists the
-# commit messages since the previous release.
-#
-# Usage: bin/release
-#
-# Requirements: docker (with buildx), gh (authenticated), a clean
-# working tree on an up-to-date main branch.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -42,7 +32,7 @@ select bump in "patch" "minor" "major"; do
   esac
 done
 
-current_version="$(grep -m1 '"version"' frontend/package.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')"
+current_version="$(grep -m1 '"version"' wintersehn/package.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')"
 IFS='.' read -r major minor patch <<<"$current_version"
 
 case "$bump" in
@@ -88,8 +78,8 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
   exit 1
 fi
 
-sed -i '' -E "s/(\"version\": *\")[^\"]+(\")/\1$new_version\2/" frontend/package.json
-git add frontend/package.json
+sed -i '' -E "s/(\"version\": *\")[^\"]+(\")/\1$new_version\2/" wintersehn/package.json
+git add wintersehn/package.json
 git commit -m "chore: bump version to $tag"
 git push origin main
 
@@ -101,9 +91,10 @@ docker buildx build --platform linux/amd64 \
 
 echo "==> Building and pushing proxy image"
 docker buildx build --platform linux/amd64 \
-  -f frontend/Dockerfile.prod \
+  -f wintersehn/Dockerfile.prod \
+  --build-context core=./core \
   -t "$PROXY_IMAGE:latest" -t "$PROXY_IMAGE:$tag" \
-  --push ./frontend
+  --push ./wintersehn
 
 bump_upper="$(echo "$bump" | tr '[:lower:]' '[:upper:]')"
 

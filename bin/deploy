@@ -1,16 +1,4 @@
 #!/usr/bin/env bash
-# Deploys the latest images with near-zero downtime for the backend
-# service: starts a second backend container on the new image, waits
-# for it to report healthy via its Docker healthcheck, then removes
-# the old one. origin/anubis/edge are recreated normally afterwards -
-# they're small, fast-starting Caddy/Go binaries, so their restart is
-# effectively instant.
-#
-# Usage: ./deploy (run from the same directory as compose.prod.yml,
-# e.g. /opt/wintersehn on the server)
-#
-# Requirements: docker compose, the backend service in
-# compose.prod.yml must have a healthcheck configured.
 set -euo pipefail
 
 cd "$(dirname "$0")"

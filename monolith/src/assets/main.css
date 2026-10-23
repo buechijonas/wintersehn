@@ -1,0 +1,44 @@
+@import 'tailwindcss';
+@import '../../../core/src/assets/base.css';
+@plugin "daisyui";
+@source "../../../core/src";
+
+@plugin "daisyui/theme" {
+  name: 'wntrs';
+  default: true;
+
+  --color-primary: #798291;
+  --color-primary-content: #ffffff;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: 'dark';
+  prefersdark: true;
+
+  --color-primary: #798291;
+  --color-primary-content: #ffffff;
+  --depth: 0;
+  --noise: 0;
+}
+
+@theme {
+  --color-wntrs-highlight: #e4e6e9;
+}
+
+:root {
+  --footer-height: env(safe-area-inset-bottom);
+  --icon-tint-primary: brightness(0) saturate(100%) invert(53%) sepia(10%) saturate(531%)
+    hue-rotate(179deg) brightness(94%) contrast(87%);
+}
+
+[data-theme='dark'] {
+  --color-wntrs-highlight: #2f363f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-wntrs-highlight: #2f363f;
+  }
+}

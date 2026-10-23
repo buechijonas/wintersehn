@@ -42,6 +42,8 @@ services:
       GOVEX_REDIRECT_URI: https://${DOMAIN}/api/auth/oidc/callback/
       FRONTEND_URL: https://${DOMAIN}
       CONSENT_PRIVATE_KEY: ${CONSENT_PRIVATE_KEY:?see .env.example}
+      MONOLITH_ENCRYPTION_KEYS: ${MONOLITH_ENCRYPTION_KEYS:?see .env.example}
+      MONOLITH_HASH_KEY: ${MONOLITH_HASH_KEY:?see .env.example}
 
     volumes:
       - backend_media:/app/media

@@ -25,8 +25,9 @@ from . import views
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("api/health/", views.health, name="health"),
-    path("api/auth/", include("accounts.urls")),
-    path("api/content/", include("content.urls")),
+    path("api/auth/", include("wintersehn.accounts.urls")),
+    path("api/content/", include("wintersehn.content.urls")),
+    path("api/monolith/", include("monolith.urls")),
     path(
         "media/<path:path>",
         serve,

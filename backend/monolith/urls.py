@@ -1,0 +1,128 @@
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("dossiers/", views.DossierListCreateView.as_view(), name="dossier-list"),
+    path(
+        "dossiers/<uuid:uuid>/",
+        views.DossierDetailView.as_view(),
+        name="dossier-detail",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/relationships/",
+        views.RelationshipListCreateView.as_view(),
+        name="dossier-relationships",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/relationships/<uuid:person>/",
+        views.RelationshipDetailView.as_view(),
+        name="dossier-relationship",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/",
+        views.EventListCreateView.as_view(),
+        name="dossier-events",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/",
+        views.EventDetailView.as_view(),
+        name="dossier-event",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/links/",
+        views.EventLinksView.as_view(),
+        name="dossier-event-links",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/addictions/",
+        views.AddictionListCreateView.as_view(),
+        name="dossier-addictions",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/addictions/<str:kind>/",
+        views.AddictionDetailView.as_view(),
+        name="dossier-addiction",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/references/",
+        views.ReferenceListCreateView.as_view(),
+        name="dossier-references",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/references/<uuid:reference>/",
+        views.ReferenceDetailView.as_view(),
+        name="dossier-reference",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/stances/",
+        views.StanceListView.as_view(),
+        name="dossier-stances",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/stances/summary/",
+        views.StanceSummaryView.as_view(),
+        name="dossier-stance-summary",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/stances/<str:topic>/",
+        views.StanceDetailView.as_view(),
+        name="dossier-stance",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/trust/",
+        views.TrustEntryListCreateView.as_view(),
+        name="dossier-trust",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/trust/<uuid:entry>/",
+        views.TrustEntryDetailView.as_view(),
+        name="dossier-trust-entry",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/govex/",
+        views.DossierGovexView.as_view(),
+        name="dossier-govex",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/swissfy/",
+        views.DossierSwissfyView.as_view(),
+        name="dossier-swissfy",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/swissfy/picture/",
+        views.DossierSwissfyPictureView.as_view(),
+        name="dossier-swissfy-picture",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/shares/",
+        views.ShareListCreateView.as_view(),
+        name="dossier-shares",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/shares/<uuid:share>/",
+        views.ShareDetailView.as_view(),
+        name="dossier-share",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/shares/<uuid:share>/preview/",
+        views.SharePreviewView.as_view(),
+        name="dossier-share-preview",
+    ),
+    path("shared/", views.SharedListView.as_view(), name="shared"),
+    path(
+        "shared/<uuid:share>/",
+        views.SharedDetailView.as_view(),
+        name="shared-detail",
+    ),
+    path("share/<str:token>/", views.SharedLinkView.as_view(), name="shared-link"),
+    path("network/", views.NetworkView.as_view(), name="network"),
+    path(
+        "network/settings/",
+        views.NetworkSettingsView.as_view(),
+        name="network-settings",
+    ),
+    path("trust/", views.TrustView.as_view(), name="trust"),
+    path("trust/<uuid:uuid>/", views.TrustDetailView.as_view(), name="trust-detail"),
+    path("govex/", views.GovexSearchView.as_view(), name="govex-search"),
+]
