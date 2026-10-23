@@ -50,7 +50,11 @@
 	}
 
 	handle {
-		root * /srv
+		map {header.X-Wintersehn-App} {app_root} {
+			monolith /srv/monolith
+			default /srv/wintersehn
+		}
+		root * {app_root}
 		try_files {path} /index.html
 		file_server
 	}

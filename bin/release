@@ -93,6 +93,7 @@ echo "==> Building and pushing proxy image"
 docker buildx build --platform linux/amd64 \
   -f wintersehn/Dockerfile.prod \
   --build-context core=./core \
+  --build-context monolith=./monolith \
   -t "$PROXY_IMAGE:latest" -t "$PROXY_IMAGE:$tag" \
   --push ./wintersehn
 

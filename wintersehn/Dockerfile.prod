@@ -1,4 +1,4 @@
-FROM node:24-alpine AS build
+FROM node:24-alpine AS wintersehn-build
 
 WORKDIR /app
 
@@ -11,8 +11,23 @@ COPY --from=core . /core
 
 RUN npm run build
 
+FROM node:24-alpine AS monolith-build
+
+WORKDIR /app
+
+COPY --from=monolith package*.json ./
+
+RUN npm ci
+
+COPY --from=monolith index.html jsconfig.json vite.config.js ./
+COPY --from=monolith src ./src
+COPY --from=core . /core
+
+RUN npm run build
+
 FROM caddy:2-alpine
 
-COPY --from=build /app/dist /srv
+COPY --from=wintersehn-build /app/dist /srv/wintersehn
+COPY --from=monolith-build /app/dist /srv/monolith
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY Caddyfile.edge /etc/caddy/Caddyfile.edge
