@@ -25,8 +25,9 @@ services:
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DJANGO_DEBUG: "false"
-      DJANGO_ALLOWED_HOSTS: ${DOMAIN},backend,localhost
-      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN}
+      DJANGO_ALLOWED_HOSTS: ${DOMAIN},monolith.${DOMAIN},backend,localhost
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN},https://monolith.${DOMAIN}
+      DJANGO_COOKIE_DOMAIN: .${DOMAIN}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -41,6 +42,7 @@ services:
       GOVEX_CLIENT_SECRET: ${GOVEX_CLIENT_SECRET}
       GOVEX_REDIRECT_URI: https://${DOMAIN}/api/auth/oidc/callback/
       FRONTEND_URL: https://${DOMAIN}
+      MONOLITH_URL: https://monolith.${DOMAIN}
       CONSENT_PRIVATE_KEY: ${CONSENT_PRIVATE_KEY:?see .env.example}
       MONOLITH_ENCRYPTION_KEYS: ${MONOLITH_ENCRYPTION_KEYS:?see .env.example}
       MONOLITH_HASH_KEY: ${MONOLITH_HASH_KEY:?see .env.example}

@@ -10,7 +10,7 @@ export async function apiFetch(url, options = {}) {
     credentials: 'include',
     headers: {
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-      ...(isUnsafe ? { 'X-CSRFToken': getCookie('csrftoken') } : {}),
+      ...(isUnsafe ? { 'X-CSRFToken': getCookie('wntrs_csrftoken') } : {}),
       ...options.headers,
     },
     ...options,
