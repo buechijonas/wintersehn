@@ -13,6 +13,10 @@ const countryModules = import.meta.glob("./images/countries/*.svg", {
   eager: true,
   import: "default",
 });
+const logoModules = import.meta.glob("./images/logos/*.svg", {
+  eager: true,
+  import: "default",
+});
 
 export const undraws = Object.fromEntries(
   Object.entries(undrawModules).map(([path, src]) => [
@@ -49,6 +53,13 @@ export const flatCategories = flatEntries.reduce(
 
 export const countries = Object.fromEntries(
   Object.entries(countryModules).map(([path, src]) => [
+    path.split("/").pop().replace(".svg", ""),
+    src,
+  ]),
+);
+
+export const logos = Object.fromEntries(
+  Object.entries(logoModules).map(([path, src]) => [
     path.split("/").pop().replace(".svg", ""),
     src,
   ]),
