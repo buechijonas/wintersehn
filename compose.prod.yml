@@ -49,6 +49,7 @@ services:
       SWISSFY_INTERNAL_URL: ${SWISSFY_INTERNAL_URL}
       SWISSFY_PUBLIC_URL: ${SWISSFY_PUBLIC_URL}
       SWISSFY_API_TOKEN: ${SWISSFY_API_TOKEN}
+      GOVEX_API_TOKEN: ${GOVEX_API_TOKEN}
 
     volumes:
       - backend_media:/app/media
