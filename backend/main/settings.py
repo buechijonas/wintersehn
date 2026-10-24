@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import base64
+import hashlib
 import os
 from pathlib import Path
 
@@ -77,6 +79,17 @@ if not DEBUG and not (MONOLITH_ENCRYPTION_KEYS and MONOLITH_HASH_KEY):
         "MONOLITH_ENCRYPTION_KEYS and MONOLITH_HASH_KEY must be set in the environment "
         "when DJANGO_DEBUG=false."
     )
+
+
+def derive_dev_key(purpose):
+    digest = hashlib.sha256(f"{SECRET_KEY}:{purpose}".encode()).digest()
+    return base64.urlsafe_b64encode(digest).decode()
+
+
+MONOLITH_ENCRYPTION_KEYS = MONOLITH_ENCRYPTION_KEYS or [
+    derive_dev_key("monolith-encryption")
+]
+MONOLITH_HASH_KEY = MONOLITH_HASH_KEY or derive_dev_key("monolith-hash")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG

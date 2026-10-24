@@ -59,8 +59,6 @@ services:
       FRONTEND_URL: http://localhost:5173
       MONOLITH_URL: http://localhost:5172
       CONSENT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgpVJv0m39Ji0/wT/7\n37xarFQG3pV4fyrLw5BsQtekk2yhRANCAAQ3GaiyE0qkvPAeC4KfXCz9b3d1DakQ\n+bimnAbswixpvoxKACFN8M2DOjwDDJxSEd2O7hKELM98RG2hZHZ4E7dP\n-----END PRIVATE KEY-----"
-      MONOLITH_ENCRYPTION_KEYS: H_nXWmaHYUUlfV3IU9rGQ2UYzmihvN0n8egcIAWebgQ=
-      MONOLITH_HASH_KEY: 0pDrHFMZ_B_d5TLxrXuW-0w6P2LAS55lOHzcThFa8pE
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,host.docker.internal
       DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5172,http://127.0.0.1:5172
 
