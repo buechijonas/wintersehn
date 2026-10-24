@@ -1,24 +1,29 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex h-[calc(100dvh-192px)] px-6">
-    <div class="flex flex-col mx-auto my-32">
-      <h1 class="text-title my-8 text-center font-light">Projekte</h1>
-      <p class="subtitle mx-auto text-wntrs-muted font-light">Inhalt folgt in Kürze.</p>
-    </div>
+  <div class="flex flex-col gap-4 pb-12 px-6 max-h-[calc(100dvh-101px)] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+    <CardCategory
+      v-for="category in projectCategories"
+      :key="category.title"
+      :title="category.title"
+      :items="category.items"
+    />
   </div>
   <BaseFooter />
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
+import CardCategory from '@/components/common/CardCategory.vue'
 import BaseFooter from '@core/components/common/BaseFooter.vue'
+import { projectCategories } from '@/data/projects.js'
 
 export default {
   name: 'ProjectsView',
-  components: { BaseBreadcrumbs, BaseFooter },
+  components: { BaseBreadcrumbs, CardCategory, BaseFooter },
   data() {
     return {
       breadcrumbs: [{ label: 'Projekte', to: '/' }],
+      projectCategories,
     }
   },
 }
