@@ -37,6 +37,10 @@ done
 
 if [[ "$status" != "healthy" ]]; then
   echo "error: new backend did not become healthy in time (status: $status). Rolling back." >&2
+  echo "==> Last log lines of the new backend:" >&2
+  docker logs --tail 80 "$new_id" >&2 || true
+  echo "==> Last health checks:" >&2
+  docker inspect -f '{{range .State.Health.Log}}{{.Output}}{{end}}' "$new_id" >&2 || true
   docker rm -f "$new_id" >/dev/null
   exit 1
 fi
