@@ -25,6 +25,7 @@ def fill_library(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ("monolith", "0015_chat_side"),
@@ -55,7 +56,7 @@ class Migration(migrations.Migration):
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
-        migrations.RunPython(fill_library, migrations.RunPython.noop),
+        migrations.RunPython(fill_library, migrations.RunPython.noop, atomic=True),
         migrations.RemoveField(model_name="chatimage", name="reference"),
         migrations.AlterField(
             model_name="chatimage",
