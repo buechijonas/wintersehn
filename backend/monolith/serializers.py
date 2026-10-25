@@ -5,13 +5,18 @@ from rest_framework.validators import UniqueValidator
 from .models import (
     Addiction,
     AddictionKind,
+    Attachment,
+    ChatMessage,
+    ChatParticipant,
     Dossier,
     Event,
+    EventReference,
     NetworkSettings,
     Reference,
     Relationship,
     Share,
     Stance,
+    Trait,
     Trust,
     TrustEntry,
     Visibility,
@@ -105,21 +110,29 @@ class StanceSerializer(serializers.ModelSerializer):
         fields = ["topic", "tag"]
 
 
+class TagsField(serializers.ListField):
+    child = serializers.CharField(max_length=60, trim_whitespace=True)
+    max_length = 30
+
+    def to_internal_value(self, data):
+        return list(dict.fromkeys(super().to_internal_value(data)))
+
+
 class TopicStanceSerializer(serializers.Serializer):
     topic = serializers.CharField(read_only=True)
-    tags = serializers.ListField(
-        child=serializers.CharField(max_length=60, trim_whitespace=True),
-        max_length=30,
-    )
+    tags = TagsField()
     value = serializers.IntegerField(read_only=True)
     suggestions = serializers.DictField(read_only=True)
 
-    def validate_tags(self, tags):
-        return list(dict.fromkeys(tags))
+
+class CharacterSerializer(serializers.Serializer):
+    tags = TagsField()
+    suggestions = serializers.DictField(read_only=True)
 
 
 class EventSerializer(serializers.ModelSerializer):
     stances = StanceSerializer(many=True, read_only=True)
+    traits = serializers.SlugRelatedField(many=True, read_only=True, slug_field="tag")
     addictions = AddictionSerializer(many=True, read_only=True)
     references = ReferenceSerializer(many=True, read_only=True)
     relationships = serializers.SerializerMethodField()
@@ -131,6 +144,7 @@ class EventSerializer(serializers.ModelSerializer):
             "title",
             "date",
             "stances",
+            "traits",
             "addictions",
             "references",
             "relationships",
@@ -144,21 +158,130 @@ class EventSerializer(serializers.ModelSerializer):
 
 
 class EventDetailSerializer(EventSerializer):
+    trust = serializers.SerializerMethodField()
+
     class Meta(EventSerializer.Meta):
-        fields = [*EventSerializer.Meta.fields, "text", "updated_at"]
+        fields = [*EventSerializer.Meta.fields, "text", "trust", "updated_at"]
         extra_kwargs = {
             **EventSerializer.Meta.extra_kwargs,
             "text": {"trim_whitespace": False},
         }
 
+    def get_trust(self, event):
+        impact = TrustEntry.objects.impact(self.context["request"].user, event)
+        return TrustImpactSerializer(impact).data
+
 
 class EventLinksSerializer(serializers.Serializer):
     stances = StanceSerializer(many=True)
+    traits = TagsField()
     addictions = serializers.ListField(
         child=serializers.ChoiceField(choices=AddictionKind.choices)
     )
     references = serializers.ListField(child=serializers.UUIDField())
     relationships = serializers.ListField(child=serializers.UUIDField())
+
+
+class UUIDRelatedField(serializers.SlugRelatedField):
+    def __init__(self, scope="reference", **kwargs):
+        self.scope = scope
+        super().__init__(slug_field="uuid", **kwargs)
+
+    def get_queryset(self):
+        return self.queryset.filter(**{self.scope: self.context[self.scope]})
+
+
+class ChatParticipantSerializer(serializers.ModelSerializer):
+    avatar = UUIDRelatedField(
+        queryset=Attachment.objects.all(), allow_null=True, required=False
+    )
+    dossier = serializers.SlugRelatedField(
+        slug_field="uuid",
+        queryset=Dossier.objects.all(),
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = ChatParticipant
+        fields = ["uuid", "name", "side", "health", "avatar", "dossier"]
+        extra_kwargs = {"name": {"trim_whitespace": True, "allow_blank": False}}
+
+    def to_representation(self, participant):
+        fight = self.context["fight"]
+        return {
+            **super().to_representation(participant),
+            "dossier": participant.dossier
+            and DossierSerializer(participant.dossier).data,
+            "remaining": fight["health"].get(participant.pk, participant.health),
+            "dealt": fight["dealt"][participant.pk],
+        }
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    sender = UUIDRelatedField(queryset=ChatParticipant.objects.all())
+    target = UUIDRelatedField(
+        queryset=ChatParticipant.objects.all(), allow_null=True, required=False
+    )
+    image = UUIDRelatedField(
+        queryset=Attachment.objects.all(), allow_null=True, required=False
+    )
+
+    class Meta:
+        model = ChatMessage
+        fields = ["uuid", "sender", "text", "image", "attack", "target"]
+        extra_kwargs = {"text": {"trim_whitespace": False}}
+
+    def validate(self, data):
+        sender = data.get("sender", self.instance and self.instance.sender)
+        target = data.get("target", self.instance and self.instance.target)
+        if target and target == sender:
+            raise serializers.ValidationError(
+                {"target": "Man kann sich nicht selbst angreifen."}
+            )
+        return data
+
+    def to_representation(self, message):
+        return {
+            **super().to_representation(message),
+            "remaining": self.context["fight"]["remaining"].get(message.pk),
+        }
+
+
+class EventReferenceSerializer(serializers.ModelSerializer):
+    links = UUIDRelatedField(
+        scope="event",
+        many=True,
+        queryset=EventReference.objects.all(),
+        required=False,
+    )
+
+    class Meta:
+        model = EventReference
+        fields = ["uuid", "kind", "icon", "title", "text", "links"]
+        extra_kwargs = {
+            "title": {"trim_whitespace": True, "allow_blank": False},
+            "text": {"trim_whitespace": False},
+        }
+
+    def validate_links(self, links):
+        if self.instance in links:
+            raise serializers.ValidationError(
+                "Eine Referenz kann nicht mit sich selbst verknüpft werden."
+            )
+        return links
+
+    def to_representation(self, reference):
+        context = {"fight": reference.fight()}
+        return {
+            **super().to_representation(reference),
+            "participants": ChatParticipantSerializer(
+                reference.participants.all(), many=True, context=context
+            ).data,
+            "messages": ChatMessageSerializer(
+                reference.messages.all(), many=True, context=context
+            ).data,
+        }
 
 
 class TrustSerializer(serializers.ModelSerializer):
@@ -185,11 +308,33 @@ class TrustEntrySerializer(serializers.ModelSerializer):
     event_title = serializers.CharField(
         source="event.title", read_only=True, default=None
     )
+    traits = TagsField(write_only=True, required=False)
 
     class Meta:
         model = TrustEntry
-        fields = ["uuid", "conduct", "points", "date", "text", "event", "event_title"]
+        fields = [
+            "uuid",
+            "conduct",
+            "points",
+            "date",
+            "text",
+            "event",
+            "event_title",
+            "traits",
+        ]
         extra_kwargs = {"text": {"trim_whitespace": True, "allow_blank": False}}
+
+    def create(self, validated_data):
+        tags = validated_data.pop("traits", [])
+        entry = super().create(validated_data)
+        entry.traits.set(Trait.objects.ensure(entry.dossier, tags))
+        return entry
+
+    def to_representation(self, entry):
+        return {
+            **super().to_representation(entry),
+            "traits": [trait.tag for trait in entry.traits.all()],
+        }
 
     def validate_event(self, event):
         if event and event.dossier != self.context["dossier"]:
@@ -204,6 +349,13 @@ class TrustLedgerSerializer(serializers.Serializer):
     level = serializers.IntegerField(allow_null=True)
     suggested_level = serializers.IntegerField(allow_null=True)
     conducts = serializers.DictField(child=serializers.IntegerField())
+    conduct_traits = serializers.DictField(child=serializers.ListField())
+    traits = serializers.ListField(child=serializers.CharField())
+    entries = TrustEntrySerializer(many=True)
+
+
+class TrustImpactSerializer(serializers.Serializer):
+    points = serializers.IntegerField()
     entries = TrustEntrySerializer(many=True)
 
 

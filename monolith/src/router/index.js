@@ -9,6 +9,7 @@ import NetworkView from '@/views/NetworkView.vue'
 import TrustView from '@/views/TrustView.vue'
 import EventView from '@/views/EventView.vue'
 import EventEditView from '@/views/EventEditView.vue'
+import EventReferenceView from '@/views/EventReferenceView.vue'
 import ShareEditView from '@/views/ShareEditView.vue'
 import SharedDossierView from '@/views/SharedDossierView.vue'
 import SharedLinkView from '@/views/SharedLinkView.vue'
@@ -48,6 +49,12 @@ const router = createRouter({
       path: '/dossiers/:uuid/events/:event/edit',
       name: 'event-edit',
       component: EventEditView,
+      meta: { activeNavigation: 'dossiers' },
+    },
+    {
+      path: '/dossiers/:uuid/events/:event/references/:reference',
+      name: 'event-reference',
+      component: EventReferenceView,
       meta: { activeNavigation: 'dossiers' },
     },
     {

@@ -24,7 +24,30 @@
         <p v-else class="mt-4 text-sm text-wntrs-muted">Noch kein Text.</p>
       </BaseCard>
 
+      <template v-if="event">
+        <div class="flex items-center justify-between gap-4 my-4">
+          <h3 class="text-xl font-light">Vertrauen</h3>
+          <TrustPoints v-if="event.trust.entries.length" :points="event.trust.points" />
+        </div>
+        <BaseCard>
+          <ul v-if="event.trust.entries.length" class="flex flex-col divide-y divide-wntrs-border">
+            <TrustEntryRow
+              v-for="entry in event.trust.entries"
+              :key="entry.uuid"
+              :uuid="uuid"
+              :entry="entry"
+              :show-event="false"
+            />
+          </ul>
+          <p v-else class="px-6 py-4 text-sm text-wntrs-muted">
+            Keine Vertrauenspunkte zu diesem Ereignis.
+          </p>
+        </BaseCard>
+      </template>
+
       <EventLinksCard v-if="event" :uuid="uuid" :event="event" @update="event = $event" />
+
+      <EventReferencesSection v-if="event" :uuid="uuid" :event="event.uuid" />
 
       <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
     </div>
@@ -37,12 +60,23 @@ import BaseCard from '@core/components/common/BaseCard.vue'
 import EditButton from '@core/components/common/EditButton.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import EventLinksCard from '@/components/EventLinksCard.vue'
+import EventReferencesSection from '@/components/EventReferencesSection.vue'
+import TrustEntryRow from '@/components/TrustEntryRow.vue'
+import TrustPoints from '@/components/TrustPoints.vue'
 import eventMixin from '@/mixins/eventMixin.js'
 import { formatDate } from '@/data/dossierFields.js'
 
 export default {
   name: 'EventView',
-  components: { BaseBreadcrumbs, BaseCard, EditButton, EventLinksCard },
+  components: {
+    BaseBreadcrumbs,
+    BaseCard,
+    EditButton,
+    EventLinksCard,
+    EventReferencesSection,
+    TrustEntryRow,
+    TrustPoints,
+  },
   mixins: [asyncActionMixin, eventMixin],
   computed: {
     breadcrumbs() {

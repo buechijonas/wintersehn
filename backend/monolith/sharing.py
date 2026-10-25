@@ -2,6 +2,7 @@ from .models import (
     Event,
     Relationship,
     Stance,
+    Trait,
     TrustEntry,
     Visibility,
 )
@@ -35,6 +36,7 @@ def meta_items(share):
 def event_links(event):
     return [
         *dict.fromkeys(f"stance:{stance.topic}" for stance in event.stances.all()),
+        *dict.fromkeys("character:traits" for trait in event.traits.all()),
         *(f"addiction:{addiction.pk}" for addiction in event.addictions.all()),
         *(f"reference:{reference.uuid}" for reference in event.references.all()),
         *(
@@ -42,6 +44,11 @@ def event_links(event):
             for relationship in event.relationships.all()
         ),
     ]
+
+
+def character_items(share):
+    tags = Trait.objects.character(share.dossier).tags
+    return [item("character:traits", "traits", tags)] if tags else []
 
 
 def event_items(share):
@@ -79,6 +86,7 @@ def trust_items(share):
                 f"trust_entry:{entry.uuid}",
                 {"kind": "entry", "conduct": entry.conduct, "points": entry.points},
                 {"date": entry.date.isoformat(), "text": entry.text},
+                dict.fromkeys("character:traits" for trait in entry.traits.all()),
             )
             for entry in ledger["entries"]
         ),
@@ -113,6 +121,7 @@ def reference_items(share):
 
 SECTIONS = {
     "meta": meta_items,
+    "character": character_items,
     "events": event_items,
     "relationships": relationship_items,
     "trust": trust_items,

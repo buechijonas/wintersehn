@@ -1,6 +1,6 @@
 from django.db import models
 
-from .crypto import blind_index, decrypt, encrypt
+from .crypto import blind_index, decrypt, encrypt, fernet
 
 
 class EncryptedMixin:
@@ -25,6 +25,17 @@ class EncryptedTextField(EncryptedMixin, models.TextField):
 
 class EncryptedDateField(EncryptedMixin, models.DateField):
     pass
+
+
+class EncryptedBinaryField(models.BinaryField):
+    def get_db_prep_value(self, value, connection, prepared=False):
+        if value is None:
+            return None
+        encrypted = fernet().encrypt(bytes(value))
+        return super().get_db_prep_value(encrypted, connection, prepared)
+
+    def from_db_value(self, value, expression, connection):
+        return None if value is None else fernet().decrypt(bytes(value))
 
 
 class HashField(models.CharField):

@@ -32,6 +32,8 @@
           </dl>
         </BaseCard>
 
+        <DossierCharacterTab v-else-if="activeTab === 'character'" :uuid="dossier.uuid" />
+
         <DossierEventsTab v-else-if="activeTab === 'events'" :uuid="dossier.uuid" />
 
         <DossierRelationshipsTab v-else-if="activeTab === 'relationships'" :uuid="dossier.uuid" />
@@ -72,6 +74,7 @@ import EditButton from '@core/components/common/EditButton.vue'
 import SectionDialog from '@core/components/common/SectionDialog.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import DossierAddictionsTab from '@/components/DossierAddictionsTab.vue'
+import DossierCharacterTab from '@/components/DossierCharacterTab.vue'
 import DossierEventsTab from '@/components/DossierEventsTab.vue'
 import DossierLinkTab from '@/components/DossierLinkTab.vue'
 import DossierReferencesTab from '@/components/DossierReferencesTab.vue'
@@ -96,6 +99,7 @@ export default {
     BaseCard,
     BaseTabs,
     DossierAddictionsTab,
+    DossierCharacterTab,
     DossierEventsTab,
     DossierLinkTab,
     DossierReferencesTab,
