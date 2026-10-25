@@ -18,6 +18,28 @@
           {{ formatDate(event.date) }}
         </span>
         <h2 class="text-xl font-bold mt-1 break-words">{{ event.title }}</h2>
+        <div class="flex flex-wrap items-center gap-1.5 mt-3">
+          <span class="text-xs text-wntrs-muted">Beteiligt:</span>
+          <RouterLink
+            v-for="dossier in event.dossiers"
+            :key="dossier.uuid"
+            :to="{ name: 'dossier', params: { uuid: dossier.uuid } }"
+            class="badge badge-sm hover:badge-primary"
+            :class="dossier.uuid === uuid ? 'badge-primary' : 'badge-soft'"
+          >
+            {{ dossier.title }}
+          </RouterLink>
+          <BaseButton
+            variant="ghost"
+            shape="square"
+            size="xs"
+            title="Beteiligte Akten bearbeiten"
+            :disabled="saving"
+            @click="$refs.dossiersDialog.open(event.dossiers)"
+          >
+            <AppIcon name="pencil" alt="Beteiligte Akten bearbeiten" />
+          </BaseButton>
+        </div>
         <p v-if="event.text" class="mt-4 whitespace-pre-wrap break-words leading-relaxed">
           {{ event.text }}
         </p>
@@ -52,13 +74,19 @@
       <p v-if="error" class="text-error text-sm mt-4 text-center">{{ error }}</p>
     </div>
   </div>
+
+  <EventDossiersDialog ref="dossiersDialog" @confirm="saveDossiers" />
 </template>
 
 <script>
+import { RouterLink } from 'vue-router'
+import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
+import BaseButton from '@core/components/common/BaseButton.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
 import EditButton from '@core/components/common/EditButton.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import EventDossiersDialog from '@/components/EventDossiersDialog.vue'
 import EventLinksCard from '@/components/EventLinksCard.vue'
 import EventReferencesSection from '@/components/EventReferencesSection.vue'
 import TrustEntryRow from '@/components/TrustEntryRow.vue'
@@ -69,9 +97,13 @@ import { formatDate } from '@/data/dossierFields.js'
 export default {
   name: 'EventView',
   components: {
+    RouterLink,
+    AppIcon,
     BaseBreadcrumbs,
+    BaseButton,
     BaseCard,
     EditButton,
+    EventDossiersDialog,
     EventLinksCard,
     EventReferencesSection,
     TrustEntryRow,
@@ -85,6 +117,21 @@ export default {
   },
   methods: {
     formatDate,
+    saveDossiers(dossiers) {
+      return this.runAction(async () => {
+        const event = await this.dossiersStore.updateEvent(this.uuid, this.event.uuid, {
+          dossiers,
+        })
+        if (dossiers.includes(this.uuid)) {
+          this.event = event
+          return
+        }
+        this.$router.replace({
+          name: 'event',
+          params: { uuid: dossiers[0], event: event.uuid },
+        })
+      })
+    },
   },
 }
 </script>

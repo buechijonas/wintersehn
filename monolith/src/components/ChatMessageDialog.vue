@@ -24,17 +24,11 @@
         <img v-if="draft.image" :src="imageUrl(draft.image)" alt="Bild" class="h-20 rounded-lg" />
         <div class="flex flex-col gap-2 flex-1">
           <ImagePickButton
-            :label="draft.image ? 'Bild ersetzen' : 'Bild hochladen'"
-            :disabled="saving"
-            @pick="setImage"
+            :label="draft.image ? 'Bild ersetzen' : 'Bild wählen'"
+            :selected="draft.image"
+            @pick="draft.image = $event"
           />
-          <BaseButton
-            v-if="draft.image"
-            variant="ghost"
-            size="sm"
-            :disabled="saving"
-            @click="draft.image = null"
-          >
+          <BaseButton v-if="draft.image" variant="ghost" size="sm" @click="draft.image = null">
             Bild entfernen
           </BaseButton>
         </div>
@@ -66,8 +60,6 @@
           </option>
         </select>
       </div>
-
-      <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
     </form>
 
     <template #actions>
@@ -80,7 +72,7 @@
         type="submit"
         :form="formId"
         variant="primary"
-        :disabled="saving || !(draft.text.trim() || draft.image)"
+        :disabled="!(draft.text.trim() || draft.image)"
       >
         <AppIcon name="disk" />
         Speichern
@@ -94,7 +86,6 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import BaseDialog from '@core/components/common/BaseDialog.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import ImagePickButton from '@/components/ImagePickButton.vue'
 import { messageData } from '@/data/eventReferences.js'
 import chatMixin from '@/mixins/chatMixin.js'
@@ -102,7 +93,7 @@ import chatMixin from '@/mixins/chatMixin.js'
 export default {
   name: 'ChatMessageDialog',
   components: { AppIcon, BaseButton, BaseDialog, DeleteButton, ImagePickButton },
-  mixins: [asyncActionMixin, chatMixin],
+  mixins: [chatMixin],
   emits: ['confirm', 'remove'],
   data() {
     return {
@@ -115,14 +106,8 @@ export default {
     open(message) {
       const { sender, text, image, attack, target } = message
       this.message = message
-      this.error = ''
       this.draft = { sender, text, image, attack, target }
       this.$refs.dialog.open()
-    },
-    setImage(file) {
-      return this.runAction(async () => {
-        this.draft.image = await this.upload(file)
-      })
     },
     confirm() {
       this.$refs.dialog.close()

@@ -22,11 +22,15 @@ def decrypt(token):
     return fernet().decrypt(token.encode()).decode()
 
 
-def blind_index(value):
+def blind_digest(data):
     if not settings.MONOLITH_HASH_KEY:
         raise ImproperlyConfigured("MONOLITH_HASH_KEY must be set.")
     key = settings.MONOLITH_HASH_KEY.encode()
-    return hmac.new(key, value.encode(), hashlib.sha256).hexdigest()
+    return hmac.new(key, data, hashlib.sha256).hexdigest()
+
+
+def blind_index(value):
+    return blind_digest(value.encode())
 
 
 def blind_indexes(values):

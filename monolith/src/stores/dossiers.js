@@ -194,19 +194,41 @@ export const useDossiersStore = defineStore('dossiers', () => {
     )
   }
 
-  async function uploadAttachment(uuid, event, reference, file) {
-    const body = new FormData()
-    body.append('file', file)
-    const { uuid: attachment } = await request(
-      eventReferenceUrl(uuid, event, `${reference}/attachments/`),
-      'Bild konnte nicht hochgeladen werden.',
-      { method: 'POST', body },
-    )
-    return attachment
+  function fetchImages() {
+    return request('/api/monolith/images/', 'Bilder konnten nicht geladen werden.')
   }
 
-  function attachmentUrl(uuid, event, reference, attachment) {
-    return eventReferenceUrl(uuid, event, `${reference}/attachments/${attachment}/`)
+  function uploadImage(file) {
+    const body = new FormData()
+    body.append('file', file)
+    return request('/api/monolith/images/', 'Bild konnte nicht hochgeladen werden.', {
+      method: 'POST',
+      body,
+    })
+  }
+
+  function renameImage(image, name) {
+    return request(
+      `/api/monolith/images/${image}/`,
+      'Bild konnte nicht umbenannt werden.',
+      json('PATCH', { name }),
+    )
+  }
+
+  function deleteImage(image) {
+    return request(`/api/monolith/images/${image}/`, 'Bild konnte nicht gelöscht werden.', {
+      method: 'DELETE',
+    })
+  }
+
+  function deleteUnusedImages() {
+    return request('/api/monolith/images/unused/', 'Bilder konnten nicht gelöscht werden.', {
+      method: 'DELETE',
+    })
+  }
+
+  function imageUrl(image, size) {
+    return `/api/monolith/images/${image}/${size ? `?size=${size}` : ''}`
   }
 
   function fetchAddictions(uuid) {
@@ -498,8 +520,12 @@ export const useDossiersStore = defineStore('dossiers', () => {
     addChatItem,
     updateChatItem,
     removeChatItem,
-    uploadAttachment,
-    attachmentUrl,
+    fetchImages,
+    uploadImage,
+    renameImage,
+    deleteImage,
+    deleteUnusedImages,
+    imageUrl,
     fetchAddictions,
     addAddiction,
     updateAddiction,

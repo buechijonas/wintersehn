@@ -1,9 +1,10 @@
 <template>
   <img
-    v-if="src"
+    v-if="src && !failed"
     :src="src"
     :alt="participant.name"
     class="size-8 shrink-0 rounded-full object-cover"
+    @error="failed = true"
   />
   <span
     v-else
@@ -20,6 +21,16 @@ export default {
   props: {
     participant: { type: Object, required: true },
     src: { type: String, default: null },
+  },
+  data() {
+    return {
+      failed: false,
+    }
+  },
+  watch: {
+    src() {
+      this.failed = false
+    },
   },
 }
 </script>

@@ -19,14 +19,8 @@ export default {
     targetsOf(sender) {
       return this.reference.participants.filter((participant) => participant.uuid !== sender)
     },
-    imageUrl(attachment) {
-      return (
-        attachment &&
-        this.dossiersStore.attachmentUrl(this.uuid, this.event, this.reference.uuid, attachment)
-      )
-    },
-    upload(file) {
-      return this.dossiersStore.uploadAttachment(this.uuid, this.event, this.reference.uuid, file)
+    imageUrl(image, size) {
+      return image && this.dossiersStore.imageUrl(image, size)
     },
     addItem(collection, data) {
       return this.runAction(async () => {

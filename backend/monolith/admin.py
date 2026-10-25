@@ -82,7 +82,8 @@ class DossierAdmin(MonolithAccess, admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(MonolithAccess, admin.ModelAdmin):
-    list_display = ["title", "dossier", "date"]
+    list_display = ["title", "date"]
+    filter_horizontal = ["dossiers"]
     readonly_fields = ["created_at", "updated_at"]
 
 

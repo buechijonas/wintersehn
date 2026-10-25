@@ -33,8 +33,9 @@ class ShareTests(APITestCase):
         self.father = Dossier.objects.create(title="Vaterakte", ethnicity="Geheimnis")
         self.recipient = Dossier.objects.create(title="Sohnakte", govex_sub="sub-son")
         self.event = Event.objects.create(
-            dossier=self.father, title="Streit", date="2026-10-01", text="Geheimtext"
+            title="Streit", date="2026-10-01", text="Geheimtext"
         )
+        self.event.dossiers.add(self.father)
         Addiction.objects.create(
             dossier=self.father, kind="cocaine", frequency="daily", event=self.event
         )

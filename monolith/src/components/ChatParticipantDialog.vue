@@ -8,14 +8,12 @@
           class="size-16! text-xl"
         />
         <div class="flex flex-col gap-2 flex-1">
-          <ImagePickButton label="Profilbild wählen" :disabled="saving" @pick="setAvatar" />
-          <BaseButton
-            v-if="draft.avatar"
-            variant="ghost"
-            size="sm"
-            :disabled="saving"
-            @click="draft.avatar = null"
-          >
+          <ImagePickButton
+            label="Profilbild wählen"
+            :selected="draft.avatar"
+            @pick="draft.avatar = $event"
+          />
+          <BaseButton v-if="draft.avatar" variant="ghost" size="sm" @click="draft.avatar = null">
             Profilbild entfernen
           </BaseButton>
         </div>
@@ -63,8 +61,6 @@
           {{ label }}
         </BaseButton>
       </div>
-
-      <p v-if="error" class="text-error text-sm mt-2">{{ error }}</p>
     </form>
 
     <template #actions>
@@ -73,7 +69,7 @@
         <AppIcon name="cross" />
         Abbrechen
       </BaseButton>
-      <BaseButton type="submit" :form="formId" variant="primary" :disabled="saving">
+      <BaseButton type="submit" :form="formId" variant="primary">
         <AppIcon :name="participant ? 'disk' : 'plus'" />
         {{ participant ? 'Speichern' : 'Hinzufügen' }}
       </BaseButton>
@@ -86,7 +82,6 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import BaseDialog from '@core/components/common/BaseDialog.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
-import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import ChatAvatar from '@/components/ChatAvatar.vue'
 import ImagePickButton from '@/components/ImagePickButton.vue'
 import { chatSides } from '@/data/eventReferences.js'
@@ -99,7 +94,7 @@ function emptyDraft(side) {
 export default {
   name: 'ChatParticipantDialog',
   components: { AppIcon, BaseButton, BaseDialog, ChatAvatar, DeleteButton, ImagePickButton },
-  mixins: [asyncActionMixin, chatMixin],
+  mixins: [chatMixin],
   emits: ['confirm', 'remove'],
   data() {
     return {
@@ -118,7 +113,6 @@ export default {
     open(participant = null) {
       const hasRight = this.reference.participants.some((p) => p.side === 'right')
       this.participant = participant
-      this.error = ''
       this.draft = participant
         ? {
             name: participant.name,
@@ -131,11 +125,6 @@ export default {
       if (!this.dossiersStore.items) this.dossiersStore.fetchDossiers()
       this.$refs.dialog.open()
       this.$nextTick(() => this.$refs.input.focus())
-    },
-    setAvatar(file) {
-      return this.runAction(async () => {
-        this.draft.avatar = await this.upload(file)
-      })
     },
     confirm() {
       this.$refs.dialog.close()

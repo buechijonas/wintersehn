@@ -13,6 +13,9 @@ export default {
     uuid() {
       return this.$route.params.uuid
     },
+    eventKey() {
+      return `${this.uuid}/${this.$route.params.event}`
+    },
     dossierRoute() {
       return { name: 'dossier', params: { uuid: this.uuid }, query: { tab: 'events' } }
     },
@@ -24,9 +27,10 @@ export default {
     },
   },
   watch: {
-    '$route.params.event': {
+    eventKey: {
       immediate: true,
-      handler(event) {
+      handler() {
+        const event = this.$route.params.event
         this.event = null
         return this.runAction(async () => {
           const [loaded] = await Promise.all([

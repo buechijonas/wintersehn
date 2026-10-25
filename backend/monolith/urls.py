@@ -65,16 +65,6 @@ urlpatterns = [
         name="event-reference-message",
     ),
     path(
-        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/attachments/",
-        views.AttachmentCreateView.as_view(),
-        name="event-reference-attachments",
-    ),
-    path(
-        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/attachments/<uuid:attachment>/",
-        views.AttachmentDetailView.as_view(),
-        name="event-reference-attachment",
-    ),
-    path(
         "dossiers/<uuid:uuid>/addictions/",
         views.AddictionListCreateView.as_view(),
         name="dossier-addictions",
@@ -161,6 +151,13 @@ urlpatterns = [
         name="shared-detail",
     ),
     path("share/<str:token>/", views.SharedLinkView.as_view(), name="shared-link"),
+    path("images/", views.ChatImageListCreateView.as_view(), name="images"),
+    path(
+        "images/unused/",
+        views.UnusedChatImagesView.as_view(),
+        name="images-unused",
+    ),
+    path("images/<uuid:image>/", views.ChatImageDetailView.as_view(), name="image"),
     path("network/", views.NetworkView.as_view(), name="network"),
     path(
         "network/settings/",
