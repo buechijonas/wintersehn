@@ -50,16 +50,13 @@
     </div>
 
     <div class="flex items-end gap-2">
-      <input ref="file" type="file" accept="image/*" class="hidden" @change="attach" />
-      <BaseButton
-        variant="neutral"
-        shape="square"
-        title="Bild anhängen"
+      <ImagePickButton
+        square
+        label="Bild anhängen"
+        :selected="draft.image"
         :disabled="saving"
-        @click="$refs.file.click()"
-      >
-        <AppIcon name="picture" alt="Bild anhängen" />
-      </BaseButton>
+        @pick="draft.image = $event"
+      />
       <textarea
         v-model="draft.text"
         aria-label="Nachricht"
@@ -89,12 +86,13 @@
 import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
+import ImagePickButton from '@/components/ImagePickButton.vue'
 import { messageData } from '@/data/eventReferences.js'
 import chatMixin from '@/mixins/chatMixin.js'
 
 export default {
   name: 'ChatComposer',
-  components: { AppIcon, BaseButton },
+  components: { AppIcon, BaseButton, ImagePickButton },
   mixins: [asyncActionMixin, chatMixin],
   data() {
     return {
@@ -115,14 +113,6 @@ export default {
     },
   },
   methods: {
-    attach(event) {
-      const [file] = event.target.files
-      event.target.value = ''
-      if (!file) return
-      return this.runAction(async () => {
-        this.draft.image = await this.upload(file)
-      })
-    },
     async send() {
       if (this.saving || !(this.draft.text.trim() || this.draft.image)) return
       await this.addItem('messages', messageData(this.draft))

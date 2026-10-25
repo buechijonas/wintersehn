@@ -89,7 +89,7 @@ export default {
       return this.runAction(async () => {
         const reference = await this.dossiersStore.createEventReference(this.uuid, this.event, data)
         this.$router.push({
-          name: 'event-reference',
+          name: reference.kind === 'text' ? 'event-reference-edit' : 'event-reference',
           params: { uuid: this.uuid, event: this.event, reference: reference.uuid },
         })
       })

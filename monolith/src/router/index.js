@@ -10,6 +10,8 @@ import TrustView from '@/views/TrustView.vue'
 import EventView from '@/views/EventView.vue'
 import EventEditView from '@/views/EventEditView.vue'
 import EventReferenceView from '@/views/EventReferenceView.vue'
+import EventReferenceEditView from '@/views/EventReferenceEditView.vue'
+import ImagesView from '@/views/ImagesView.vue'
 import ShareEditView from '@/views/ShareEditView.vue'
 import SharedDossierView from '@/views/SharedDossierView.vue'
 import SharedLinkView from '@/views/SharedLinkView.vue'
@@ -56,6 +58,18 @@ const router = createRouter({
       name: 'event-reference',
       component: EventReferenceView,
       meta: { activeNavigation: 'dossiers' },
+    },
+    {
+      path: '/dossiers/:uuid/events/:event/references/:reference/edit',
+      name: 'event-reference-edit',
+      component: EventReferenceEditView,
+      meta: { activeNavigation: 'dossiers' },
+    },
+    {
+      path: '/images',
+      name: 'images',
+      component: ImagesView,
+      meta: { activeNavigation: 'images' },
     },
     {
       path: '/dossiers/:uuid/shares/:share',

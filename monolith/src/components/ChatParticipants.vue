@@ -14,25 +14,43 @@
     </div>
 
     <ul v-if="reference.participants.length" class="flex flex-col py-2">
-      <li v-for="participant in reference.participants" :key="participant.uuid">
-        <button
-          type="button"
-          class="flex w-full flex-col gap-1.5 px-4 py-2 text-left cursor-pointer hover:bg-base-200"
-          :title="`${participant.name} bearbeiten`"
-          @click="$emit('edit', participant)"
-        >
-          <span class="flex items-center gap-2 min-w-0">
+      <li
+        v-for="participant in reference.participants"
+        :key="participant.uuid"
+        class="flex flex-col gap-1.5 px-4 py-2"
+      >
+        <div class="flex items-center gap-2 min-w-0">
+          <component
+            :is="participant.dossier ? 'RouterLink' : 'div'"
+            :to="
+              participant.dossier && { name: 'dossier', params: { uuid: participant.dossier.uuid } }
+            "
+            class="flex items-center gap-2 min-w-0 flex-1"
+            :class="{ 'group hover:text-primary': participant.dossier }"
+            :title="participant.dossier && `Akte ${participant.dossier.title} öffnen`"
+          >
             <ChatAvatar :participant="participant" :src="imageUrl(participant.avatar)" />
             <span class="flex flex-col min-w-0 flex-1">
-              <span class="text-sm font-bold truncate">{{ participant.name }}</span>
+              <span class="text-sm font-bold truncate group-hover:underline">
+                {{ participant.name }}
+              </span>
               <span class="text-xs text-wntrs-muted truncate">{{ role(participant) }}</span>
             </span>
-          </span>
-          <HealthBar :remaining="participant.remaining" :health="participant.health" />
-          <span v-if="participant.dealt" class="text-xs text-error">
-            {{ participant.dealt }} Angriffspunkte ausgeteilt
-          </span>
-        </button>
+          </component>
+          <BaseButton
+            variant="ghost"
+            shape="square"
+            size="xs"
+            :title="`${participant.name} bearbeiten`"
+            @click="$emit('edit', participant)"
+          >
+            <AppIcon name="pencil" :alt="`${participant.name} bearbeiten`" />
+          </BaseButton>
+        </div>
+        <HealthBar :remaining="participant.remaining" :health="participant.health" />
+        <span v-if="participant.dealt" class="text-xs text-error">
+          {{ participant.dealt }} Angriffspunkte ausgeteilt
+        </span>
       </li>
     </ul>
 
@@ -41,6 +59,7 @@
 </template>
 
 <script>
+import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
@@ -51,7 +70,7 @@ import chatMixin from '@/mixins/chatMixin.js'
 
 export default {
   name: 'ChatParticipants',
-  components: { AppIcon, BaseButton, BaseCard, ChatAvatar, HealthBar },
+  components: { RouterLink, AppIcon, BaseButton, BaseCard, ChatAvatar, HealthBar },
   mixins: [chatMixin],
   emits: ['add', 'edit'],
   methods: {

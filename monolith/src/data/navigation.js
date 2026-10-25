@@ -10,6 +10,7 @@ export const navigationItems = [
     ...monolithOnly,
   },
   { key: 'trust', label: 'Vertrauenskreise', icon: 'solar-system', to: '/trust', ...monolithOnly },
+  { key: 'images', label: 'Bilder', icon: 'picture', to: '/images', ...monolithOnly },
   {
     key: 'shared',
     label: 'Mit mir geteilt',

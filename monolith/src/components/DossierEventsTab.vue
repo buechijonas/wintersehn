@@ -34,6 +34,9 @@
             {{ formatDate(event.date) }}
           </span>
           <span class="block font-bold text-sm break-words">{{ event.title }}</span>
+          <span v-if="others(event).length" class="block text-xs text-wntrs-muted truncate">
+            mit {{ others(event).join(', ') }}
+          </span>
           <EventLinks :event="event" class="mt-1.5" />
         </RouterLink>
       </li>
@@ -85,6 +88,11 @@ export default {
     },
   },
   methods: {
+    others(event) {
+      return event.dossiers
+        .filter((dossier) => dossier.uuid !== this.uuid)
+        .map((dossier) => dossier.title)
+    },
     formatDate,
     load() {
       return this.runAction(async () => {

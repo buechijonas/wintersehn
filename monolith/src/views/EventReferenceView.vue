@@ -1,7 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs">
     <template v-if="reference" #actions>
-      <EditButton @click="$refs.referenceDialog.open(reference)" />
+      <EditButton :to="{ name: 'event-reference-edit', params: $route.params }" />
     </template>
   </BaseBreadcrumbs>
   <div
@@ -36,13 +36,7 @@
             />
           </template>
 
-          <p
-            v-else
-            class="px-6 py-4 whitespace-pre-wrap break-words leading-relaxed"
-            :class="{ 'text-sm text-wntrs-muted': !reference.text }"
-          >
-            {{ reference.text || 'Noch kein Text.' }}
-          </p>
+          <MarkdownContent v-else :text="reference.text" class="px-6 py-5" />
         </BaseCard>
 
         <aside class="flex flex-col gap-4">
@@ -64,11 +58,6 @@
     </div>
   </div>
 
-  <EventReferenceDialog
-    ref="referenceDialog"
-    @confirm="save"
-    @remove="$refs.confirmDialog.open()"
-  />
   <ChatParticipantDialog
     v-if="reference"
     ref="participantDialog"
@@ -83,18 +72,11 @@
     @confirm="saveMessage"
     @remove="removeItem('messages', $event)"
   />
-  <ConfirmDialog
-    ref="confirmDialog"
-    title="Referenz löschen"
-    :message="`Möchtest du «${reference?.title}» wirklich löschen?`"
-    @confirm="remove"
-  />
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
-import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
 import EditButton from '@core/components/common/EditButton.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import ChatComposer from '@/components/ChatComposer.vue'
@@ -102,10 +84,11 @@ import ChatMessageDialog from '@/components/ChatMessageDialog.vue'
 import ChatMessages from '@/components/ChatMessages.vue'
 import ChatParticipantDialog from '@/components/ChatParticipantDialog.vue'
 import ChatParticipants from '@/components/ChatParticipants.vue'
-import EventReferenceDialog from '@/components/EventReferenceDialog.vue'
 import EventReferenceLinks from '@/components/EventReferenceLinks.vue'
+import MarkdownContent from '@/components/MarkdownContent.vue'
 import { referenceIcon, referenceSummary } from '@/data/eventReferences.js'
 import eventMixin from '@/mixins/eventMixin.js'
+import eventReferenceMixin from '@/mixins/eventReferenceMixin.js'
 
 export default {
   name: 'EventReferenceView',
@@ -117,65 +100,22 @@ export default {
     ChatMessages,
     ChatParticipantDialog,
     ChatParticipants,
-    ConfirmDialog,
     EditButton,
-    EventReferenceDialog,
     EventReferenceLinks,
+    MarkdownContent,
   },
-  mixins: [asyncActionMixin, eventMixin],
-  data() {
-    return {
-      reference: null,
-      siblings: [],
-    }
-  },
+  mixins: [asyncActionMixin, eventMixin, eventReferenceMixin],
   computed: {
-    eventUuid() {
-      return this.$route.params.event
-    },
-    eventRoute() {
-      return { name: 'event', params: { uuid: this.uuid, event: this.eventUuid } }
-    },
     chatProps() {
       return { uuid: this.uuid, event: this.eventUuid, reference: this.reference }
     },
     breadcrumbs() {
-      return [
-        ...this.baseBreadcrumbs,
-        { label: this.event?.title ?? '…', to: this.eventRoute },
-        { label: this.reference?.title ?? '…' },
-      ]
-    },
-  },
-  watch: {
-    '$route.params.reference': {
-      immediate: true,
-      handler(reference) {
-        this.reference = null
-        return this.runAction(async () => {
-          const [loaded, all] = await Promise.all([
-            this.dossiersStore.fetchEventReference(this.uuid, this.eventUuid, reference),
-            this.dossiersStore.fetchEventReferences(this.uuid, this.eventUuid),
-          ])
-          this.reference = loaded
-          this.siblings = all.filter((other) => other.uuid !== reference)
-        })
-      },
+      return [...this.referenceBreadcrumbs, { label: this.reference?.title ?? '…' }]
     },
   },
   methods: {
     referenceIcon,
     referenceSummary,
-    save(data) {
-      return this.runAction(async () => {
-        this.reference = await this.dossiersStore.updateEventReference(
-          this.uuid,
-          this.eventUuid,
-          this.reference.uuid,
-          data,
-        )
-      })
-    },
     chatArgs(collection) {
       return [this.uuid, this.eventUuid, this.reference.uuid, collection]
     },
@@ -202,16 +142,6 @@ export default {
           ...this.chatArgs(collection),
           item.uuid,
         )
-      })
-    },
-    remove() {
-      return this.runAction(async () => {
-        await this.dossiersStore.deleteEventReference(
-          this.uuid,
-          this.eventUuid,
-          this.reference.uuid,
-        )
-        this.$router.push(this.eventRoute)
       })
     },
   },

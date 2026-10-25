@@ -28,7 +28,7 @@ from .catalog import (
     SPECTRUM,
     WEIGHTS,
 )
-from .crypto import blind_index, blind_indexes
+from .crypto import blind_digest, blind_index, blind_indexes
 from .fields import (
     EncryptedBinaryField,
     EncryptedCharField,
@@ -115,7 +115,7 @@ class RelationshipQuerySet(models.QuerySet):
             default=models.F("dossier__title"),
         )
         return (
-            self.filter(models.Q(dossier=dossier) | models.Q(person=dossier))
+            self.involving(dossier)
             .select_related("dossier", "person")
             .annotate(other_title=other_title)
             .order_by(Collate("other_title", "de-CH-x-icu"))
@@ -126,6 +126,9 @@ class RelationshipQuerySet(models.QuerySet):
             models.Q(dossier__uuid=dossier, person__uuid=person)
             | models.Q(dossier__uuid=person, person__uuid=dossier)
         )
+
+    def involving(self, dossier):
+        return self.filter(models.Q(dossier=dossier) | models.Q(person=dossier))
 
     def with_persons(self, dossier, persons):
         return self.filter(
@@ -240,7 +243,8 @@ def any_of(conditions):
 
 class EventQuerySet(models.QuerySet):
     def with_links(self):
-        return self.select_related("dossier").prefetch_related(
+        return self.prefetch_related(
+            "dossiers",
             "stances",
             "traits",
             "addictions",
@@ -252,9 +256,7 @@ class EventQuerySet(models.QuerySet):
 
 class Event(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    dossier = models.ForeignKey(
-        Dossier, on_delete=models.CASCADE, related_name="events"
-    )
+    dossiers = models.ManyToManyField(Dossier, related_name="events")
     title = EncryptedCharField(max_length=200)
     date = models.DateField()
     text = EncryptedTextField(blank=True)
@@ -273,19 +275,31 @@ class Event(models.Model):
     def __str__(self):
         return self.title
 
-    def link(self, stances, traits, addictions, references, relationships):
-        self.stances.update(event=None)
-        self.traits.update(event=None)
-        self.addictions.update(event=None)
-        self.references.update(event=None)
-        self.relationships.update(event=None)
-        self.dossier.stances.matching(stances).update(event=self)
-        self.dossier.traits.matching(traits).update(event=self)
-        self.dossier.addictions.of_kinds(addictions).update(event=self)
-        self.dossier.references.filter(uuid__in=references).update(event=self)
-        Relationship.objects.with_persons(self.dossier, relationships).update(
-            event=self
-        )
+    def link(self, dossier, stances, traits, addictions, references, relationships):
+        self.stances.filter(dossier=dossier).update(event=None)
+        self.traits.filter(dossier=dossier).update(event=None)
+        self.addictions.filter(dossier=dossier).update(event=None)
+        self.references.filter(dossier=dossier).update(event=None)
+        self.relationships.involving(dossier).update(event=None)
+        dossier.stances.matching(stances).update(event=self)
+        dossier.traits.matching(traits).update(event=self)
+        dossier.addictions.of_kinds(addictions).update(event=self)
+        dossier.references.filter(uuid__in=references).update(event=self)
+        Relationship.objects.with_persons(dossier, relationships).update(event=self)
+
+    def set_dossiers(self, dossiers):
+        self.dossiers.set(dossiers)
+        for related in (
+            self.stances,
+            self.traits,
+            self.addictions,
+            self.references,
+            self.trust_entries,
+        ):
+            related.exclude(dossier__in=dossiers).update(event=None)
+        self.relationships.exclude(
+            models.Q(dossier__in=dossiers) | models.Q(person__in=dossiers)
+        ).update(event=None)
 
 
 class EventReferenceKind(models.TextChoices):
@@ -309,9 +323,7 @@ class EventReference(models.Model):
     icon = models.CharField(max_length=50, blank=True, validators=[validate_slug])
     title = EncryptedCharField(max_length=200)
     text = EncryptedTextField(blank=True)
-    links = models.ManyToManyField(
-        "self", blank=True, symmetrical=False, related_name="linked_by"
-    )
+    links = models.ManyToManyField("self", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = EventReferenceQuerySet.as_manager()
@@ -341,16 +353,41 @@ class EventReference(models.Model):
         return {"health": health, "dealt": dealt, "remaining": remaining}
 
 
-class Attachment(models.Model):
+class ChatImageQuerySet(models.QuerySet):
+    def store(self, name, data, user):
+        image, _ = self.get_or_create(
+            digest=blind_digest(data),
+            defaults={"name": name, "data": data, "created_by": user},
+        )
+        return image
+
+    def with_usage(self):
+        usage = models.Count("avatars", distinct=True) + models.Count(
+            "messages", distinct=True
+        )
+        return self.defer("data").annotate(usage=usage)
+
+    def unused(self):
+        return self.with_usage().filter(usage=0)
+
+
+class ChatImage(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    reference = models.ForeignKey(
-        EventReference, on_delete=models.CASCADE, related_name="attachments"
-    )
+    name = EncryptedCharField(max_length=200)
     data = EncryptedBinaryField()
+    digest = models.CharField(max_length=64, unique=True, editable=False)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = ChatImageQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+
     def __str__(self):
-        return str(self.uuid)
+        return self.name
 
 
 class ChatSide(models.TextChoices):
@@ -369,7 +406,11 @@ class ChatParticipant(models.Model):
     )
     health = models.PositiveSmallIntegerField(default=100, validators=bounded(1, 1000))
     avatar = models.ForeignKey(
-        Attachment, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        ChatImage,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="avatars",
     )
     dossier = models.ForeignKey(
         Dossier, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -393,7 +434,11 @@ class ChatMessage(models.Model):
     )
     text = EncryptedTextField(blank=True)
     image = models.ForeignKey(
-        Attachment, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+        ChatImage,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="messages",
     )
     attack = models.PositiveSmallIntegerField(default=0, validators=bounded(0, 1000))
     target = models.ForeignKey(
@@ -734,9 +779,9 @@ class TrustEntryQuerySet(models.QuerySet):
             "entries": entries,
         }
 
-    def impact(self, user, event):
+    def impact(self, user, event, dossier):
         entries = (
-            self.filter(user=user, event=event)
+            self.filter(user=user, event=event, dossier=dossier)
             .select_related("event")
             .prefetch_related("traits")
         )

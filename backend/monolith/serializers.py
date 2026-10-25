@@ -5,7 +5,7 @@ from rest_framework.validators import UniqueValidator
 from .models import (
     Addiction,
     AddictionKind,
-    Attachment,
+    ChatImage,
     ChatMessage,
     ChatParticipant,
     Dossier,
@@ -130,31 +130,55 @@ class CharacterSerializer(serializers.Serializer):
     suggestions = serializers.DictField(read_only=True)
 
 
+def owned(items, dossier):
+    return [item for item in items if item.dossier_id == dossier.pk]
+
+
 class EventSerializer(serializers.ModelSerializer):
-    stances = StanceSerializer(many=True, read_only=True)
-    traits = serializers.SlugRelatedField(many=True, read_only=True, slug_field="tag")
-    addictions = AddictionSerializer(many=True, read_only=True)
-    references = ReferenceSerializer(many=True, read_only=True)
-    relationships = serializers.SerializerMethodField()
+    dossiers = serializers.SlugRelatedField(
+        slug_field="uuid",
+        many=True,
+        queryset=Dossier.objects.all(),
+        required=False,
+        allow_empty=False,
+    )
 
     class Meta:
         model = Event
-        fields = [
-            "uuid",
-            "title",
-            "date",
-            "stances",
-            "traits",
-            "addictions",
-            "references",
-            "relationships",
-        ]
+        fields = ["uuid", "title", "date", "dossiers"]
         extra_kwargs = {"title": {"trim_whitespace": True, "allow_blank": False}}
 
-    def get_relationships(self, event):
-        return RelationshipSerializer(
-            event.relationships.all(), many=True, context={"dossier": event.dossier}
-        ).data
+    def update(self, event, validated_data):
+        dossiers = validated_data.pop("dossiers", None)
+        event = super().update(event, validated_data)
+        if dossiers is not None:
+            event.set_dossiers(dossiers)
+        return event
+
+    def to_representation(self, event):
+        dossier = self.context["dossier"]
+        relationships = [
+            relationship
+            for relationship in event.relationships.all()
+            if dossier.pk in (relationship.dossier_id, relationship.person_id)
+        ]
+        return {
+            **super().to_representation(event),
+            "dossiers": DossierSerializer(event.dossiers.all(), many=True).data,
+            "stances": StanceSerializer(
+                owned(event.stances.all(), dossier), many=True
+            ).data,
+            "traits": [trait.tag for trait in owned(event.traits.all(), dossier)],
+            "addictions": AddictionSerializer(
+                owned(event.addictions.all(), dossier), many=True
+            ).data,
+            "references": ReferenceSerializer(
+                owned(event.references.all(), dossier), many=True
+            ).data,
+            "relationships": RelationshipSerializer(
+                relationships, many=True, context={"dossier": dossier}
+            ).data,
+        }
 
 
 class EventDetailSerializer(EventSerializer):
@@ -168,7 +192,9 @@ class EventDetailSerializer(EventSerializer):
         }
 
     def get_trust(self, event):
-        impact = TrustEntry.objects.impact(self.context["request"].user, event)
+        impact = TrustEntry.objects.impact(
+            self.context["request"].user, event, self.context["dossier"]
+        )
         return TrustImpactSerializer(impact).data
 
 
@@ -182,6 +208,15 @@ class EventLinksSerializer(serializers.Serializer):
     relationships = serializers.ListField(child=serializers.UUIDField())
 
 
+class ChatImageSerializer(serializers.ModelSerializer):
+    usage = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = ChatImage
+        fields = ["uuid", "name", "usage", "created_at"]
+        extra_kwargs = {"name": {"trim_whitespace": True, "allow_blank": False}}
+
+
 class UUIDRelatedField(serializers.SlugRelatedField):
     def __init__(self, scope="reference", **kwargs):
         self.scope = scope
@@ -192,8 +227,11 @@ class UUIDRelatedField(serializers.SlugRelatedField):
 
 
 class ChatParticipantSerializer(serializers.ModelSerializer):
-    avatar = UUIDRelatedField(
-        queryset=Attachment.objects.all(), allow_null=True, required=False
+    avatar = serializers.SlugRelatedField(
+        slug_field="uuid",
+        queryset=ChatImage.objects.all(),
+        allow_null=True,
+        required=False,
     )
     dossier = serializers.SlugRelatedField(
         slug_field="uuid",
@@ -223,8 +261,11 @@ class ChatMessageSerializer(serializers.ModelSerializer):
     target = UUIDRelatedField(
         queryset=ChatParticipant.objects.all(), allow_null=True, required=False
     )
-    image = UUIDRelatedField(
-        queryset=Attachment.objects.all(), allow_null=True, required=False
+    image = serializers.SlugRelatedField(
+        slug_field="uuid",
+        queryset=ChatImage.objects.all(),
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -337,7 +378,7 @@ class TrustEntrySerializer(serializers.ModelSerializer):
         }
 
     def validate_event(self, event):
-        if event and event.dossier != self.context["dossier"]:
+        if event and not event.dossiers.filter(pk=self.context["dossier"].pk).exists():
             raise serializers.ValidationError(
                 "Das Ereignis gehört zu einer anderen Akte."
             )

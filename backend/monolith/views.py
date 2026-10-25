@@ -11,10 +11,10 @@ from rest_framework.views import APIView
 from wintersehn.accounts.consent import push_to_govex
 
 from . import govex, sharing, swissfy
-from .images import encode_image
+from .images import encode_image, image_name, thumbnail
 from .models import (
     Addiction,
-    Attachment,
+    ChatImage,
     Dossier,
     Event,
     EventReference,
@@ -32,6 +32,7 @@ from .permissions import CanViewMonolith, CanViewShared
 from .serializers import (
     AddictionSerializer,
     CharacterSerializer,
+    ChatImageSerializer,
     ChatMessageSerializer,
     ChatParticipantSerializer,
     DossierDetailSerializer,
@@ -198,53 +199,65 @@ class AddictionDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class EventListCreateView(APIView):
+class EventView(APIView):
     permission_classes = [IsAuthenticated, CanViewMonolith]
 
+    def event(self, uuid, event):
+        return get_object_or_404(
+            Event.objects.with_links(), dossiers__uuid=uuid, uuid=event
+        )
+
+    def context(self, request, uuid):
+        return {"request": request, "dossier": get_object_or_404(Dossier, uuid=uuid)}
+
+    def respond(self, request, uuid, event, status_code=status.HTTP_200_OK):
+        event = Event.objects.with_links().get(pk=event.pk)
+        serializer = EventDetailSerializer(event, context=self.context(request, uuid))
+        return Response(serializer.data, status=status_code)
+
+
+class EventListCreateView(EventView):
     def get(self, request, uuid):
-        events = Event.objects.with_links().filter(dossier__uuid=uuid)
-        return Response(EventSerializer(events, many=True).data)
+        events = Event.objects.with_links().filter(dossiers__uuid=uuid)
+        context = self.context(request, uuid)
+        return Response(EventSerializer(events, many=True, context=context).data)
 
     def post(self, request, uuid):
-        dossier = get_object_or_404(Dossier, uuid=uuid)
-        serializer = EventSerializer(data=request.data)
+        context = self.context(request, uuid)
+        serializer = EventSerializer(data=request.data, context=context)
         serializer.is_valid(raise_exception=True)
-        serializer.save(dossier=dossier, created_by=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        event = serializer.save(created_by=request.user)
+        event.dossiers.add(context["dossier"])
+        return self.respond(request, uuid, event, status.HTTP_201_CREATED)
 
 
-class EventDetailView(APIView):
-    permission_classes = [IsAuthenticated, CanViewMonolith]
-
+class EventDetailView(EventView):
     def get(self, request, uuid, event):
-        event = get_object_or_404(
-            Event.objects.with_links(), dossier__uuid=uuid, uuid=event
-        )
-        return Response(EventDetailSerializer(event, context={"request": request}).data)
+        return self.respond(request, uuid, self.event(uuid, event))
 
     def patch(self, request, uuid, event):
-        event = get_object_or_404(Event, dossier__uuid=uuid, uuid=event)
         serializer = EventDetailSerializer(
-            event, data=request.data, partial=True, context={"request": request}
+            self.event(uuid, event),
+            data=request.data,
+            partial=True,
+            context=self.context(request, uuid),
         )
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        return self.respond(request, uuid, serializer.save())
 
     def delete(self, request, uuid, event):
-        get_object_or_404(Event, dossier__uuid=uuid, uuid=event).delete()
+        self.event(uuid, event).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class EventLinksView(APIView):
-    permission_classes = [IsAuthenticated, CanViewMonolith]
-
+class EventLinksView(EventView):
     def put(self, request, uuid, event):
-        event = get_object_or_404(Event, dossier__uuid=uuid, uuid=event)
+        event = self.event(uuid, event)
         serializer = EventLinksSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        event.link(**serializer.validated_data)
-        return Response(EventDetailSerializer(event, context={"request": request}).data)
+        dossier = self.context(request, uuid)["dossier"]
+        event.link(dossier, **serializer.validated_data)
+        return self.respond(request, uuid, event)
 
 
 class EventReferenceView(APIView):
@@ -253,7 +266,7 @@ class EventReferenceView(APIView):
     def reference(self, uuid, event, reference):
         return get_object_or_404(
             EventReference,
-            event__dossier__uuid=uuid,
+            event__dossiers__uuid=uuid,
             event__uuid=event,
             uuid=reference,
         )
@@ -266,12 +279,12 @@ class EventReferenceView(APIView):
 class EventReferenceListCreateView(EventReferenceView):
     def get(self, request, uuid, event):
         references = EventReference.objects.with_chat().filter(
-            event__dossier__uuid=uuid, event__uuid=event
+            event__dossiers__uuid=uuid, event__uuid=event
         )
         return Response(EventReferenceSerializer(references, many=True).data)
 
     def post(self, request, uuid, event):
-        event = get_object_or_404(Event, dossier__uuid=uuid, uuid=event)
+        event = get_object_or_404(Event, dossiers__uuid=uuid, uuid=event)
         serializer = EventReferenceSerializer(
             data=request.data, context={"event": event}
         )
@@ -355,30 +368,56 @@ class ChatMessageDetailView(ChatItemDetailView):
     serializer_class = ChatMessageSerializer
 
 
-class AttachmentCreateView(EventReferenceView):
+class ChatImageListCreateView(APIView):
+    permission_classes = [IsAuthenticated, CanViewMonolith]
     parser_classes = [MultiPartParser]
 
-    def post(self, request, uuid, event, reference):
-        reference = self.reference(uuid, event, reference)
+    def get(self, request):
+        images = ChatImage.objects.with_usage()
+        return Response(ChatImageSerializer(images, many=True).data)
+
+    def post(self, request):
         upload = request.FILES.get("file")
         if not upload:
             raise ValidationError({"file": "Keine Datei hochgeladen."})
-        attachment = Attachment.objects.create(
-            reference=reference, data=encode_image(upload)
-        )
-        return Response({"uuid": attachment.uuid}, status=status.HTTP_201_CREATED)
+        name = request.data.get("name", "").strip() or image_name(upload)
+        image = ChatImage.objects.store(name, encode_image(upload), request.user)
+        image = ChatImage.objects.with_usage().get(pk=image.pk)
+        return Response(ChatImageSerializer(image).data, status=status.HTTP_201_CREATED)
 
 
-class AttachmentDetailView(EventReferenceView):
-    def get(self, request, uuid, event, reference, attachment):
-        attachment = get_object_or_404(
-            Attachment,
-            reference=self.reference(uuid, event, reference),
-            uuid=attachment,
-        )
-        response = HttpResponse(attachment.data, content_type="image/webp")
+class ChatImageDetailView(APIView):
+    permission_classes = [IsAuthenticated, CanViewMonolith]
+
+    def get(self, request, image):
+        image = get_object_or_404(ChatImage, uuid=image)
+        size = request.query_params.get("size", "")
+        data = thumbnail(image.data, int(size) if size.isdigit() else None)
+        response = HttpResponse(data, content_type="image/webp")
         response["Cache-Control"] = "private, max-age=86400"
         return response
+
+    def patch(self, request, image):
+        image = get_object_or_404(ChatImage.objects.with_usage(), uuid=image)
+        serializer = ChatImageSerializer(image, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, image):
+        get_object_or_404(ChatImage, uuid=image).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UnusedChatImagesView(APIView):
+    permission_classes = [IsAuthenticated, CanViewMonolith]
+
+    def delete(self, request):
+        ChatImage.objects.filter(
+            pk__in=ChatImage.objects.unused().values("pk")
+        ).delete()
+        images = ChatImage.objects.with_usage()
+        return Response(ChatImageSerializer(images, many=True).data)
 
 
 class CharacterView(APIView):

@@ -6,7 +6,7 @@ from .models import (
     TrustEntry,
     Visibility,
 )
-from .serializers import DossierDetailSerializer
+from .serializers import DossierDetailSerializer, owned
 
 FULL = Visibility.FULL
 SHOWN = {
@@ -33,15 +33,21 @@ def meta_items(share):
     ]
 
 
-def event_links(event):
+def event_links(event, dossier):
+    stances = owned(event.stances.all(), dossier)
+    relationships = [
+        relationship
+        for relationship in event.relationships.all()
+        if dossier.pk in (relationship.dossier_id, relationship.person_id)
+    ]
     return [
-        *dict.fromkeys(f"stance:{stance.topic}" for stance in event.stances.all()),
-        *dict.fromkeys("character:traits" for trait in event.traits.all()),
-        *(f"addiction:{addiction.pk}" for addiction in event.addictions.all()),
-        *(f"reference:{reference.uuid}" for reference in event.references.all()),
+        *dict.fromkeys(f"stance:{stance.topic}" for stance in stances),
+        *dict.fromkeys("character:traits" for _ in owned(event.traits.all(), dossier)),
+        *(f"addiction:{item.pk}" for item in owned(event.addictions.all(), dossier)),
+        *(f"reference:{item.uuid}" for item in owned(event.references.all(), dossier)),
         *(
-            f"relationship:{relationship.other(event.dossier).uuid}"
-            for relationship in event.relationships.all()
+            f"relationship:{relationship.other(dossier).uuid}"
+            for relationship in relationships
         ),
     ]
 
@@ -52,13 +58,13 @@ def character_items(share):
 
 
 def event_items(share):
-    events = Event.objects.with_links().filter(dossier=share.dossier)
+    events = Event.objects.with_links().filter(dossiers=share.dossier)
     return [
         item(
             f"event:{event.uuid}",
             {"date": event.date.isoformat(), "title": event.title},
             event.text,
-            event_links(event),
+            event_links(event, share.dossier),
         )
         for event in events
     ]
