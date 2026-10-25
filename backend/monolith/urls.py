@@ -35,6 +35,46 @@ urlpatterns = [
         name="dossier-event-links",
     ),
     path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/references/",
+        views.EventReferenceListCreateView.as_view(),
+        name="event-references",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/",
+        views.EventReferenceDetailView.as_view(),
+        name="event-reference",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/participants/",
+        views.ChatParticipantListView.as_view(),
+        name="event-reference-participants",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/participants/<uuid:item>/",
+        views.ChatParticipantDetailView.as_view(),
+        name="event-reference-participant",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/messages/",
+        views.ChatMessageListView.as_view(),
+        name="event-reference-messages",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/messages/<uuid:item>/",
+        views.ChatMessageDetailView.as_view(),
+        name="event-reference-message",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/attachments/",
+        views.AttachmentCreateView.as_view(),
+        name="event-reference-attachments",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/attachments/<uuid:attachment>/",
+        views.AttachmentDetailView.as_view(),
+        name="event-reference-attachment",
+    ),
+    path(
         "dossiers/<uuid:uuid>/addictions/",
         views.AddictionListCreateView.as_view(),
         name="dossier-addictions",
@@ -68,6 +108,11 @@ urlpatterns = [
         "dossiers/<uuid:uuid>/stances/<str:topic>/",
         views.StanceDetailView.as_view(),
         name="dossier-stance",
+    ),
+    path(
+        "dossiers/<uuid:uuid>/character/",
+        views.CharacterView.as_view(),
+        name="dossier-character",
     ),
     path(
         "dossiers/<uuid:uuid>/trust/",

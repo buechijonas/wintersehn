@@ -17,6 +17,9 @@ export const conductLabels = {
   lied: 'Gelogen',
   debt_repaid: 'Schulden beglichen',
   debt_unpaid: 'Schulden nicht beglichen',
+  fault_admitted: 'Fehler eingestanden',
+  fault_denied: 'Fehler nicht eingestanden',
+  competed: 'Alles zum Wettbewerb gemacht',
 }
 
 export function formatPoints(points) {

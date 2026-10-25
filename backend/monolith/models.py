@@ -19,9 +19,18 @@ from django.db.models.functions import Coalesce, Collate, Greatest, Least
 
 from wintersehn.accounts.models import UserProfile
 
-from .catalog import CATALOG, COMPASS, CONDUCT_POINTS, SPECTRUM, WEIGHTS
+from .catalog import (
+    CATALOG,
+    CHARACTER,
+    COMPASS,
+    CONDUCT_POINTS,
+    CONDUCT_TRAITS,
+    SPECTRUM,
+    WEIGHTS,
+)
 from .crypto import blind_index, blind_indexes
 from .fields import (
+    EncryptedBinaryField,
     EncryptedCharField,
     EncryptedDateField,
     EncryptedTextField,
@@ -233,6 +242,7 @@ class EventQuerySet(models.QuerySet):
     def with_links(self):
         return self.select_related("dossier").prefetch_related(
             "stances",
+            "traits",
             "addictions",
             "references",
             "relationships__dossier",
@@ -263,17 +273,143 @@ class Event(models.Model):
     def __str__(self):
         return self.title
 
-    def link(self, stances, addictions, references, relationships):
+    def link(self, stances, traits, addictions, references, relationships):
         self.stances.update(event=None)
+        self.traits.update(event=None)
         self.addictions.update(event=None)
         self.references.update(event=None)
         self.relationships.update(event=None)
         self.dossier.stances.matching(stances).update(event=self)
+        self.dossier.traits.matching(traits).update(event=self)
         self.dossier.addictions.of_kinds(addictions).update(event=self)
         self.dossier.references.filter(uuid__in=references).update(event=self)
         Relationship.objects.with_persons(self.dossier, relationships).update(
             event=self
         )
+
+
+class EventReferenceKind(models.TextChoices):
+    TEXT = "text", "Text"
+    CHAT = "chat", "Chat"
+
+
+class EventReferenceQuerySet(models.QuerySet):
+    def with_chat(self):
+        return self.prefetch_related(
+            "links", "participants", "messages__sender", "messages__target"
+        )
+
+
+class EventReference(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    event = models.ForeignKey(
+        Event, on_delete=models.CASCADE, related_name="event_references"
+    )
+    kind = models.CharField(max_length=10, choices=EventReferenceKind.choices)
+    icon = models.CharField(max_length=50, blank=True, validators=[validate_slug])
+    title = EncryptedCharField(max_length=200)
+    text = EncryptedTextField(blank=True)
+    links = models.ManyToManyField(
+        "self", blank=True, symmetrical=False, related_name="linked_by"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = EventReferenceQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        verbose_name_plural = "Event references"
+
+    def __str__(self):
+        return self.title
+
+    def fight(self):
+        health = {
+            participant.pk: participant.health
+            for participant in self.participants.all()
+        }
+        dealt = defaultdict(int)
+        remaining = {}
+        for message in self.messages.all():
+            if not (message.attack and message.target_id):
+                continue
+            health[message.target_id] = max(
+                0, health[message.target_id] - message.attack
+            )
+            dealt[message.sender_id] += message.attack
+            remaining[message.pk] = health[message.target_id]
+        return {"health": health, "dealt": dealt, "remaining": remaining}
+
+
+class Attachment(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    reference = models.ForeignKey(
+        EventReference, on_delete=models.CASCADE, related_name="attachments"
+    )
+    data = EncryptedBinaryField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.uuid)
+
+
+class ChatSide(models.TextChoices):
+    LEFT = "left", "Left"
+    RIGHT = "right", "Right"
+
+
+class ChatParticipant(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    reference = models.ForeignKey(
+        EventReference, on_delete=models.CASCADE, related_name="participants"
+    )
+    name = EncryptedCharField(max_length=100)
+    side = models.CharField(
+        max_length=5, choices=ChatSide.choices, default=ChatSide.LEFT
+    )
+    health = models.PositiveSmallIntegerField(default=100, validators=bounded(1, 1000))
+    avatar = models.ForeignKey(
+        Attachment, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    dossier = models.ForeignKey(
+        Dossier, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return self.name
+
+
+class ChatMessage(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    reference = models.ForeignKey(
+        EventReference, on_delete=models.CASCADE, related_name="messages"
+    )
+    sender = models.ForeignKey(
+        ChatParticipant, on_delete=models.CASCADE, related_name="+"
+    )
+    text = EncryptedTextField(blank=True)
+    image = models.ForeignKey(
+        Attachment, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    attack = models.PositiveSmallIntegerField(default=0, validators=bounded(0, 1000))
+    target = models.ForeignKey(
+        ChatParticipant,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return f"{self.sender}: {self.text[:40]}"
 
 
 class Topic(models.TextChoices):
@@ -379,6 +515,66 @@ class Stance(models.Model):
 
     def __str__(self):
         return f"{self.dossier} – {self.get_topic_display()}: {self.tag}"
+
+
+@dataclass
+class Character:
+    tags: list
+
+    @property
+    def suggestions(self):
+        return CHARACTER
+
+
+class TraitQuerySet(models.QuerySet):
+    def matching(self, tags):
+        return self.filter(tag_hash__in=blind_indexes(tags))
+
+    def character(self, dossier):
+        return Character(
+            list(self.filter(dossier=dossier).values_list("tag", flat=True))
+        )
+
+    def ensure(self, dossier, tags):
+        traits = self.filter(dossier=dossier)
+        existing = set(traits.values_list("tag", flat=True))
+        self.bulk_create(
+            Trait(dossier=dossier, tag=tag) for tag in tags if tag not in existing
+        )
+        return traits.matching(tags)
+
+    def set_tags(self, dossier, tags):
+        self.filter(dossier=dossier).exclude(tag_hash__in=blind_indexes(tags)).delete()
+        self.ensure(dossier, tags)
+        return Character(tags)
+
+
+class Trait(models.Model):
+    dossier = models.ForeignKey(
+        Dossier, on_delete=models.CASCADE, related_name="traits"
+    )
+    tag = EncryptedCharField(max_length=60)
+    tag_hash = HashField("tag")
+    event = models.ForeignKey(
+        Event,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="traits",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = TraitQuerySet.as_manager()
+
+    class Meta:
+        ordering = ["created_at", "id"]
+        verbose_name_plural = "Traits"
+        constraints = [
+            models.UniqueConstraint(fields=["dossier", "tag_hash"], name="unique_trait")
+        ]
+
+    def __str__(self):
+        return f"{self.dossier} – {self.tag}"
 
 
 class AddictionKind(models.TextChoices):
@@ -495,6 +691,9 @@ class Conduct(models.TextChoices):
     LIED = "lied", "Lied"
     DEBT_REPAID = "debt_repaid", "Debt repaid"
     DEBT_UNPAID = "debt_unpaid", "Debt unpaid"
+    FAULT_ADMITTED = "fault_admitted", "Fault admitted"
+    FAULT_DENIED = "fault_denied", "Fault denied"
+    COMPETED = "competed", "Turned everything into a competition"
 
 
 def conduct_points():
@@ -518,7 +717,11 @@ class TrustEntryQuerySet(models.QuerySet):
         return Dossier.objects.annotate(points=Coalesce(models.Subquery(total), 0))
 
     def ledger(self, user, dossier):
-        entries = self.filter(user=user, dossier=dossier).select_related("event")
+        entries = (
+            self.filter(user=user, dossier=dossier)
+            .select_related("event")
+            .prefetch_related("traits")
+        )
         points = sum(entry.points for entry in entries)
         trust = Trust.objects.filter(user=user, dossier=dossier).first()
         return {
@@ -526,8 +729,18 @@ class TrustEntryQuerySet(models.QuerySet):
             "level": trust and trust.level,
             "suggested_level": Trust.suggested_level(points) if entries else None,
             "conducts": CONDUCT_POINTS,
+            "conduct_traits": CONDUCT_TRAITS,
+            "traits": Trait.objects.character(dossier).tags,
             "entries": entries,
         }
+
+    def impact(self, user, event):
+        entries = (
+            self.filter(user=user, event=event)
+            .select_related("event")
+            .prefetch_related("traits")
+        )
+        return {"points": sum(entry.points for entry in entries), "entries": entries}
 
 
 class TrustEntry(models.Model):
@@ -548,6 +761,7 @@ class TrustEntry(models.Model):
         on_delete=models.SET_NULL,
         related_name="trust_entries",
     )
+    traits = models.ManyToManyField(Trait, blank=True, related_name="trust_entries")
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = TrustEntryQuerySet.as_manager()

@@ -31,6 +31,10 @@ const formatters = {
     label: (key) => fieldLabels[key],
     value: (value, key) => formatField(key, value) || '–',
   },
+  character: {
+    label: () => 'Charakter',
+    value: (tags) => tags.join(', '),
+  },
   events: {
     label: ({ date, title }) => `${formatDate(date)} · ${title}`,
     value: (text) => text || '–',

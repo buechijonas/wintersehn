@@ -3,7 +3,7 @@ import { platformName } from '@/data/platforms.js'
 import { statusLabels } from '@/data/statuses.js'
 import { topics } from '@/data/topics.js'
 
-export const linkTypes = ['stances', 'addictions', 'references', 'relationships']
+export const linkTypes = ['stances', 'traits', 'addictions', 'references', 'relationships']
 
 export function link(type, ref, text) {
   return { type, ref, text, key: JSON.stringify([type, ref]) }
@@ -11,6 +11,10 @@ export function link(type, ref, text) {
 
 export function stanceLink({ topic, tag }) {
   return link('stances', { topic, tag }, `${topics[topic].label}: ${tag}`)
+}
+
+export function traitLink(tag) {
+  return link('traits', tag, `Charakter: ${tag}`)
 }
 
 export function addictionLink({ kind, frequency }) {
@@ -29,6 +33,7 @@ export function relationshipLink({ person, status }) {
 export function eventLinks(event) {
   return [
     ...event.stances.map(stanceLink),
+    ...event.traits.map(traitLink),
     ...event.addictions.map(addictionLink),
     ...event.references.map(referenceLink),
     ...event.relationships.map(relationshipLink),

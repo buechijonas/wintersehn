@@ -10,6 +10,7 @@ from .models import (
     Share,
     ShareRule,
     Stance,
+    Trait,
     Trust,
     TrustEntry,
 )
@@ -61,9 +62,20 @@ class StanceInline(MonolithAccess, admin.TabularInline):
     extra = 0
 
 
+class TraitInline(MonolithAccess, admin.TabularInline):
+    model = Trait
+    extra = 0
+
+
 @admin.register(Dossier)
 class DossierAdmin(MonolithAccess, admin.ModelAdmin):
-    inlines = [RelationshipInline, ReferenceInline, StanceInline, AddictionInline]
+    inlines = [
+        RelationshipInline,
+        ReferenceInline,
+        StanceInline,
+        TraitInline,
+        AddictionInline,
+    ]
     list_display = ["title", "created_by", "created_at"]
     readonly_fields = ["created_at"]
 

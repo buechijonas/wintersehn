@@ -2,6 +2,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -10,27 +11,35 @@ from rest_framework.views import APIView
 from wintersehn.accounts.consent import push_to_govex
 
 from . import govex, sharing, swissfy
+from .images import encode_image
 from .models import (
     Addiction,
+    Attachment,
     Dossier,
     Event,
+    EventReference,
     NetworkSettings,
     Reference,
     Relationship,
     Share,
     Stance,
     Topic,
+    Trait,
     Trust,
     TrustEntry,
 )
 from .permissions import CanViewMonolith, CanViewShared
 from .serializers import (
     AddictionSerializer,
+    CharacterSerializer,
+    ChatMessageSerializer,
+    ChatParticipantSerializer,
     DossierDetailSerializer,
     DossierPointsSerializer,
     DossierSerializer,
     EventDetailSerializer,
     EventLinksSerializer,
+    EventReferenceSerializer,
     EventSerializer,
     NetworkSettingsSerializer,
     ReferenceSerializer,
@@ -211,11 +220,13 @@ class EventDetailView(APIView):
         event = get_object_or_404(
             Event.objects.with_links(), dossier__uuid=uuid, uuid=event
         )
-        return Response(EventDetailSerializer(event).data)
+        return Response(EventDetailSerializer(event, context={"request": request}).data)
 
     def patch(self, request, uuid, event):
         event = get_object_or_404(Event, dossier__uuid=uuid, uuid=event)
-        serializer = EventDetailSerializer(event, data=request.data, partial=True)
+        serializer = EventDetailSerializer(
+            event, data=request.data, partial=True, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -233,7 +244,156 @@ class EventLinksView(APIView):
         serializer = EventLinksSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         event.link(**serializer.validated_data)
-        return Response(EventDetailSerializer(event).data)
+        return Response(EventDetailSerializer(event, context={"request": request}).data)
+
+
+class EventReferenceView(APIView):
+    permission_classes = [IsAuthenticated, CanViewMonolith]
+
+    def reference(self, uuid, event, reference):
+        return get_object_or_404(
+            EventReference,
+            event__dossier__uuid=uuid,
+            event__uuid=event,
+            uuid=reference,
+        )
+
+    def respond(self, reference, status_code=status.HTTP_200_OK):
+        reference = EventReference.objects.with_chat().get(pk=reference.pk)
+        return Response(EventReferenceSerializer(reference).data, status=status_code)
+
+
+class EventReferenceListCreateView(EventReferenceView):
+    def get(self, request, uuid, event):
+        references = EventReference.objects.with_chat().filter(
+            event__dossier__uuid=uuid, event__uuid=event
+        )
+        return Response(EventReferenceSerializer(references, many=True).data)
+
+    def post(self, request, uuid, event):
+        event = get_object_or_404(Event, dossier__uuid=uuid, uuid=event)
+        serializer = EventReferenceSerializer(
+            data=request.data, context={"event": event}
+        )
+        serializer.is_valid(raise_exception=True)
+        reference = serializer.save(event=event)
+        return self.respond(reference, status.HTTP_201_CREATED)
+
+
+class EventReferenceDetailView(EventReferenceView):
+    def get(self, request, uuid, event, reference):
+        return self.respond(self.reference(uuid, event, reference))
+
+    def patch(self, request, uuid, event, reference):
+        reference = self.reference(uuid, event, reference)
+        serializer = EventReferenceSerializer(
+            reference,
+            data=request.data,
+            partial=True,
+            context={"event": reference.event},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return self.respond(reference)
+
+    def delete(self, request, uuid, event, reference):
+        self.reference(uuid, event, reference).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ChatItemListView(EventReferenceView):
+    serializer_class = None
+
+    def post(self, request, uuid, event, reference):
+        reference = self.reference(uuid, event, reference)
+        serializer = self.serializer_class(
+            data=request.data, context={"reference": reference}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save(reference=reference)
+        return self.respond(reference, status.HTTP_201_CREATED)
+
+
+class ChatItemDetailView(EventReferenceView):
+    serializer_class = None
+
+    def item(self, reference, item):
+        model = self.serializer_class.Meta.model
+        return get_object_or_404(model, reference=reference, uuid=item)
+
+    def patch(self, request, uuid, event, reference, item):
+        reference = self.reference(uuid, event, reference)
+        serializer = self.serializer_class(
+            self.item(reference, item),
+            data=request.data,
+            partial=True,
+            context={"reference": reference},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return self.respond(reference)
+
+    def delete(self, request, uuid, event, reference, item):
+        reference = self.reference(uuid, event, reference)
+        self.item(reference, item).delete()
+        return self.respond(reference)
+
+
+class ChatParticipantListView(ChatItemListView):
+    serializer_class = ChatParticipantSerializer
+
+
+class ChatParticipantDetailView(ChatItemDetailView):
+    serializer_class = ChatParticipantSerializer
+
+
+class ChatMessageListView(ChatItemListView):
+    serializer_class = ChatMessageSerializer
+
+
+class ChatMessageDetailView(ChatItemDetailView):
+    serializer_class = ChatMessageSerializer
+
+
+class AttachmentCreateView(EventReferenceView):
+    parser_classes = [MultiPartParser]
+
+    def post(self, request, uuid, event, reference):
+        reference = self.reference(uuid, event, reference)
+        upload = request.FILES.get("file")
+        if not upload:
+            raise ValidationError({"file": "Keine Datei hochgeladen."})
+        attachment = Attachment.objects.create(
+            reference=reference, data=encode_image(upload)
+        )
+        return Response({"uuid": attachment.uuid}, status=status.HTTP_201_CREATED)
+
+
+class AttachmentDetailView(EventReferenceView):
+    def get(self, request, uuid, event, reference, attachment):
+        attachment = get_object_or_404(
+            Attachment,
+            reference=self.reference(uuid, event, reference),
+            uuid=attachment,
+        )
+        response = HttpResponse(attachment.data, content_type="image/webp")
+        response["Cache-Control"] = "private, max-age=86400"
+        return response
+
+
+class CharacterView(APIView):
+    permission_classes = [IsAuthenticated, CanViewMonolith]
+
+    def get(self, request, uuid):
+        dossier = get_object_or_404(Dossier, uuid=uuid)
+        return Response(CharacterSerializer(Trait.objects.character(dossier)).data)
+
+    def put(self, request, uuid):
+        dossier = get_object_or_404(Dossier, uuid=uuid)
+        serializer = CharacterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        character = Trait.objects.set_tags(dossier, serializer.validated_data["tags"])
+        return Response(CharacterSerializer(character).data)
 
 
 class StanceListView(APIView):

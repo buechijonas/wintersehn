@@ -131,6 +131,84 @@ export const useDossiersStore = defineStore('dossiers', () => {
     )
   }
 
+  function eventReferenceUrl(uuid, event, path = '') {
+    return `/api/monolith/dossiers/${uuid}/events/${event}/references/${path}`
+  }
+
+  function fetchEventReferences(uuid, event) {
+    return request(eventReferenceUrl(uuid, event), 'Referenzen konnten nicht geladen werden.')
+  }
+
+  function fetchEventReference(uuid, event, reference) {
+    return request(
+      eventReferenceUrl(uuid, event, `${reference}/`),
+      'Referenz konnte nicht geladen werden.',
+    )
+  }
+
+  function createEventReference(uuid, event, data) {
+    return request(
+      eventReferenceUrl(uuid, event),
+      'Referenz konnte nicht erstellt werden.',
+      json('POST', data),
+    )
+  }
+
+  function updateEventReference(uuid, event, reference, data) {
+    return request(
+      eventReferenceUrl(uuid, event, `${reference}/`),
+      'Speichern fehlgeschlagen.',
+      json('PATCH', data),
+    )
+  }
+
+  function deleteEventReference(uuid, event, reference) {
+    return request(
+      eventReferenceUrl(uuid, event, `${reference}/`),
+      'Referenz konnte nicht gelöscht werden.',
+      { method: 'DELETE' },
+    )
+  }
+
+  function addChatItem(uuid, event, reference, collection, data) {
+    return request(
+      eventReferenceUrl(uuid, event, `${reference}/${collection}/`),
+      'Hinzufügen fehlgeschlagen.',
+      json('POST', data),
+    )
+  }
+
+  function updateChatItem(uuid, event, reference, collection, item, data) {
+    return request(
+      eventReferenceUrl(uuid, event, `${reference}/${collection}/${item}/`),
+      'Speichern fehlgeschlagen.',
+      json('PATCH', data),
+    )
+  }
+
+  function removeChatItem(uuid, event, reference, collection, item) {
+    return request(
+      eventReferenceUrl(uuid, event, `${reference}/${collection}/${item}/`),
+      'Entfernen fehlgeschlagen.',
+      { method: 'DELETE' },
+    )
+  }
+
+  async function uploadAttachment(uuid, event, reference, file) {
+    const body = new FormData()
+    body.append('file', file)
+    const { uuid: attachment } = await request(
+      eventReferenceUrl(uuid, event, `${reference}/attachments/`),
+      'Bild konnte nicht hochgeladen werden.',
+      { method: 'POST', body },
+    )
+    return attachment
+  }
+
+  function attachmentUrl(uuid, event, reference, attachment) {
+    return eventReferenceUrl(uuid, event, `${reference}/attachments/${attachment}/`)
+  }
+
   function fetchAddictions(uuid) {
     return request(
       `/api/monolith/dossiers/${uuid}/addictions/`,
@@ -204,6 +282,21 @@ export const useDossiersStore = defineStore('dossiers', () => {
       `/api/monolith/dossiers/${uuid}/stances/${topic}/`,
       'Speichern fehlgeschlagen.',
       json('PUT', data),
+    )
+  }
+
+  function fetchCharacter(uuid) {
+    return request(
+      `/api/monolith/dossiers/${uuid}/character/`,
+      'Charakter konnte nicht geladen werden.',
+    )
+  }
+
+  function saveCharacter(uuid, tags) {
+    return request(
+      `/api/monolith/dossiers/${uuid}/character/`,
+      'Speichern fehlgeschlagen.',
+      json('PUT', { tags }),
     )
   }
 
@@ -397,6 +490,16 @@ export const useDossiersStore = defineStore('dossiers', () => {
     updateEvent,
     deleteEvent,
     linkEvent,
+    fetchEventReferences,
+    fetchEventReference,
+    createEventReference,
+    updateEventReference,
+    deleteEventReference,
+    addChatItem,
+    updateChatItem,
+    removeChatItem,
+    uploadAttachment,
+    attachmentUrl,
     fetchAddictions,
     addAddiction,
     updateAddiction,
@@ -407,6 +510,8 @@ export const useDossiersStore = defineStore('dossiers', () => {
     fetchStances,
     fetchStanceSummary,
     saveStance,
+    fetchCharacter,
+    saveCharacter,
     fetchNetwork,
     fetchNetworkSettings,
     saveNetworkSettings,

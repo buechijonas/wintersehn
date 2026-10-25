@@ -51,6 +51,7 @@ import {
   referenceLink,
   relationshipLink,
   stanceLink,
+  traitLink,
 } from '@/data/links.js'
 import { useDossiersStore } from '@/stores/dossiers.js'
 
@@ -85,8 +86,9 @@ export default {
   methods: {
     loadOptions() {
       return this.runAction(async () => {
-        const [stances, addictions, references, relationships] = await Promise.all([
+        const [stances, character, addictions, references, relationships] = await Promise.all([
           this.dossiersStore.fetchStances(this.uuid),
+          this.dossiersStore.fetchCharacter(this.uuid),
           this.dossiersStore.fetchAddictions(this.uuid),
           this.dossiersStore.fetchReferences(this.uuid),
           this.dossiersStore.fetchRelationships(this.uuid),
@@ -98,6 +100,7 @@ export default {
               tags.map((tag) => stanceLink({ topic, tag })),
             ),
           },
+          { label: 'Charakter', links: character.tags.map(traitLink) },
           { label: 'Sucht', links: addictions.map(addictionLink) },
           { label: 'Beziehungen', links: relationships.map(relationshipLink) },
           { label: 'Referenzen', links: references.map(referenceLink) },
