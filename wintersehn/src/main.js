@@ -22,6 +22,14 @@ app.provide('app', {
   navigationItems,
   footerLinks,
   hasAdmin: true,
+  appSwitches: [
+    { label: 'GOVEX', url: import.meta.env.VITE_GOVEX_URL ?? 'https://auth.neotyra.com' },
+    {
+      label: 'MONOLITH',
+      url: import.meta.env.VITE_MONOLITH_URL ?? 'https://monolith.wintersehn.ch',
+      permission: 'can_view_monolith',
+    },
+  ],
   displayName: (user) => (user?.verified ? 'Jonas S. Büchi' : packageJson.name),
 })
 

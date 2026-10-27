@@ -1,7 +1,18 @@
 <template>
-  <div class="app-nav col-start-2 row-start-1 hidden h-12 w-80 items-center pl-8 lg:flex">
+  <div
+    class="app-nav relative z-40 col-start-2 row-start-1 hidden h-12 w-80 items-center pl-8 lg:flex"
+    :class="{ 'dropdown dropdown-bottom': appSwitches.length }"
+  >
     <div v-if="!authStore.ready" class="skeleton h-5 w-40"></div>
-    <h1 v-else class="text-[1.2rem]">{{ displayName }}</h1>
+    <h1
+      v-else
+      v-bind="appSwitches.length ? { tabindex: 0, role: 'button' } : {}"
+      class="text-[1.2rem]"
+      :class="{ 'cursor-pointer': appSwitches.length }"
+    >
+      {{ displayName }}
+    </h1>
+    <AppSwitchMenu v-if="appSwitches.length" :targets="appSwitches" class="w-full" />
   </div>
   <div class="col-start-2 row-start-1 drawer drawer-end lg:drawer-open">
     <input id="my-drawer-3" v-model="isNavDrawerOpen" type="checkbox" class="drawer-toggle" />
@@ -86,13 +97,15 @@ import { RouterLink } from 'vue-router'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import AppIcon from '@core/components/common/AppIcon.vue'
 import CipherText from '@core/components/common/CipherText.vue'
+import AppSwitchMenu from '@core/components/common/AppSwitchMenu.vue'
 import { icons } from '@core/assets/icons.js'
 import { isNavDrawerOpen } from '@core/lib/navDrawer.js'
 import { useAuthStore } from '@core/stores/auth.js'
+import { appSwitchTargets } from '@core/lib/appSwitch.js'
 
 export default {
   name: 'BaseNavigation',
-  components: { RouterLink, BaseButton, AppIcon, CipherText },
+  components: { RouterLink, BaseButton, AppIcon, CipherText, AppSwitchMenu },
   inject: ['app'],
   props: {
     activeNavigation: {
@@ -117,6 +130,9 @@ export default {
       return this.app.navigationItems.filter(
         (item) => !item.requiresAuth || this.authStore.isAuthenticated,
       )
+    },
+    appSwitches() {
+      return appSwitchTargets(this.app, this.authStore.user)
     },
     isNavDrawerOpen: {
       get() {

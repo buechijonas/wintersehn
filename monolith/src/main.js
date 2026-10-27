@@ -21,6 +21,10 @@ app.provide('app', {
   navigationItems,
   footerLinks: [],
   hasAdmin: false,
+  appSwitches: [
+    { label: 'GOVEX', url: import.meta.env.VITE_GOVEX_URL ?? 'https://auth.neotyra.com' },
+    { label: 'Wintersehn', url: import.meta.env.VITE_WINTERSEHN_URL ?? 'https://wintersehn.ch' },
+  ],
   displayName: () => packageJson.name,
 })
 
