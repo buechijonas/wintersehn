@@ -21,8 +21,8 @@
       <ul v-else class="menu w-full lg:w-80 p-4 gap-2">
         <li v-for="item in navigationItems" :key="item.key">
           <component
-            :is="isLocked(item) ? 'span' : RouterLink"
-            v-bind="isLocked(item) ? { 'aria-disabled': 'true' } : { to: item.to }"
+            :is="linkComponent(item)"
+            v-bind="linkAttributes(item)"
             class="nav-item flex items-center gap-3 p-4"
             :class="{
               'active bg-wntrs-highlight text-primary': activeNavigation === item.key,
@@ -33,6 +33,7 @@
             <img :src="icons[item.icon]" alt="" class="nav-icon size-6 lg:size-5 shrink-0" />
             <CipherText v-if="item.cipher && isLocked(item)" :length="item.label.length" />
             <span v-else>{{ item.label }}</span>
+            <span v-if="item.href" class="ml-auto text-xs text-wntrs-muted">Externer Link</span>
             <img v-if="isLocked(item)" :src="icons.lock" alt="" class="lock-icon size-3 shrink-0" />
           </component>
         </li>
@@ -132,6 +133,16 @@ export default {
       if (!this.authStore.isAuthenticated) return true
       if (item.permission) return !this.authStore.user?.[item.permission]
       return false
+    },
+    linkComponent(item) {
+      if (item.href) return 'a'
+      if (this.isLocked(item)) return 'span'
+      return RouterLink
+    },
+    linkAttributes(item) {
+      if (item.href) return { href: item.href, target: '_blank', rel: 'noopener' }
+      if (this.isLocked(item)) return { 'aria-disabled': 'true' }
+      return { to: item.to }
     },
   },
 }
