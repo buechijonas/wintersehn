@@ -15,14 +15,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .images import THUMBNAIL_SIZES, UPLOAD_NAME, build_thumbnail, thumbnail_path
-from .models import SiteContent
+from .models import Destination, SiteContent
+from .permissions import CountriesPermission
 from .rbac import (
     can_grant_permissions,
     managed_permissions_queryset,
     set_role_permissions,
 )
 from .rbac_serializers import PermissionSerializer, RoleSerializer
-from .serializers import SiteContentSerializer
+from .serializers import (
+    CountryMapSerializer,
+    DestinationSerializer,
+    SiteContentSerializer,
+)
 
 MAX_UPLOAD_SIZE = 512 * 1024 * 1024  # 512 MB
 MAX_DIMENSION = 2000
@@ -75,6 +80,37 @@ class SiteContentView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+def country_map_response():
+    country_map = {
+        "destination": Destination.objects.current(),
+        "sections": SiteContent.objects.data("countries", []),
+    }
+    return Response(CountryMapSerializer(country_map).data)
+
+
+class CountryMapView(APIView):
+    permission_classes = [CountriesPermission]
+
+    def get(self, request):
+        return country_map_response()
+
+
+class DestinationView(APIView):
+    permission_classes = [CountriesPermission]
+
+    def put(self, request):
+        serializer = DestinationSerializer(
+            Destination.objects.first(), data=request.data
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return country_map_response()
+
+    def delete(self, request):
+        Destination.objects.all().delete()
+        return country_map_response()
 
 
 class ContentImageUploadView(APIView):

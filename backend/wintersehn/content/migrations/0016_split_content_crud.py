@@ -44,7 +44,9 @@ def migrate_group_permissions(apps, schema_editor):
     Permission = apps.get_model("auth", "Permission")
     ContentType = apps.get_model("contenttypes", "ContentType")
 
-    content_type = ContentType.objects.get(app_label="content", model="sitecontent")
+    content_type, _ = ContentType.objects.get_or_create(
+        app_label="content", model="sitecontent"
+    )
 
     new_permissions_by_codename = {}
     for codename, name in NEW_PERMISSIONS:

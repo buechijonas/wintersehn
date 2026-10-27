@@ -1,10 +1,21 @@
+from functools import cached_property
+
 from django.db import models
+from django.utils import timezone
+
+
+class SiteContentQuerySet(models.QuerySet):
+    def data(self, key, default):
+        content = self.filter(key=key).first()
+        return content.data if content else default
 
 
 class SiteContent(models.Model):
     key = models.SlugField(unique=True)
     data = models.JSONField()
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = SiteContentQuerySet.as_manager()
 
     class Meta:
         permissions = [
@@ -43,3 +54,34 @@ class SiteContent(models.Model):
 
     def __str__(self):
         return self.key
+
+
+class DestinationQuerySet(models.QuerySet):
+    def current(self):
+        destination = self.first()
+        return destination if destination and destination.country else None
+
+
+class Destination(models.Model):
+    icon = models.CharField(max_length=100)
+    date = models.DateField(null=True, blank=True)
+
+    objects = DestinationQuerySet.as_manager()
+
+    def __str__(self):
+        return self.icon
+
+    @cached_property
+    def country(self):
+        sections = SiteContent.objects.data("countries", [])
+        matches = (
+            {**item, "section": section_index, "item": item_index}
+            for section_index, section in enumerate(sections)
+            for item_index, item in enumerate(section["items"])
+            if item["icon"] == self.icon
+        )
+        return next(matches, None)
+
+    @property
+    def days_left(self):
+        return (self.date - timezone.localdate()).days if self.date else None
