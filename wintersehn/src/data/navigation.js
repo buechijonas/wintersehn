@@ -29,7 +29,6 @@ export const navigationItems = [
     label: 'Länder',
     icon: 'plane',
     to: '/countries',
-    disabled: true,
     permission: 'can_view_countries',
   },
   { key: 'projects', label: 'Projekte', icon: 'box-open-full', to: '/projects', disabled: true },

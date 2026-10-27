@@ -12,5 +12,11 @@ urlpatterns = [
     path(
         "images/<str:name>/", views.ImageThumbnailView.as_view(), name="content-image-thumbnail"
     ),
+    path("countries/map/", views.CountryMapView.as_view(), name="country-map"),
+    path(
+        "countries/destination/",
+        views.DestinationView.as_view(),
+        name="country-destination",
+    ),
     path("<slug:key>/", views.SiteContentView.as_view(), name="site-content"),
 ]

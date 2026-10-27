@@ -13,6 +13,31 @@
 
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
+      <BaseCard class="p-6 mb-4">
+        <h3 class="mb-4">Nächstes Ziel</h3>
+        <form class="flex flex-wrap items-center gap-4" @submit.prevent="saveDestination">
+          <select
+            v-model="destinationIcon"
+            class="select select-sm w-full max-w-60"
+            :disabled="!canEdit"
+            aria-label="Land"
+          >
+            <option value="">Kein Ziel</option>
+            <option v-for="country in countryOptions" :key="country.icon" :value="country.icon">
+              {{ country.label }}
+            </option>
+          </select>
+          <input
+            v-model="destinationDate"
+            type="date"
+            class="input input-sm w-full max-w-44"
+            :disabled="!canEdit || !destinationIcon"
+            aria-label="Reisedatum"
+          />
+          <SaveButton v-if="canEdit" type="submit" :disabled="saving" />
+        </form>
+      </BaseCard>
+
       <SortableList
         :items="sections"
         :disabled="!canEdit"
@@ -104,9 +129,11 @@ import BaseFooter from '@core/components/common/BaseFooter.vue'
 import AddButton from '@core/components/common/AddButton.vue'
 import SectionDialog from '@core/components/common/SectionDialog.vue'
 import SortableList from '@core/components/common/SortableList.vue'
+import SaveButton from '@core/components/common/SaveButton.vue'
 import { countries } from '@core/assets/images.js'
 import { useAuthStore } from '@core/stores/auth.js'
 import { useContentStore } from '@core/stores/content.js'
+import { useCountriesStore } from '@/stores/countries.js'
 import confirmDeleteMixin from '@core/mixins/confirmDeleteMixin.js'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 
@@ -121,6 +148,7 @@ export default {
     SortableList,
     AddButton,
     SectionDialog,
+    SaveButton,
   },
   mixins: [confirmDeleteMixin, asyncActionMixin],
   data() {
@@ -129,6 +157,8 @@ export default {
         { label: 'Admin', to: '/admin' },
         { label: 'Länder' },
       ],
+      destinationIcon: '',
+      destinationDate: '',
     }
   },
   computed: {
@@ -137,6 +167,9 @@ export default {
     },
     contentStore() {
       return useContentStore()
+    },
+    countriesStore() {
+      return useCountriesStore()
     },
     countryIcons() {
       return countries
@@ -147,11 +180,28 @@ export default {
     canEdit() {
       return !!this.authStore.user?.can_change_countries
     },
+    countryOptions() {
+      const items = this.sections.flatMap((section) => section.items)
+      return [...new Map(items.map((item) => [item.icon, item])).values()]
+    },
   },
-  mounted() {
+  async mounted() {
     this.contentStore.fetchContent('countries')
+    const { destination } = await this.countriesStore.fetchMap()
+    this.destinationIcon = destination?.icon ?? ''
+    this.destinationDate = destination?.date ?? ''
   },
   methods: {
+    saveDestination() {
+      this.runAction(() =>
+        this.destinationIcon
+          ? this.countriesStore.saveDestination({
+              icon: this.destinationIcon,
+              date: this.destinationDate || null,
+            })
+          : this.countriesStore.clearDestination(),
+      )
+    },
     persist(data) {
       return this.runAction(() => this.contentStore.saveContent('countries', data))
     },
