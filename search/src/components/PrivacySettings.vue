@@ -134,6 +134,18 @@
             @update:model-value="save({ pageLength: $event })"
           />
         </div>
+        <div class="flex flex-col gap-3">
+          <p class="text-sm text-wntrs-muted">
+            Wie lange auf langsame Anbieter gewartet wird. Schnell zeigt Treffer nach höchstens 3
+            Sekunden, Gründlich wartet bis zu 10 Sekunden und bringt dafür mehr Anbieter.
+          </p>
+          <OptionButtons
+            :model-value="settings.timeout"
+            :options="searchChoices.timeout"
+            :labels="timeoutLabels"
+            @update:model-value="save({ timeout: $event })"
+          />
+        </div>
       </BaseCard>
     </section>
   </div>
@@ -151,6 +163,7 @@ import {
   paginationLabels,
   protections,
   searchChoices,
+  timeoutLabels,
 } from '@/data/settings.js'
 import { useSearchStore } from '@/stores/search.js'
 
@@ -166,6 +179,7 @@ export default {
       paginationLabels,
       protections,
       searchChoices,
+      timeoutLabels,
       tor: import.meta.env.PROD,
     }
   },

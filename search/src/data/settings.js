@@ -4,6 +4,7 @@ export const searchChoices = {
   method: ['post', 'get'],
   pagination: ['pages', 'infinite'],
   pageLength: [1, 2, 3],
+  timeout: [3, 5, 10],
 }
 
 export const defaultSearchSettings = {
@@ -12,6 +13,7 @@ export const defaultSearchSettings = {
   method: 'post',
   pagination: 'pages',
   pageLength: 1,
+  timeout: 5,
   blocklistEnabled: false,
   blocklist: [],
   allowlistEnabled: false,
@@ -58,6 +60,12 @@ export const storageLabels = {
 export const paginationLabels = {
   pages: 'Seiten',
   infinite: 'Endless Scrolling',
+}
+
+export const timeoutLabels = {
+  3: 'Schnell',
+  5: 'Ausgewogen',
+  10: 'Gründlich',
 }
 
 export const pageLengthLabels = {

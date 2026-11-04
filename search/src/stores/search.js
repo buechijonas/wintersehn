@@ -119,6 +119,7 @@ export const useSearchStore = defineStore('search', () => {
       format: 'json',
       engines: engines.join(','),
       language: settings.value.language,
+      timeout_limit: settings.value.timeout,
     })
     const isGet = settings.value.method === 'get'
     const response = await fetch(isGet ? `/searxng/search?${params}` : '/searxng/search', {
