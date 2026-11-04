@@ -9,7 +9,8 @@
         <HandednessSettings />
       </template>
       <PrivacySettings v-else-if="activeTab === 'privacy'" />
-      <FilterSettings v-else />
+      <FilterSettings v-else-if="activeTab === 'filter'" />
+      <DonateSettings v-else />
     </div>
   </div>
 </template>
@@ -18,6 +19,7 @@
 import AppearanceSettings from '@core/components/common/AppearanceSettings.vue'
 import BaseTabs from '@core/components/common/BaseTabs.vue'
 import AccountSettings from '@/components/AccountSettings.vue'
+import DonateSettings from '@/components/DonateSettings.vue'
 import FilterSettings from '@/components/FilterSettings.vue'
 import HandednessSettings from '@/components/HandednessSettings.vue'
 import PrivacySettings from '@/components/PrivacySettings.vue'
@@ -29,6 +31,7 @@ export default {
     AppearanceSettings,
     BaseTabs,
     AccountSettings,
+    DonateSettings,
     FilterSettings,
     HandednessSettings,
     PrivacySettings,
