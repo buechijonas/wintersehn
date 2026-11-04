@@ -10,6 +10,7 @@ import { RouterView } from 'vue-router'
 import SearchHeader from '@/components/SearchHeader.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 import { useSearchStore } from '@/stores/search.js'
+import { useSponsorsStore } from '@/stores/sponsors.js'
 
 export default {
   name: 'App',
@@ -18,6 +19,9 @@ export default {
     await Promise.all([useAuthStore().fetchMe(), this.$router.isReady()])
     await useSearchStore().loadAccountSettings()
     await useSearchStore().fetchNetworks()
+    await useSponsorsStore()
+      .fetchSponsors()
+      .catch(() => null)
     const { path, query, hash } = this.$route
     this.$router.replace({ path, query, hash, force: true })
   },

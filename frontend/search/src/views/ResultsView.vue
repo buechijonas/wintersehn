@@ -67,7 +67,12 @@
 
         <div v-if="result.results.length" class="mt-4 sm:mt-8">
           <ImageGrid v-if="category === 'images'" :results="result.results" />
-          <ResultList v-else :results="result.results" :with-images="category !== 'general'" />
+          <ResultList
+            v-else
+            :results="result.results"
+            :with-images="category !== 'general'"
+            :sponsor="category === 'general' && result.page === 1 ? sponsorsStore.current : null"
+          />
         </div>
 
         <p v-else class="text-wntrs-muted mt-8">Keine Treffer.</p>
@@ -116,6 +121,7 @@ import SearchHeader from '@/components/SearchHeader.vue'
 import { handedness } from '@/lib/handedness.js'
 import { categories, donateUrl } from '@/data/settings.js'
 import { useSearchStore } from '@/stores/search.js'
+import { useSponsorsStore } from '@/stores/sponsors.js'
 
 const RIGHT_LAYOUT = {
   grid: 'grid-cols-[1fr_auto] sm:grid-cols-[auto_minmax(0,40rem)_1fr]',
@@ -160,6 +166,9 @@ export default {
     searchStore() {
       return useSearchStore()
     },
+    sponsorsStore() {
+      return useSponsorsStore()
+    },
     result() {
       return this.searchStore.result
     },
@@ -187,6 +196,7 @@ export default {
   },
   methods: {
     search(query, page = 1) {
+      this.sponsorsStore.rotate()
       return this.runAction(() => this.searchStore.search(query, page, this.category))
     },
     goTo(query, page = 1) {

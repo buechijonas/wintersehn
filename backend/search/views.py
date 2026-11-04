@@ -1,8 +1,11 @@
+from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import SearchSettings
-from .serializers import SearchSettingsSerializer
+from .models import SearchSettings, Sponsor
+from .permissions import SponsorsPermission
+from .serializers import SearchSettingsSerializer, SponsorSerializer
 
 
 class SearchSettingsView(APIView):
@@ -18,3 +21,31 @@ class SearchSettingsView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class SponsorListCreateView(APIView):
+    permission_classes = [SponsorsPermission]
+
+    def get(self, request):
+        return Response(SponsorSerializer(Sponsor.objects.all(), many=True).data)
+
+    def post(self, request):
+        serializer = SponsorSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class SponsorDetailView(APIView):
+    permission_classes = [SponsorsPermission]
+
+    def put(self, request, uuid):
+        sponsor = get_object_or_404(Sponsor, uuid=uuid)
+        serializer = SponsorSerializer(sponsor, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, uuid):
+        get_object_or_404(Sponsor, uuid=uuid).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
