@@ -72,7 +72,7 @@ services:
 
     restart: unless-stopped
 
-    command: npm run dev -- --host 0.0.0.0
+    command: npm run dev -- --host 0.0.0.0 --port 5173 --strictPort
 
     volumes:
       - ./frontend/wintersehn:/app
@@ -97,7 +97,7 @@ services:
 
     restart: unless-stopped
 
-    command: npm run dev -- --host 0.0.0.0
+    command: npm run dev -- --host 0.0.0.0 --port 5172 --strictPort
 
     volumes:
       - ./frontend/monolith:/app
@@ -122,7 +122,7 @@ services:
 
     restart: unless-stopped
 
-    command: npm run dev -- --host 0.0.0.0
+    command: npm run dev -- --host 0.0.0.0 --port 5171 --strictPort
 
     volumes:
       - ./frontend/search:/app
