@@ -124,10 +124,13 @@ export const useSearchStore = defineStore('search', () => {
     const response = await fetch(isGet ? `/searxng/search?${params}` : '/searxng/search', {
       method: isGet ? 'GET' : 'POST',
       body: isGet ? null : params,
-      credentials: 'omit',
+      credentials: 'same-origin',
       referrerPolicy: 'no-referrer',
     }).catch(() => null)
     if (!response?.ok) throw new Error('Die Suchmaschine ist nicht erreichbar.')
+    if (!response.headers.get('content-type')?.includes('application/json')) {
+      throw new Error('Die Sicherheitsprüfung ist abgelaufen. Bitte lade die Seite neu.')
+    }
     return response.json()
   }
 
