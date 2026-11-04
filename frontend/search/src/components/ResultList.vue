@@ -1,8 +1,10 @@
 <template>
-  <ul
-    class="flex flex-col max-sm:-mx-8 max-sm:divide-y max-sm:divide-wntrs-border max-sm:border-b max-sm:border-wntrs-border sm:gap-8"
-  >
-    <li v-for="item in results" :key="item.key" class="max-sm:px-8 max-sm:py-4">
+  <ul class="flex flex-col gap-2 max-sm:-mx-4 sm:gap-8">
+    <li
+      v-for="item in results"
+      :key="item.key"
+      class="max-sm:rounded-box max-sm:border max-sm:border-wntrs-border max-sm:px-3 max-sm:py-3"
+    >
       <a :href="item.url" rel="noopener noreferrer" class="group flex gap-4">
         <img
           v-if="withImages && item.image"
