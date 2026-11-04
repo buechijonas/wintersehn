@@ -86,11 +86,11 @@ ui:
   query_in_title: false
 
 outgoing:
-  request_timeout: 10.0
-  max_request_timeout: 20.0
+  request_timeout: 4.0
+  max_request_timeout: 6.0
   useragent_suffix: ""
   using_tor_proxy: true
-  extra_proxy_timeout: 10
+  extra_proxy_timeout: 2
   proxies:
     all://:
       - socks5h://tor:9050

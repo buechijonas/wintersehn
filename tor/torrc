@@ -3,6 +3,6 @@ SocksPolicy accept 10.0.0.0/8
 SocksPolicy accept 172.16.0.0/12
 SocksPolicy accept 192.168.0.0/16
 SocksPolicy reject *
-MaxCircuitDirtiness 60
+MaxCircuitDirtiness 300
 DataDirectory /var/lib/tor
 Log notice stdout
