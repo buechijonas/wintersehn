@@ -52,6 +52,13 @@ function proxiedImage(src) {
   return null
 }
 
+function toFailure([engine, reason]) {
+  return {
+    provider: engine.split(/[ .]/)[0].replace('wikicommons', 'wikipedia'),
+    reason: reason.replace(/^Suspended: /, ''),
+  }
+}
+
 function toResult(item) {
   return {
     key: item.img_src || item.url,
@@ -165,11 +172,13 @@ export const useSearchStore = defineStore('search', () => {
       .flatMap((data) => data.results)
       .map(toResult)
       .filter((item) => isVisible(item, settings.value))
+    const failures = pages.flatMap((data) => data.unresponsive_engines).map(toFailure)
     return {
       query: q,
       page,
       category,
       results: [...new Map(results.map((item) => [item.key, item])).values()],
+      failures: [...new Map(failures.map((item) => [item.provider, item])).values()],
       suggestions: pages[0].suggestions,
     }
   }

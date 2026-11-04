@@ -28,8 +28,7 @@
   --font-display: 'Manrope', sans-serif;
   --color-wntrs-title: #202c46;
   --color-wntrs-field: #d0d3f2;
-  --color-wntrs-sponsor: #c2410c;
-  --color-wntrs-sponsor-surface: #ffedd5;
+  --color-wntrs-sponsor: #f97316;
 }
 
 :root {
@@ -41,15 +40,13 @@
 [data-theme='dark'] {
   --color-wntrs-highlight: #2f363f;
   --color-wntrs-title: #c9d1e3;
-  --color-wntrs-sponsor: #fdba74;
-  --color-wntrs-sponsor-surface: #43281c;
+  --color-wntrs-sponsor: #fb923c;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --color-wntrs-highlight: #2f363f;
     --color-wntrs-title: #c9d1e3;
-    --color-wntrs-sponsor: #fdba74;
-    --color-wntrs-sponsor-surface: #43281c;
+    --color-wntrs-sponsor: #fb923c;
   }
 }

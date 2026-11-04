@@ -45,6 +45,15 @@ export const engineLabels = {
   },
 }
 
+export const failureLabels = {
+  'too many requests': 'zu viele Anfragen',
+  CAPTCHA: 'Captcha',
+  timeout: 'Zeitüberschreitung',
+  'access denied': 'Zugriff verweigert',
+  'HTTP connection error': 'keine Verbindung',
+  'parsing error': 'unlesbare Antwort',
+}
+
 export const languageLabels = {
   all: 'Keine',
   de: 'Deutsch',

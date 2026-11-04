@@ -5,8 +5,8 @@
     <section>
       <h3 class="text-xl my-4">Sponsoren</h3>
       <p class="text-sm text-wntrs-muted mb-4">
-        Erscheinen zuoberst in den Suchresultaten unter «Alle» und wechseln sich bei jeder Suche ab.
-        Sie sind als «Sponsored» markiert.
+        Erscheinen zuoberst in allen Suchresultaten und wechseln sich bei jeder Suche und jeder
+        Seite ab. Sie sind als «Gesponsert» markiert.
       </p>
       <BaseCard v-if="sponsorsStore.items.length" tag="ul" class="divide-y divide-wntrs-border">
         <li
