@@ -5,6 +5,7 @@ export const searchChoices = {
   pagination: ['pages', 'infinite'],
   pageLength: [1, 2, 3],
   timeout: [3, 5, 10],
+  network: ['tor', 'vpn', 'proxy'],
 }
 
 export const defaultSearchSettings = {
@@ -14,6 +15,7 @@ export const defaultSearchSettings = {
   pagination: 'pages',
   pageLength: 1,
   timeout: 5,
+  network: 'tor',
   blocklistEnabled: false,
   blocklist: [],
   allowlistEnabled: false,
@@ -60,6 +62,19 @@ export const storageLabels = {
 export const paginationLabels = {
   pages: 'Seiten',
   infinite: 'Endless Scrolling',
+}
+
+export const networkLabels = {
+  tor: 'Tor',
+  vpn: 'VPN',
+  proxy: 'Eigener Proxy',
+}
+
+export const networkDescriptions = {
+  tor: 'Anfragen laufen über Tor. Suchanbieter sehen weder dich noch den Server, dafür ist es langsamer und Captchas sind häufiger.',
+  vpn: 'Anfragen laufen über einen VPN-Anbieter. Suchanbieter sehen dessen IP. Der VPN-Anbieter sieht, welche Suchanbieter angefragt werden, dank HTTPS aber nicht die Suchbegriffe.',
+  proxy:
+    'Anfragen laufen über einen eigenen Proxy des Betreibers. Suchanbieter sehen die IP dieses Proxys. Der Proxy sieht, welche Suchanbieter angefragt werden, dank HTTPS aber nicht die Suchbegriffe.',
 }
 
 export const timeoutLabels = {

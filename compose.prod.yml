@@ -72,6 +72,8 @@ services:
 
     environment:
       SEARXNG_SECRET: ${SEARXNG_SECRET:?see .env.example}
+      SEARXNG_VPN_PROXY: ${SEARXNG_VPN_PROXY:-}
+      SEARXNG_CUSTOM_PROXY: ${SEARXNG_CUSTOM_PROXY:-}
 
     depends_on:
       - tor
@@ -80,6 +82,27 @@ services:
     image: buechijonas/wintersehn-tor:latest
 
     restart: unless-stopped
+
+  vpn:
+    image: qmcgaw/gluetun:v3
+    profiles: ["vpn"]
+
+    restart: unless-stopped
+
+    cap_add:
+      - NET_ADMIN
+
+    devices:
+      - /dev/net/tun:/dev/net/tun
+
+    environment:
+      VPN_SERVICE_PROVIDER: ${VPN_SERVICE_PROVIDER:-}
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${VPN_WIREGUARD_PRIVATE_KEY:-}
+      WIREGUARD_ADDRESSES: ${VPN_WIREGUARD_ADDRESSES:-}
+      SERVER_COUNTRIES: ${VPN_SERVER_COUNTRIES:-Switzerland}
+      HTTPPROXY: "on"
+      HTTPPROXY_LOG: "off"
 
   origin:
     image: buechijonas/wintersehn-proxy:latest

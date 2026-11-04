@@ -17,6 +17,7 @@ export default {
   async mounted() {
     await Promise.all([useAuthStore().fetchMe(), this.$router.isReady()])
     await useSearchStore().loadAccountSettings()
+    await useSearchStore().fetchNetworks()
     const { path, query, hash } = this.$route
     this.$router.replace({ path, query, hash, force: true })
   },

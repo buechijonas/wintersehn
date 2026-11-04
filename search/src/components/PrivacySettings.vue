@@ -7,9 +7,11 @@
           Diese Suche ist ein eigener Vermittler zwischen dir und den Suchmaschinen. Sie fragt
           Anbieter wie Brave, Mojeek oder Qwant in deinem Auftrag an. Die Anbieter erfahren dabei
           nie, wer du bist: Sie sehen weder deine IP-Adresse noch Cookies, Browserdaten oder einen
-          Verlauf. Alle Anfragen gehen zusätzlich über das Tor-Netzwerk, jeder Anbieter über einen
-          eigenen, regelmässig wechselnden Weg. So sieht ein Anbieter nicht einmal den Server dieser
-          Suche und kann deine Anfragen auch nicht mit denen bei anderen Anbietern verknüpfen.
+          Verlauf. Standardmässig gehen alle Anfragen zusätzlich über das Tor-Netzwerk, jeder
+          Anbieter über einen eigenen, regelmässig wechselnden Weg. So sieht ein Anbieter nicht
+          einmal den Server dieser Suche und kann deine Anfragen auch nicht mit denen bei anderen
+          Anbietern verknüpfen. Unter «Netzwerk» kannst du stattdessen einen VPN-Anbieter oder einen
+          eigenen Proxy wählen, sofern eingerichtet.
         </p>
         <p>
           Auch der Inhaber dieser Suche erhält deine Daten nicht. Suchbegriffe werden nicht
@@ -32,23 +34,29 @@
       <h3 class="text-xl my-4">Schutz</h3>
       <BaseCard tag="ul" class="p-6 flex flex-col gap-3">
         <li class="flex items-start gap-3">
-          <AppIcon
-            :name="tor ? 'check-circle' : 'circle'"
-            class="mt-0.5"
-            :class="tor ? 'text-primary' : 'text-wntrs-muted'"
-          />
-          <span>
-            {{
-              tor
-                ? 'Alle Anfragen laufen über Tor. Suchanbieter sehen nicht, von wo gesucht wird.'
-                : 'Tor ist in dieser Umgebung nicht aktiv. Suchanbieter sehen die Server-IP.'
-            }}
-          </span>
+          <AppIcon name="check-circle" class="mt-0.5 text-primary" />
+          <span>{{ networkStatus }}</span>
         </li>
         <li v-for="protection in protections" :key="protection" class="flex items-start gap-3">
           <AppIcon name="check-circle" class="mt-0.5 text-primary" />
           <span>{{ protection }}</span>
         </li>
+      </BaseCard>
+    </section>
+
+    <section>
+      <h3 class="text-xl my-4">Netzwerk</h3>
+      <BaseCard class="p-6 flex flex-col gap-4">
+        <p class="text-sm text-wntrs-muted">{{ networkDescriptions[network] }}</p>
+        <OptionButtons
+          :model-value="network"
+          :options="searchStore.networks"
+          :labels="networkLabels"
+          @update:model-value="save({ network: $event })"
+        />
+        <p v-if="searchStore.networks.length === 1" class="text-sm text-wntrs-muted">
+          VPN und eigener Proxy sind auf diesem Server nicht eingerichtet.
+        </p>
       </BaseCard>
     </section>
 
@@ -161,6 +169,8 @@ import {
   methodLabels,
   pageLengthLabels,
   paginationLabels,
+  networkDescriptions,
+  networkLabels,
   protections,
   searchChoices,
   timeoutLabels,
@@ -180,7 +190,8 @@ export default {
       protections,
       searchChoices,
       timeoutLabels,
-      tor: import.meta.env.PROD,
+      networkDescriptions,
+      networkLabels,
     }
   },
   computed: {
@@ -189,6 +200,14 @@ export default {
     },
     settings() {
       return this.searchStore.settings
+    },
+    network() {
+      return this.searchStore.activeNetwork()
+    },
+    networkStatus() {
+      if (this.network !== 'tor') return `Anfragen laufen über: ${networkLabels[this.network]}.`
+      if (import.meta.env.PROD) return 'Alle Anfragen laufen über Tor.'
+      return 'Tor ist in dieser Entwicklungsumgebung nicht aktiv.'
     },
   },
   methods: {

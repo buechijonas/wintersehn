@@ -68,6 +68,7 @@ export const useSearchStore = defineStore('search', () => {
   const result = ref(null)
   const settings = ref(readSettings())
   const scope = ref(readScope())
+  const networks = ref(['tor'])
 
   let saveTimer = null
   let loadingAccount = false
@@ -105,9 +106,30 @@ export const useSearchStore = defineStore('search', () => {
 
   let latestSearch = 0
 
+  async function fetchNetworks() {
+    const response = await fetch('/searxng/config', { credentials: 'same-origin' }).catch(
+      () => null,
+    )
+    if (!response?.headers.get('content-type')?.includes('application/json')) return
+    const names = (await response.json()).engines.map(({ name }) => name)
+    const extra = ['vpn', 'proxy'].filter((network) =>
+      names.some((name) => name.endsWith(` ${network}`)),
+    )
+    networks.value = ['tor', ...extra]
+  }
+
+  function activeNetwork() {
+    return networks.value.includes(settings.value.network) ? settings.value.network : 'tor'
+  }
+
   function categoryEngines(category) {
     const { engines } = categories.find(({ key }) => key === category)
-    return settings.value.engines.map((engine) => engines[engine]).filter(Boolean)
+    const network = activeNetwork()
+    const suffix = network === 'tor' ? '' : ` ${network}`
+    return settings.value.engines
+      .map((engine) => engines[engine])
+      .filter(Boolean)
+      .map((engine) => `${engine}${suffix}`)
   }
 
   async function fetchPage(q, pageno, category) {
@@ -178,7 +200,10 @@ export const useSearchStore = defineStore('search', () => {
     result,
     settings,
     scope,
+    networks,
     search,
+    fetchNetworks,
+    activeNetwork,
     loadMore,
     loadAccountSettings,
     setScope,

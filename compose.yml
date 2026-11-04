@@ -150,7 +150,8 @@ services:
     restart: unless-stopped
 
     environment:
-      SEARXNG_SETTINGS_PATH: /usr/local/searxng/config/settings.dev.yml
+      SEARXNG_BASE_SETTINGS: /usr/local/searxng/config/settings.dev.yml
+      SEARXNG_CUSTOM_PROXY: ${SEARXNG_CUSTOM_PROXY:-}
 
 volumes:
   postgres_data:
