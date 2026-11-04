@@ -49,9 +49,20 @@
 		}
 	}
 
+	@searxng {
+		header X-Wintersehn-App search
+		path /searxng/search /searxng/image
+	}
+
+	handle @searxng {
+		uri strip_prefix /searxng
+		reverse_proxy searxng:8080
+	}
+
 	handle {
 		map {header.X-Wintersehn-App} {app_root} {
 			monolith /srv/monolith
+			search /srv/search
 			default /srv/wintersehn
 		}
 		root * {app_root}

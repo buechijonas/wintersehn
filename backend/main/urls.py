@@ -28,6 +28,7 @@ urlpatterns = [
     path("api/auth/", include("wintersehn.accounts.urls")),
     path("api/content/", include("wintersehn.content.urls")),
     path("api/monolith/", include("monolith.urls")),
+    path("api/search/", include("search.urls")),
     path(
         "media/<path:path>",
         serve,
