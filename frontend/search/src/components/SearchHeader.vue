@@ -35,7 +35,11 @@
             <span>Einstellungen</span>
           </RouterLink>
         </li>
-        <li v-for="target in appSwitches" :key="target.url">
+        <li
+          v-for="(target, index) in appSwitches"
+          :key="target.url"
+          :class="{ 'mt-1 border-t border-wntrs-border pt-1': index === 0 }"
+        >
           <a :href="target.url" class="flex h-12 items-center gap-3">
             <img
               :src="target.icon ?? `${target.url}/icons/maskable-512.png`"
