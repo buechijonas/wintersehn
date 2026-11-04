@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full">
+  <div class="relative w-full">
     <div v-if="!features.length" class="skeleton aspect-[2/1] w-full"></div>
     <svg v-else :viewBox="viewBox" class="size-full" role="img" aria-label="Weltkarte">
       <path
@@ -7,12 +7,12 @@
         :key="shape.key"
         :d="shape.d"
         class="stroke-base-100 [stroke-width:0.4]"
-        :class="
-          shape.country ? 'fill-primary cursor-pointer hover:opacity-75' : 'fill-base-content/15'
-        "
+        :class="shape.country ? countryClass(shape.country) : 'fill-base-content/15'"
+        :style="{ fillOpacity: shape.country?.weight }"
+        @mouseenter="hovered = shape.country"
+        @mouseleave="hovered = null"
         @click="open(shape.country)"
       >
-        <title v-if="shape.country">{{ shape.country.label }}</title>
       </path>
       <circle
         v-for="marker in markers"
@@ -20,12 +20,22 @@
         :cx="marker.position[0]"
         :cy="marker.position[1]"
         r="3.5"
-        class="fill-primary stroke-base-100 [stroke-width:1] cursor-pointer hover:opacity-75"
+        class="stroke-base-100 [stroke-width:1]"
+        :class="countryClass(marker.country)"
+        :style="{ fillOpacity: marker.country.weight }"
+        @mouseenter="hovered = marker.country"
+        @mouseleave="hovered = null"
         @click="open(marker.country)"
       >
-        <title>{{ marker.country.label }}</title>
       </circle>
     </svg>
+    <BaseCard
+      v-if="hovered"
+      class="absolute top-0 left-0 flex items-center gap-2 px-2 py-1 text-xs rounded-box max-w-4/5 pointer-events-none"
+    >
+      <img class="size-4 shrink-0" :alt="hovered.icon" :src="flags[hovered.icon]" />
+      <span>{{ hovered.label }}</span>
+    </BaseCard>
   </div>
 </template>
 
@@ -33,6 +43,8 @@
 import { markRaw } from 'vue'
 import { feature } from 'topojson-client'
 import { geoCentroid, geoNaturalEarth1, geoPath } from 'd3-geo'
+import BaseCard from '@core/components/common/BaseCard.vue'
+import { countries as flags } from '@core/assets/images.js'
 
 const WIDTH = 960
 const ANTARCTICA = '010'
@@ -40,11 +52,12 @@ const MIN_VISIBLE_AREA = 8
 
 export default {
   name: 'CountryMap',
+  components: { BaseCard },
   props: {
     countries: { type: Array, required: true },
   },
   data() {
-    return { features: [] }
+    return { features: [], flags, hovered: null }
   },
   computed: {
     projection() {
@@ -96,8 +109,11 @@ export default {
     )
   },
   methods: {
+    countryClass(country) {
+      return country.to ? 'fill-primary cursor-pointer hover:opacity-75' : 'fill-primary'
+    },
     open(country) {
-      if (country) this.$router.push(country.to)
+      if (country?.to) this.$router.push(country.to)
     },
   },
 }

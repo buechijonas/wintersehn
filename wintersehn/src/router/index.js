@@ -5,6 +5,7 @@ import HomeView from '@/views/HomeView.vue'
 import MediaView from '@/views/MediaView.vue'
 import ArticleView from '@/views/ArticleView.vue'
 import NewsView from '@/views/NewsView.vue'
+import NewsSectionView from '@/views/NewsSectionView.vue'
 import ArticlePostView from '@/views/ArticlePostView.vue'
 import AboutView from '@/views/AboutView.vue'
 import EthosView from '@/views/EthosView.vue'
@@ -73,6 +74,12 @@ const router = createRouter({
       path: '/news',
       name: 'news',
       component: NewsView,
+      meta: { activeNavigation: 'news' },
+    },
+    {
+      path: '/news/:key',
+      name: 'news-section',
+      component: NewsSectionView,
       meta: { activeNavigation: 'news' },
     },
     {
@@ -325,6 +332,7 @@ const PAGE_TITLES = {
   article: 'Artikeln',
   'article-post': 'Artikel',
   news: 'Medien',
+  'news-section': 'Medien',
   about: 'Über mich',
   ethos: 'Ethos',
   cv: 'Lebenslauf',

@@ -18,5 +18,6 @@ urlpatterns = [
         views.DestinationView.as_view(),
         name="country-destination",
     ),
+    path("news/footprint/", views.FootprintView.as_view(), name="news-footprint"),
     path("<slug:key>/", views.SiteContentView.as_view(), name="site-content"),
 ]
