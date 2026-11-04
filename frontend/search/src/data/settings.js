@@ -28,6 +28,7 @@ export const settingsTabs = [
   { key: 'privacy', label: 'Datenschutz' },
   { key: 'filter', label: 'Filter' },
   { key: 'donate', label: 'Spenden' },
+  { key: 'sponsors', label: 'Sponsoren', permission: 'can_view_admin' },
 ]
 
 export const donateUrl = 'https://buymeacoffee.com/wintersehn'
