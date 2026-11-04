@@ -6,6 +6,8 @@ cd "$(dirname "$0")/.."
 DOCKER_USER="buechijonas"
 BACKEND_IMAGE="$DOCKER_USER/wintersehn-backend"
 PROXY_IMAGE="$DOCKER_USER/wintersehn-proxy"
+SEARXNG_IMAGE="$DOCKER_USER/wintersehn-searxng"
+TOR_IMAGE="$DOCKER_USER/wintersehn-tor"
 
 if [[ -n "$(git status --porcelain)" ]]; then
   echo "error: working tree is not clean. Commit or stash your changes first." >&2
@@ -94,8 +96,19 @@ docker buildx build --platform linux/amd64 \
   -f wintersehn/Dockerfile.prod \
   --build-context core=./core \
   --build-context monolith=./monolith \
+  --build-context search=./search \
   -t "$PROXY_IMAGE:latest" -t "$PROXY_IMAGE:$tag" \
   --push ./wintersehn
+
+echo "==> Building and pushing searxng image"
+docker buildx build --platform linux/amd64 \
+  -t "$SEARXNG_IMAGE:latest" -t "$SEARXNG_IMAGE:$tag" \
+  --push ./searxng
+
+echo "==> Building and pushing tor image"
+docker buildx build --platform linux/amd64 \
+  -t "$TOR_IMAGE:latest" -t "$TOR_IMAGE:$tag" \
+  --push ./tor
 
 bump_upper="$(echo "$bump" | tr '[:lower:]' '[:upper:]')"
 
@@ -108,3 +121,5 @@ gh release create "$tag" \
 echo "==> Done. Released $tag and pushed:"
 echo "    $BACKEND_IMAGE:$tag (and :latest)"
 echo "    $PROXY_IMAGE:$tag (and :latest)"
+echo "    $SEARXNG_IMAGE:$tag (and :latest)"
+echo "    $TOR_IMAGE:$tag (and :latest)"

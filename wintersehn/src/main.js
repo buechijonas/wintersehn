@@ -29,6 +29,7 @@ app.provide('app', {
       url: import.meta.env.VITE_MONOLITH_URL ?? 'https://monolith.wintersehn.ch',
       permission: 'can_view_monolith',
     },
+    { label: 'SUCHE', url: import.meta.env.VITE_SEARCH_URL ?? 'https://search.wintersehn.ch' },
   ],
   displayName: (user) => (user?.verified ? 'Jonas S. Büchi' : packageJson.name),
 })

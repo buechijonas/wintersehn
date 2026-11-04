@@ -1,0 +1,96 @@
+use_default_settings:
+  engines:
+    keep_only:
+      - brave
+      - brave.images
+      - brave.videos
+      - brave.news
+      - duckduckgo
+      - duckduckgo images
+      - duckduckgo videos
+      - duckduckgo news
+      - mojeek
+      - mojeek images
+      - mojeek news
+      - qwant
+      - qwant images
+      - qwant videos
+      - qwant news
+      - startpage
+      - startpage images
+      - startpage news
+      - wikipedia
+      - wikicommons.images
+      - wikicommons.videos
+
+engines:
+  - name: mojeek
+    inactive: false
+  - name: mojeek images
+    inactive: false
+  - name: mojeek news
+    inactive: false
+  - name: startpage
+    inactive: false
+  - name: startpage images
+    inactive: false
+  - name: startpage news
+    inactive: false
+  - name: qwant
+    disabled: false
+  - name: qwant images
+    disabled: false
+  - name: qwant videos
+    disabled: false
+  - name: qwant news
+    disabled: false
+
+general:
+  instance_name: wintersehn
+  debug: false
+  enable_metrics: false
+
+search:
+  safe_search: 0
+  autocomplete: ""
+  favicon_resolver: ""
+  default_lang: de
+  formats:
+    - json
+  suspended_times:
+    SearxEngineAccessDenied: 120
+    SearxEngineCaptcha: 300
+    SearxEngineTooManyRequests: 120
+    cf_SearxEngineCaptcha: 1800
+    cf_SearxEngineAccessDenied: 1800
+    recaptcha_SearxEngineCaptcha: 1800
+
+server:
+  secret_key: dev-only-overridden-by-SEARXNG_SECRET
+  limiter: false
+  public_instance: false
+  image_proxy: true
+  method: POST
+
+plugins:
+  searx.plugins.tracker_url_remover.SXNGPlugin:
+    active: true
+  searx.plugins.image_proxy_rewrite.SXNGPlugin:
+    active: true
+  searx.plugins.self_info.SXNGPlugin:
+    active: false
+  searx.plugins.hash_plugin.SXNGPlugin:
+    active: false
+
+ui:
+  query_in_title: false
+
+outgoing:
+  request_timeout: 10.0
+  max_request_timeout: 20.0
+  useragent_suffix: ""
+  using_tor_proxy: true
+  extra_proxy_timeout: 10
+  proxies:
+    all://:
+      - socks5h://tor:9050

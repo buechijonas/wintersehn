@@ -110,6 +110,7 @@ INSTALLED_APPS = [
     "wintersehn.accounts",
     "wintersehn.content",
     "monolith",
+    "search",
 ]
 
 REST_FRAMEWORK = {

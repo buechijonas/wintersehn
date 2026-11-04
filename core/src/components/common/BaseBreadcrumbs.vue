@@ -1,5 +1,6 @@
 <template>
   <div
+    v-if="!app.hideBreadcrumbs"
     class="app-header sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-wntrs-border bg-base-200 py-2 px-6"
   >
     <div class="breadcrumbs text-sm">
@@ -25,6 +26,7 @@ import CipherText from '@core/components/common/CipherText.vue'
 export default {
   name: 'BaseBreadcrumbs',
   components: { RouterLink, CipherText },
+  inject: ['app'],
   props: {
     items: {
       type: Array,

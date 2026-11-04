@@ -25,8 +25,8 @@ services:
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DJANGO_DEBUG: "false"
-      DJANGO_ALLOWED_HOSTS: ${DOMAIN},monolith.${DOMAIN},backend,localhost
-      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN},https://monolith.${DOMAIN}
+      DJANGO_ALLOWED_HOSTS: ${DOMAIN},monolith.${DOMAIN},search.${DOMAIN},backend,localhost
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN},https://monolith.${DOMAIN},https://search.${DOMAIN}
       DJANGO_COOKIE_DOMAIN: .${DOMAIN}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
@@ -65,6 +65,22 @@ services:
       db:
         condition: service_healthy
 
+  searxng:
+    image: buechijonas/wintersehn-searxng:latest
+
+    restart: unless-stopped
+
+    environment:
+      SEARXNG_SECRET: ${SEARXNG_SECRET:?see .env.example}
+
+    depends_on:
+      - tor
+
+  tor:
+    image: buechijonas/wintersehn-tor:latest
+
+    restart: unless-stopped
+
   origin:
     image: buechijonas/wintersehn-proxy:latest
 
@@ -72,6 +88,7 @@ services:
 
     depends_on:
       - backend
+      - searxng
 
   anubis:
     image: ghcr.io/techarohq/anubis:latest
