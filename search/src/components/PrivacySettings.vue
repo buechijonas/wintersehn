@@ -1,6 +1,20 @@
 <template>
   <div class="flex flex-col gap-10">
     <section>
+      <h3 class="text-xl my-4">Schutz</h3>
+      <BaseCard tag="ul" class="p-6 flex flex-col gap-3">
+        <li class="flex items-start gap-3">
+          <AppIcon name="check-circle" class="mt-0.5 text-primary" />
+          <span>{{ networkStatus }}</span>
+        </li>
+        <li v-for="protection in protections" :key="protection" class="flex items-start gap-3">
+          <AppIcon name="check-circle" class="mt-0.5 text-primary" />
+          <span>{{ protection }}</span>
+        </li>
+      </BaseCard>
+    </section>
+
+    <section>
       <h3 class="text-xl my-4">So privat ist diese Suche</h3>
       <div class="flex flex-col gap-3 text-sm text-wntrs-slate leading-relaxed">
         <p>
@@ -10,8 +24,8 @@
           Verlauf. Standardmässig gehen alle Anfragen zusätzlich über das Tor-Netzwerk, jeder
           Anbieter über einen eigenen, regelmässig wechselnden Weg. So sieht ein Anbieter nicht
           einmal den Server dieser Suche und kann deine Anfragen auch nicht mit denen bei anderen
-          Anbietern verknüpfen. Unter «Netzwerk» kannst du stattdessen einen VPN-Anbieter oder einen
-          eigenen Proxy wählen, sofern eingerichtet.
+          Anbietern verknüpfen. Unter «Netzwerk» kannst du stattdessen einen VPN-Anbieter, einen
+          eigenen Proxy oder den direkten Weg wählen.
         </p>
         <p>
           Auch der Inhaber dieser Suche erhält deine Daten nicht. Suchbegriffe werden nicht
@@ -31,20 +45,6 @@
     </section>
 
     <section>
-      <h3 class="text-xl my-4">Schutz</h3>
-      <BaseCard tag="ul" class="p-6 flex flex-col gap-3">
-        <li class="flex items-start gap-3">
-          <AppIcon name="check-circle" class="mt-0.5 text-primary" />
-          <span>{{ networkStatus }}</span>
-        </li>
-        <li v-for="protection in protections" :key="protection" class="flex items-start gap-3">
-          <AppIcon name="check-circle" class="mt-0.5 text-primary" />
-          <span>{{ protection }}</span>
-        </li>
-      </BaseCard>
-    </section>
-
-    <section>
       <h3 class="text-xl my-4">Netzwerk</h3>
       <BaseCard class="p-6 flex flex-col gap-4">
         <p class="text-sm text-wntrs-muted">{{ networkDescriptions[network] }}</p>
@@ -54,8 +54,11 @@
           :labels="networkLabels"
           @update:model-value="save({ network: $event })"
         />
-        <p v-if="searchStore.networks.length === 1" class="text-sm text-wntrs-muted">
-          VPN und eigener Proxy sind auf diesem Server nicht eingerichtet.
+        <p
+          v-if="searchStore.networks.length < searchChoices.network.length"
+          class="text-sm text-wntrs-muted"
+        >
+          Nicht alle Netzwerke sind auf diesem Server eingerichtet.
         </p>
       </BaseCard>
     </section>

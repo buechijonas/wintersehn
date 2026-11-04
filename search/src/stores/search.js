@@ -112,7 +112,7 @@ export const useSearchStore = defineStore('search', () => {
     )
     if (!response?.headers.get('content-type')?.includes('application/json')) return
     const names = (await response.json()).engines.map(({ name }) => name)
-    const extra = ['vpn', 'proxy'].filter((network) =>
+    const extra = ['vpn', 'proxy', 'direct'].filter((network) =>
       names.some((name) => name.endsWith(` ${network}`)),
     )
     networks.value = ['tor', ...extra]

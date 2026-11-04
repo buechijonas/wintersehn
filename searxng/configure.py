@@ -4,7 +4,7 @@ from pathlib import Path
 import yaml
 
 UPSTREAM_SETTINGS = Path("/usr/local/searxng/searx/settings.yml")
-NETWORKS = {
+PROXIES = {
     "vpn": os.environ.get("SEARXNG_VPN_PROXY", ""),
     "proxy": os.environ.get("SEARXNG_CUSTOM_PROXY", ""),
 }
@@ -26,11 +26,12 @@ def main():
     upstream = yaml.safe_load(UPSTREAM_SETTINGS.read_text())["engines"]
     keep_only = settings["use_default_settings"]["engines"]["keep_only"]
     engines = [engine for engine in upstream if engine["name"] in keep_only]
-    networks = {name: proxy for name, proxy in NETWORKS.items() if proxy}
+    proxies = {name: {"all://": [proxy]} for name, proxy in PROXIES.items() if proxy}
+    networks = {"direct": {}, **proxies}
 
     settings["outgoing"]["networks"] = {
-        name: {"using_tor_proxy": False, "proxies": {"all://": [proxy]}}
-        for name, proxy in networks.items()
+        name: {"using_tor_proxy": False, "proxies": network_proxies}
+        for name, network_proxies in networks.items()
     }
     variants = [variant(engine, name) for name in networks for engine in engines]
     settings["engines"] = settings.get("engines", []) + variants

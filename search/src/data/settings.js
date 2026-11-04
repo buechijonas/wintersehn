@@ -5,7 +5,7 @@ export const searchChoices = {
   pagination: ['pages', 'infinite'],
   pageLength: [1, 2, 3],
   timeout: [3, 5, 10],
-  network: ['tor', 'vpn', 'proxy'],
+  network: ['tor', 'vpn', 'proxy', 'direct'],
 }
 
 export const defaultSearchSettings = {
@@ -68,11 +68,14 @@ export const networkLabels = {
   tor: 'Tor',
   vpn: 'VPN',
   proxy: 'Eigener Proxy',
+  direct: 'Direkt',
 }
 
 export const networkDescriptions = {
   tor: 'Anfragen laufen über Tor. Suchanbieter sehen weder dich noch den Server, dafür ist es langsamer und Captchas sind häufiger.',
   vpn: 'Anfragen laufen über einen VPN-Anbieter. Suchanbieter sehen dessen IP. Der VPN-Anbieter sieht, welche Suchanbieter angefragt werden, dank HTTPS aber nicht die Suchbegriffe.',
+  direct:
+    'Anfragen gehen ohne Umweg vom Server an die Suchanbieter. Am schnellsten und mit wenig Captchas. Die Anbieter sehen die IP des Servers, nie deine, können aber alle Anfragen dieses Servers einander zuordnen.',
   proxy:
     'Anfragen laufen über einen eigenen Proxy des Betreibers. Suchanbieter sehen die IP dieses Proxys. Der Proxy sieht, welche Suchanbieter angefragt werden, dank HTTPS aber nicht die Suchbegriffe.',
 }
