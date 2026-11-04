@@ -1,44 +1,48 @@
 <template>
-  <div class="grid flex-1 content-start gap-x-6 px-6 pt-5 pb-16" :class="layout.grid">
-    <RouterLink
-      to="/"
-      class="self-center font-display font-bold tracking-tighter text-3xl text-wntrs-title"
-      :class="layout.logo"
+  <div class="grid flex-1 content-start gap-x-6 px-6 pb-16" :class="layout.grid">
+    <header
+      class="sticky top-0 z-20 col-span-full grid grid-cols-subgrid bg-base-100 pt-5 shadow-[0_0_0_1.5rem_var(--color-base-100)] [clip-path:inset(0_-1.5rem)]"
     >
-      Suche
-    </RouterLink>
-    <SearchHeader class="self-center px-0!" :class="layout.header" />
-    <SearchField
-      :model-value="searchStore.query"
-      class="mt-2 sm:mt-0 sm:self-center"
-      :class="layout.main"
-      @submit="goTo"
-    />
-    <nav class="flex gap-6 overflow-x-auto px-7 mt-2 [scrollbar-width:none]" :class="layout.main">
       <RouterLink
-        v-for="tab in categories"
-        :key="tab.key"
-        :to="{ query: { ...$route.query, tab: tab.key, page: undefined } }"
-        replace
-        class="h-10 shrink-0 border-b-2 flex items-center text-sm"
-        :class="
-          category === tab.key
-            ? 'border-primary text-base-content'
-            : 'border-transparent text-wntrs-muted hover:text-base-content'
-        "
+        to="/"
+        class="self-center font-display font-bold tracking-tighter text-3xl text-wntrs-title"
+        :class="layout.logo"
       >
-        {{ tab.label }}
+        Suche
       </RouterLink>
-      <a
-        :href="donateUrl"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="h-10 shrink-0 border-b-2 border-transparent flex items-center text-sm text-wntrs-muted hover:text-primary"
-      >
-        Spenden
-      </a>
-    </nav>
-    <div class="col-span-full -mx-6 border-b border-wntrs-border"></div>
+      <SearchHeader class="self-center px-0!" :class="layout.header" />
+      <SearchField
+        :model-value="searchStore.query"
+        class="mt-2 sm:mt-0 sm:self-center"
+        :class="layout.main"
+        @submit="goTo"
+      />
+      <nav class="flex gap-6 overflow-x-auto px-7 mt-2 [scrollbar-width:none]" :class="layout.main">
+        <RouterLink
+          v-for="tab in categories"
+          :key="tab.key"
+          :to="{ query: { ...$route.query, tab: tab.key, page: undefined } }"
+          replace
+          class="h-10 shrink-0 border-b-2 flex items-center text-sm"
+          :class="
+            category === tab.key
+              ? 'border-primary text-base-content'
+              : 'border-transparent text-wntrs-muted hover:text-base-content'
+          "
+        >
+          {{ tab.label }}
+        </RouterLink>
+        <a
+          :href="donateUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="h-10 shrink-0 border-b-2 border-transparent flex items-center text-sm text-wntrs-muted hover:text-primary"
+        >
+          Spenden
+        </a>
+      </nav>
+      <div class="col-span-full -mx-6 border-b border-wntrs-border"></div>
+    </header>
 
     <div class="px-2" :class="category === 'images' ? layout.wide : layout.main">
       <p v-if="error" class="text-error text-sm mt-8">{{ error }}</p>
