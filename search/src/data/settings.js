@@ -27,7 +27,10 @@ export const settingsTabs = [
   { key: 'appearance', label: 'Darstellung' },
   { key: 'privacy', label: 'Datenschutz' },
   { key: 'filter', label: 'Filter' },
+  { key: 'donate', label: 'Spenden' },
 ]
+
+export const donateUrl = 'https://buymeacoffee.com/wintersehn'
 
 export const engineLabels = {
   brave: { label: 'Brave', description: 'Eigener Index, kein Nutzerprofil.' },

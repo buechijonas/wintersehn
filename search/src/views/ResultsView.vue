@@ -29,6 +29,14 @@
       >
         {{ tab.label }}
       </RouterLink>
+      <a
+        :href="donateUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="h-10 shrink-0 border-b-2 border-transparent flex items-center text-sm text-wntrs-muted hover:text-primary"
+      >
+        Spenden
+      </a>
     </nav>
     <div class="col-span-full -mx-6 border-b border-wntrs-border"></div>
 
@@ -106,7 +114,7 @@ import ResultList from '@/components/ResultList.vue'
 import SearchField from '@/components/SearchField.vue'
 import SearchHeader from '@/components/SearchHeader.vue'
 import { handedness } from '@/lib/handedness.js'
-import { categories } from '@/data/settings.js'
+import { categories, donateUrl } from '@/data/settings.js'
 import { useSearchStore } from '@/stores/search.js'
 
 const RIGHT_LAYOUT = {
@@ -140,6 +148,7 @@ export default {
   data() {
     return {
       categories,
+      donateUrl,
       loadingMore: false,
       moreError: '',
     }
