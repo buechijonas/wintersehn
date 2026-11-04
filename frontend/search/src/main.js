@@ -18,12 +18,12 @@ app.provide('app', {
   footerLinks: [],
   hideBreadcrumbs: true,
   appSwitches: [
-    { label: 'Wintersehn', url: import.meta.env.VITE_WINTERSEHN_URL ?? 'https://wintersehn.ch' },
     {
       label: 'swissfy',
       url: import.meta.env.VITE_SWISSFY_URL ?? 'https://swissfy.ch',
       icon: '/icons/apps/swissfy.png',
     },
+    { label: 'Wintersehn', url: import.meta.env.VITE_WINTERSEHN_URL ?? 'https://wintersehn.ch' },
     {
       label: 'MONOLITH',
       url: import.meta.env.VITE_MONOLITH_URL ?? 'https://monolith.wintersehn.ch',
