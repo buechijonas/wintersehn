@@ -74,14 +74,21 @@ services:
       SEARXNG_SECRET: ${SEARXNG_SECRET:?see .env.example}
       SEARXNG_VPN_PROXY: ${SEARXNG_VPN_PROXY:-}
       SEARXNG_CUSTOM_PROXY: ${SEARXNG_CUSTOM_PROXY:-}
+      SEARXNG_BRAVE_API_KEY: ${SEARXNG_BRAVE_API_KEY:-}
 
     depends_on:
-      - tor
+      - tor-1
+      - tor-2
+      - tor-3
 
-  tor:
+  tor-1: &tor
     image: buechijonas/wintersehn-tor:latest
 
     restart: unless-stopped
+
+  tor-2: *tor
+
+  tor-3: *tor
 
   vpn:
     image: qmcgaw/gluetun:v3

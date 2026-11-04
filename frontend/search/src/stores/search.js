@@ -57,7 +57,10 @@ function proxiedImage(src) {
 
 function toFailure([engine, reason]) {
   return {
-    provider: engine.split(/[ .]/)[0].replace('wikicommons', 'wikipedia'),
+    provider: engine
+      .split(/[ .]/)[0]
+      .replace('wikicommons', 'wikipedia')
+      .replace('braveapi', 'brave'),
     reason: reason.replace(/^(Suspended|Ausgesetzt): /, ''),
   }
 }
@@ -79,6 +82,7 @@ export const useSearchStore = defineStore('search', () => {
   const settings = ref(readSettings())
   const scope = ref(readScope())
   const networks = ref(['tor'])
+  const braveApi = ref(false)
   const hostRatings = ref({})
   const pendingHosts = ref([])
   const checkedHosts = new Set()
@@ -130,6 +134,7 @@ export const useSearchStore = defineStore('search', () => {
       names.some((name) => name.endsWith(` ${network}`)),
     )
     networks.value = ['tor', ...extra]
+    braveApi.value = names.includes('braveapi')
   }
 
   function activeNetwork() {
@@ -140,8 +145,9 @@ export const useSearchStore = defineStore('search', () => {
     const { engines } = categories.find(({ key }) => key === category)
     const network = activeNetwork()
     const suffix = network === 'tor' ? '' : ` ${network}`
+    const useBraveApi = braveApi.value && category === 'general'
     return settings.value.engines
-      .map((engine) => engines[engine])
+      .map((engine) => (useBraveApi && engine === 'brave' ? 'braveapi' : engines[engine]))
       .filter(Boolean)
       .map((engine) => `${engine}${suffix}`)
   }

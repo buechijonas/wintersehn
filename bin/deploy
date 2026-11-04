@@ -53,7 +53,7 @@ docker stop "$old_id" >/dev/null
 docker rm "$old_id" >/dev/null
 
 echo "==> Recreating tor, searxng, origin, anubis and edge with any new images"
-"${COMPOSE[@]}" up -d --remove-orphans tor searxng origin anubis edge
+"${COMPOSE[@]}" up -d --remove-orphans tor-1 tor-2 tor-3 searxng origin anubis edge
 
 echo "==> Done."
 "${COMPOSE[@]}" ps
