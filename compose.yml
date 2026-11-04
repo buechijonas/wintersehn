@@ -68,15 +68,15 @@ services:
 
   wintersehn:
     build:
-      context: ./wintersehn
+      context: ./frontend/wintersehn
 
     restart: unless-stopped
 
     command: npm run dev -- --host 0.0.0.0
 
     volumes:
-      - ./wintersehn:/app
-      - ./core:/core
+      - ./frontend/wintersehn:/app
+      - ./frontend/core:/core
       - wintersehn_node_modules:/app/node_modules
 
     ports:
@@ -93,15 +93,15 @@ services:
 
   monolith:
     build:
-      context: ./monolith
+      context: ./frontend/monolith
 
     restart: unless-stopped
 
     command: npm run dev -- --host 0.0.0.0
 
     volumes:
-      - ./monolith:/app
-      - ./core:/core
+      - ./frontend/monolith:/app
+      - ./frontend/core:/core
       - monolith_node_modules:/app/node_modules
 
     ports:
@@ -118,15 +118,15 @@ services:
 
   search:
     build:
-      context: ./search
+      context: ./frontend/search
 
     restart: unless-stopped
 
     command: npm run dev -- --host 0.0.0.0
 
     volumes:
-      - ./search:/app
-      - ./core:/core
+      - ./frontend/search:/app
+      - ./frontend/core:/core
       - search_node_modules:/app/node_modules
 
     ports:
@@ -145,7 +145,7 @@ services:
 
   searxng:
     build:
-      context: ./searxng
+      context: ./docker/searxng
 
     restart: unless-stopped
 

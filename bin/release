@@ -34,7 +34,7 @@ select bump in "patch" "minor" "major"; do
   esac
 done
 
-current_version="$(grep -m1 '"version"' wintersehn/package.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')"
+current_version="$(grep -m1 '"version"' frontend/wintersehn/package.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')"
 IFS='.' read -r major minor patch <<<"$current_version"
 
 case "$bump" in
@@ -80,8 +80,8 @@ if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
   exit 1
 fi
 
-sed -i '' -E "s/(\"version\": *\")[^\"]+(\")/\1$new_version\2/" wintersehn/package.json
-git add wintersehn/package.json
+sed -i '' -E "s/(\"version\": *\")[^\"]+(\")/\1$new_version\2/" frontend/wintersehn/package.json
+git add frontend/wintersehn/package.json
 git commit -m "chore: bump version to $tag"
 git push origin main
 
@@ -93,22 +93,22 @@ docker buildx build --platform linux/amd64 \
 
 echo "==> Building and pushing proxy image"
 docker buildx build --platform linux/amd64 \
-  -f wintersehn/Dockerfile.prod \
-  --build-context core=./core \
-  --build-context monolith=./monolith \
-  --build-context search=./search \
+  --build-context core=./frontend/core \
+  --build-context wintersehn=./frontend/wintersehn \
+  --build-context monolith=./frontend/monolith \
+  --build-context search=./frontend/search \
   -t "$PROXY_IMAGE:latest" -t "$PROXY_IMAGE:$tag" \
-  --push ./wintersehn
+  --push ./docker/proxy
 
 echo "==> Building and pushing searxng image"
 docker buildx build --platform linux/amd64 \
   -t "$SEARXNG_IMAGE:latest" -t "$SEARXNG_IMAGE:$tag" \
-  --push ./searxng
+  --push ./docker/searxng
 
 echo "==> Building and pushing tor image"
 docker buildx build --platform linux/amd64 \
   -t "$TOR_IMAGE:latest" -t "$TOR_IMAGE:$tag" \
-  --push ./tor
+  --push ./docker/tor
 
 bump_upper="$(echo "$bump" | tr '[:lower:]' '[:upper:]')"
 

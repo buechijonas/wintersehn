@@ -2,11 +2,13 @@ FROM node:24-alpine AS wintersehn-build
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY --from=wintersehn package*.json ./
 
 RUN npm ci
 
-COPY . .
+COPY --from=wintersehn index.html jsconfig.json vite.config.js ./
+COPY --from=wintersehn src ./src
+COPY --from=wintersehn public ./public
 COPY --from=core . /core
 
 RUN npm run build
@@ -21,6 +23,7 @@ RUN npm ci
 
 COPY --from=monolith index.html jsconfig.json vite.config.js ./
 COPY --from=monolith src ./src
+COPY --from=monolith public ./public
 COPY --from=core . /core
 
 RUN npm run build
