@@ -24,7 +24,7 @@ app.provide('app', {
   appSwitches: [
     { label: 'GOVEX', url: import.meta.env.VITE_GOVEX_URL ?? 'https://auth.neotyra.com' },
     { label: 'Wintersehn', url: import.meta.env.VITE_WINTERSEHN_URL ?? 'https://wintersehn.ch' },
-    { label: 'SUCHE', url: import.meta.env.VITE_SEARCH_URL ?? 'https://search.wintersehn.ch' },
+    { label: 'Suche', url: import.meta.env.VITE_SEARCH_URL ?? 'https://search.wintersehn.ch' },
   ],
   displayName: () => packageJson.name,
 })

@@ -26,6 +26,6 @@ const router = createRouter({
   ],
 })
 
-installGuards(router, 'SUCHE', { search: 'Suche', results: 'Ergebnisse' })
+installGuards(router, 'Suche', { search: 'Suche', results: 'Ergebnisse' })
 
 export default router

@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "SUCHE",
-  "short_name": "SUCHE",
+  "name": "Suche",
+  "short_name": "Suche",
   "lang": "de",
   "start_url": "/",
   "scope": "/",
