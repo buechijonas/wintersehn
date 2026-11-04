@@ -51,7 +51,7 @@
 
 	@searxng {
 		header X-Wintersehn-App search
-		path /searxng/search /searxng/image
+		path /searxng/search /searxng/image /searxng/config
 	}
 
 	handle @searxng {

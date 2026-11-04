@@ -37,7 +37,11 @@
         </li>
         <li v-for="target in appSwitches" :key="target.url">
           <a :href="target.url" class="flex h-12 items-center gap-3">
-            <img :src="`${target.url}/icons/maskable-512.png`" alt="" class="size-6" />
+            <img
+              :src="target.icon ?? `${target.url}/icons/maskable-512.png`"
+              alt=""
+              class="size-6"
+            />
             <span>{{ target.label }}</span>
           </a>
         </li>

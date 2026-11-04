@@ -6,3 +6,10 @@ Frontend for search.wintersehn.ch. The browser queries SearXNG (`../searxng`) di
 npm install
 npm run dev   # http://localhost:5171
 ```
+
+## Networks
+
+SearXNG always offers Tor. Two optional networks become selectable in the privacy settings when configured in the server's `.env`:
+
+- `SEARXNG_VPN_PROXY=http://vpn:8888` together with `COMPOSE_PROFILES=vpn` and the WireGuard settings `VPN_SERVICE_PROVIDER`, `VPN_WIREGUARD_PRIVATE_KEY`, `VPN_WIREGUARD_ADDRESSES` and optionally `VPN_SERVER_COUNTRIES` (runs gluetun).
+- `SEARXNG_CUSTOM_PROXY=socks5h://user:pass@host:port` (or `http://…`) for a proxy you run yourself.
