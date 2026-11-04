@@ -1,5 +1,6 @@
 import json
 
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
 from .models import SearchSettings, Sponsor
@@ -28,3 +29,13 @@ class SponsorSerializer(serializers.ModelSerializer):
             "title": {"trim_whitespace": True, "allow_blank": False},
             "url": {"error_messages": {"invalid": "Bitte gib eine gültige URL ein."}},
         }
+
+
+HOST_VALIDATOR = RegexValidator(r"^(?=.{1,253}$)([a-z0-9-]{1,63}\.)+[a-z]{2,63}$")
+
+
+class HostRatingsRequestSerializer(serializers.Serializer):
+    hosts = serializers.ListField(
+        child=serializers.CharField(max_length=253, validators=[HOST_VALIDATOR]),
+        max_length=30,
+    )

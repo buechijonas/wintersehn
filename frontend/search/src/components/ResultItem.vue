@@ -1,36 +1,114 @@
 <template>
-  <a :href="item.url" :rel="rel" class="group flex gap-4">
-    <img
+  <div class="relative flex gap-4">
+    <component
+      :is="linkTag"
       v-if="withImage && item.image"
-      :src="item.image"
-      alt=""
-      loading="lazy"
-      decoding="async"
-      class="aspect-video w-36 shrink-0 rounded-box object-cover bg-base-200"
-    />
-    <span class="flex min-w-0 flex-1 flex-col gap-1">
-      <span class="flex items-center justify-between gap-2">
+      v-bind="linkAttrs"
+      class="shrink-0"
+      @click="openLink"
+    >
+      <img
+        :src="item.image"
+        alt=""
+        loading="lazy"
+        decoding="async"
+        class="aspect-video w-36 rounded-box object-cover bg-base-200"
+      />
+    </component>
+    <div class="flex min-w-0 flex-1 flex-col gap-1">
+      <div class="flex min-h-5 items-center gap-2">
         <span class="flex min-w-0 items-center gap-2 text-xs">
           <slot name="prefix" />
-          <span class="text-wntrs-muted truncate">{{ item.host }}</span>
+          <span class="truncate" :class="hostClass">{{ item.host }}</span>
         </span>
-        <slot name="badge" />
-      </span>
-      <span class="text-lg text-wntrs-title group-hover:underline">{{ item.title }}</span>
-      <span v-if="item.content" class="text-sm text-wntrs-slate line-clamp-2">
-        {{ item.content }}
-      </span>
-    </span>
-  </a>
+        <RatingMarker
+          v-if="rating"
+          :rating="rating"
+          :report="report"
+          :host="item.host"
+          class="max-sm:ml-auto"
+        />
+        <span
+          v-else-if="pending"
+          class="loading loading-spinner size-3.5 text-wntrs-muted max-sm:ml-auto"
+          aria-label="Sicherheit wird geprüft"
+        ></span>
+        <span class="ml-auto flex shrink-0 empty:hidden max-sm:ml-0">
+          <slot name="badge" />
+        </span>
+      </div>
+      <component
+        :is="linkTag"
+        v-bind="linkAttrs"
+        class="group flex flex-col gap-1 after:absolute after:inset-0"
+        @click="openLink"
+        @keydown.enter="openLink"
+      >
+        <span class="text-lg text-wntrs-title" :class="{ 'group-hover:underline': !isBlocked }">
+          {{ item.title }}
+        </span>
+        <span v-if="item.content" class="text-sm text-wntrs-slate line-clamp-2">
+          {{ item.content }}
+        </span>
+      </component>
+    </div>
+  </div>
 </template>
 
 <script>
+import RatingMarker from '@/components/RatingMarker.vue'
+
+const hostClasses = { secure: 'text-wntrs-secure', insecure: 'text-error' }
+const RISKY_RATINGS = ['insecure', 'http']
+const linkAttributes = {
+  warn: {
+    role: 'button',
+    tabindex: '0',
+    title: 'Unsichere Seite: vor dem Öffnen wird nachgefragt',
+    class: 'cursor-pointer',
+  },
+  block: {
+    'aria-disabled': 'true',
+    title: 'Gesperrt: unsichere Seite',
+    class: 'cursor-not-allowed opacity-60',
+  },
+}
+
 export default {
   name: 'ResultItem',
+  components: { RatingMarker },
   props: {
     item: { type: Object, required: true },
     withImage: { type: Boolean, default: false },
     rel: { type: String, default: 'noopener noreferrer' },
+    rating: { type: String, default: null },
+    report: { type: Object, default: null },
+    pending: { type: Boolean, default: false },
+    riskyLinks: { type: String, default: 'warn' },
+  },
+  emits: ['warn'],
+  computed: {
+    hostClass() {
+      return hostClasses[this.rating] ?? 'text-wntrs-muted'
+    },
+    linkMode() {
+      return RISKY_RATINGS.includes(this.rating) ? this.riskyLinks : 'allow'
+    },
+    isBlocked() {
+      return this.linkMode === 'block'
+    },
+    linkTag() {
+      return this.linkMode === 'allow' ? 'a' : 'span'
+    },
+    linkAttrs() {
+      return linkAttributes[this.linkMode] ?? { href: this.item.url, rel: this.rel }
+    },
+  },
+  methods: {
+    openLink() {
+      if (this.linkMode !== 'warn') return
+      this.$emit('warn', { ...this.item, rating: this.rating, grade: this.report?.grade })
+    },
   },
 }
 </script>

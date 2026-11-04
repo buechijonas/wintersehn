@@ -7,7 +7,11 @@
     <span v-else-if="authStore.isAuthenticated" class="text-sm">
       {{ authStore.user.display_name }}
     </span>
-    <div class="dropdown" :class="isLeft ? 'dropdown-start' : 'dropdown-end'">
+    <div
+      class="group dropdown"
+      :class="isLeft ? 'dropdown-start' : 'dropdown-end'"
+      @keydown.esc="closeMenu"
+    >
       <div
         tabindex="0"
         role="button"
@@ -18,7 +22,7 @@
       </div>
       <ul
         tabindex="0"
-        class="dropdown-content menu z-40 w-56 rounded-box border border-wntrs-border bg-base-100 p-1"
+        class="dropdown-content menu invisible group-focus-within:visible z-40 w-56 rounded-box border border-wntrs-border bg-base-100 p-1"
       >
         <li>
           <RouterLink
@@ -55,6 +59,7 @@
 </template>
 
 <script>
+import { closeMenu } from '@/lib/menu.js'
 import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/common/AppIcon.vue'
 import { useAuthStore } from '@core/stores/auth.js'
@@ -79,9 +84,7 @@ export default {
     },
   },
   methods: {
-    closeMenu() {
-      document.activeElement.blur()
-    },
+    closeMenu,
   },
 }
 </script>

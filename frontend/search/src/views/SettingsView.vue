@@ -9,6 +9,7 @@
         <HandednessSettings />
       </template>
       <PrivacySettings v-else-if="activeTab === 'privacy'" />
+      <SecuritySettings v-else-if="activeTab === 'security'" />
       <FilterSettings v-else-if="activeTab === 'filter'" />
       <DonateSettings v-else-if="activeTab === 'donate'" />
       <SponsorSettings v-else />
@@ -25,6 +26,7 @@ import SponsorSettings from '@/components/SponsorSettings.vue'
 import FilterSettings from '@/components/FilterSettings.vue'
 import HandednessSettings from '@/components/HandednessSettings.vue'
 import PrivacySettings from '@/components/PrivacySettings.vue'
+import SecuritySettings from '@/components/SecuritySettings.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 import { settingsTabs } from '@/data/settings.js'
 
@@ -38,6 +40,7 @@ export default {
     FilterSettings,
     HandednessSettings,
     PrivacySettings,
+    SecuritySettings,
     SponsorSettings,
   },
   computed: {
