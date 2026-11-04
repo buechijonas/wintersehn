@@ -1,5 +1,5 @@
 <template>
-  <span class="relative z-10 flex">
+  <span class="relative z-10 flex focus-within:z-40">
     <template v-if="report">
       <div class="group dropdown hidden sm:flex" @keydown.esc="closeMenu">
         <div
