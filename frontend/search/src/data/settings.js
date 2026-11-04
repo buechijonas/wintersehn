@@ -6,6 +6,7 @@ export const searchChoices = {
   pageLength: [1, 2, 3],
   timeout: [3, 5, 10],
   network: ['tor', 'vpn', 'proxy', 'direct'],
+  riskyLinks: ['allow', 'warn', 'block'],
 }
 
 export const defaultSearchSettings = {
@@ -16,6 +17,7 @@ export const defaultSearchSettings = {
   pageLength: 1,
   timeout: 5,
   network: 'tor',
+  riskyLinks: 'warn',
   blocklistEnabled: false,
   blocklist: [],
   allowlistEnabled: false,
@@ -26,6 +28,7 @@ export const settingsTabs = [
   { key: 'account', label: 'Account' },
   { key: 'appearance', label: 'Darstellung' },
   { key: 'privacy', label: 'Datenschutz' },
+  { key: 'security', label: 'Sicherheit' },
   { key: 'filter', label: 'Filter' },
   { key: 'donate', label: 'Spenden' },
   { key: 'sponsors', label: 'Sponsoren', permission: 'can_view_admin' },
@@ -77,6 +80,12 @@ export const paginationLabels = {
   infinite: 'Endless Scrolling',
 }
 
+export const riskyLinkLabels = {
+  allow: 'Öffnen',
+  warn: 'Warnen',
+  block: 'Sperren',
+}
+
 export const networkLabels = {
   tor: 'Tor',
   vpn: 'VPN',
@@ -111,6 +120,7 @@ export const protections = [
   'Suchanbieter sehen weder deine IP noch Cookies oder Browserdaten.',
   'Zielseiten erhalten keinen Referrer.',
   'Tracking-Parameter werden aus Treffer-Links entfernt.',
+  'Zeichen hinter der Adresse warnen vor unverschlüsselten oder schlecht abgesicherten Seiten.',
   'Keine Autovervollständigung, keine Favicons, keine Statistiken.',
 ]
 

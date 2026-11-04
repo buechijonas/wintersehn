@@ -8,6 +8,9 @@ import { matchesDomain } from '@/lib/domains.js'
 const STORAGE_KEY = 'search-settings'
 const SCOPE_KEY = 'search-settings-scope'
 const SAVE_DELAY = 500
+const HOST_PATTERN = /^([a-z0-9-]{1,63}\.)+[a-z]{2,63}$/
+const MAX_HOSTS = 30
+const CACHE_TTL = 5 * 60 * 1000
 
 function readSettings() {
   try {
@@ -55,7 +58,7 @@ function proxiedImage(src) {
 function toFailure([engine, reason]) {
   return {
     provider: engine.split(/[ .]/)[0].replace('wikicommons', 'wikipedia'),
-    reason: reason.replace(/^Suspended: /, ''),
+    reason: reason.replace(/^(Suspended|Ausgesetzt): /, ''),
   }
 }
 
@@ -76,6 +79,10 @@ export const useSearchStore = defineStore('search', () => {
   const settings = ref(readSettings())
   const scope = ref(readScope())
   const networks = ref(['tor'])
+  const hostRatings = ref({})
+  const pendingHosts = ref([])
+  const checkedHosts = new Set()
+  const resultCache = new Map()
 
   let saveTimer = null
   let loadingAccount = false
@@ -183,17 +190,47 @@ export const useSearchStore = defineStore('search', () => {
     }
   }
 
+  async function rateHosts(items) {
+    const hosts = [...new Set(items.map(({ host }) => host))]
+      .filter((host) => HOST_PATTERN.test(host) && !checkedHosts.has(host))
+      .slice(0, MAX_HOSTS)
+    if (!hosts.length) return
+    hosts.forEach((host) => checkedHosts.add(host))
+    pendingHosts.value = [...pendingHosts.value, ...hosts]
+    const response = await apiFetch('/api/search/host-ratings/', {
+      method: 'POST',
+      body: JSON.stringify({ hosts }),
+    }).catch(() => null)
+    const reports = response?.ok ? (await response.json()).hosts : {}
+    hostRatings.value = { ...hostRatings.value, ...reports }
+    pendingHosts.value = pendingHosts.value.filter((host) => !hosts.includes(host))
+  }
+
+  function cachedResults(q, page, category) {
+    const key = JSON.stringify([q, page, category, settings.value])
+    const hit = resultCache.get(key)
+    if (hit && Date.now() - hit.time < CACHE_TTL) return hit.promise
+    const promise = fetchResults(q, page, category)
+    resultCache.set(key, { promise, time: Date.now() })
+    promise
+      .then((body) => body.results.length || resultCache.delete(key))
+      .catch(() => resultCache.delete(key))
+    return promise
+  }
+
   async function search(q, page = 1, category = 'general') {
     const current = ++latestSearch
     query.value = q
-    const body = await fetchResults(q, page, category)
-    if (current === latestSearch) result.value = { ...body, done: !body.results.length }
+    const body = await cachedResults(q, page, category)
+    if (current !== latestSearch) return
+    result.value = { ...body, done: !body.results.length }
+    rateHosts(body.results)
   }
 
   async function loadMore() {
     const current = latestSearch
     const { query: q, page, category } = result.value
-    const body = await fetchResults(q, page + 1, category)
+    const body = await cachedResults(q, page + 1, category)
     if (current !== latestSearch) return
     const keys = new Set(result.value.results.map(({ key }) => key))
     const results = body.results.filter(({ key }) => !keys.has(key))
@@ -202,6 +239,7 @@ export const useSearchStore = defineStore('search', () => {
       results: [...result.value.results, ...results],
       done: !results.length,
     }
+    rateHosts(results)
   }
 
   return {
@@ -210,6 +248,8 @@ export const useSearchStore = defineStore('search', () => {
     settings,
     scope,
     networks,
+    hostRatings,
+    pendingHosts,
     search,
     fetchNetworks,
     activeNetwork,

@@ -9,16 +9,20 @@
       </span>
     </div>
     <SearchField :model-value="searchStore.query" @submit="search" />
+    <div class="fixed inset-x-0 bottom-8 flex justify-center">
+      <SecureBadge align="top" />
+    </div>
   </div>
 </template>
 
 <script>
 import SearchField from '@/components/SearchField.vue'
+import SecureBadge from '@/components/SecureBadge.vue'
 import { useSearchStore } from '@/stores/search.js'
 
 export default {
   name: 'SearchView',
-  components: { SearchField },
+  components: { SearchField, SecureBadge },
   computed: {
     searchStore() {
       return useSearchStore()

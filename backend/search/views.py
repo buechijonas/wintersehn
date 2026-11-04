@@ -1,11 +1,18 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from . import observatory
 from .models import SearchSettings, Sponsor
 from .permissions import SponsorsPermission
-from .serializers import SearchSettingsSerializer, SponsorSerializer
+from .serializers import (
+    HostRatingsRequestSerializer,
+    SearchSettingsSerializer,
+    SponsorSerializer,
+)
+from .throttling import HostRatingsThrottle
 
 
 class SearchSettingsView(APIView):
@@ -49,3 +56,14 @@ class SponsorDetailView(APIView):
     def delete(self, request, uuid):
         get_object_or_404(Sponsor, uuid=uuid).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class HostRatingsView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [HostRatingsThrottle]
+
+    def post(self, request):
+        params = HostRatingsRequestSerializer(data=request.data)
+        params.is_valid(raise_exception=True)
+        hosts = sorted(set(params.validated_data["hosts"]))
+        return Response({"hosts": observatory.ratings(hosts)})

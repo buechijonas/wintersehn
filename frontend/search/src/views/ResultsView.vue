@@ -1,7 +1,7 @@
 <template>
   <div class="grid flex-1 content-start gap-x-6 px-6 pb-16" :class="layout.grid">
     <header
-      class="sticky top-0 z-20 col-span-full grid grid-cols-subgrid bg-base-100 pt-5 shadow-[0_0_0_1.5rem_var(--color-base-100)] [clip-path:inset(0_-1.5rem)]"
+      class="col-span-full grid sm:sticky sm:top-0 sm:z-20 grid-cols-subgrid bg-base-100 pt-5 shadow-[-1.5rem_0_0_var(--color-base-100),1.5rem_0_0_var(--color-base-100)]"
     >
       <RouterLink
         to="/"
@@ -17,30 +17,33 @@
         :class="layout.main"
         @submit="goTo"
       />
-      <nav class="flex gap-6 overflow-x-auto px-7 mt-2 [scrollbar-width:none]" :class="layout.main">
-        <RouterLink
-          v-for="tab in categories"
-          :key="tab.key"
-          :to="{ query: { ...$route.query, tab: tab.key, page: undefined } }"
-          replace
-          class="h-10 shrink-0 border-b-2 flex items-center text-sm"
-          :class="
-            category === tab.key
-              ? 'border-primary text-base-content'
-              : 'border-transparent text-wntrs-muted hover:text-base-content'
-          "
-        >
-          {{ tab.label }}
-        </RouterLink>
-        <a
-          :href="donateUrl"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="h-10 shrink-0 border-b-2 border-transparent flex items-center text-sm text-wntrs-muted hover:text-primary"
-        >
-          Spenden
-        </a>
-      </nav>
+      <div class="mt-2 flex items-center gap-4" :class="layout.main">
+        <nav class="flex min-w-0 flex-1 gap-6 overflow-x-auto px-7 [scrollbar-width:none]">
+          <RouterLink
+            v-for="tab in categories"
+            :key="tab.key"
+            :to="{ query: { ...$route.query, tab: tab.key, page: undefined } }"
+            replace
+            class="h-10 shrink-0 border-b-2 flex items-center text-sm"
+            :class="
+              category === tab.key
+                ? 'border-primary text-base-content'
+                : 'border-transparent text-wntrs-muted hover:text-base-content'
+            "
+          >
+            {{ tab.label }}
+          </RouterLink>
+          <a
+            :href="donateUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="h-10 shrink-0 border-b-2 border-transparent flex items-center text-sm text-wntrs-muted hover:text-primary"
+          >
+            Spenden
+          </a>
+        </nav>
+        <SecureBadge class="shrink-0" />
+      </div>
       <div class="col-span-full -mx-6 border-b border-wntrs-border"></div>
     </header>
 
@@ -84,6 +87,9 @@
             :results="result.results"
             :with-images="category !== 'general'"
             :sponsor="sponsorsStore.current"
+            :host-ratings="searchStore.hostRatings"
+            :pending-hosts="searchStore.pendingHosts"
+            :risky-links="searchStore.settings.riskyLinks"
           />
         </div>
 
@@ -143,6 +149,7 @@ import ImageGrid from '@/components/ImageGrid.vue'
 import InfiniteSentinel from '@/components/InfiniteSentinel.vue'
 import ResultList from '@/components/ResultList.vue'
 import SearchField from '@/components/SearchField.vue'
+import SecureBadge from '@/components/SecureBadge.vue'
 import SearchHeader from '@/components/SearchHeader.vue'
 import { handedness } from '@/lib/handedness.js'
 import { categories, donateUrl, engineLabels, failureLabels } from '@/data/settings.js'
@@ -174,6 +181,7 @@ export default {
     InfiniteSentinel,
     ResultList,
     SearchField,
+    SecureBadge,
     SearchHeader,
   },
   mixins: [asyncActionMixin],

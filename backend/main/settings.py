@@ -123,6 +123,7 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "share_link_ip": "10/min",
         "share_link": "60/hour",
+        "host_ratings": "30/min",
     },
 }
 
