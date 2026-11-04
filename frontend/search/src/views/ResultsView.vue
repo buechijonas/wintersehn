@@ -66,13 +66,35 @@
         </p>
 
         <div v-if="result.results.length" class="mt-4 sm:mt-8">
-          <ImageGrid v-if="category === 'images'" :results="result.results" />
+          <template v-if="category === 'images'">
+            <ResultList
+              v-if="sponsorsStore.current"
+              :results="[]"
+              :sponsor="sponsorsStore.current"
+              class="mb-6 max-w-160"
+            />
+            <ImageGrid :results="result.results" />
+          </template>
           <ResultList
             v-else
             :results="result.results"
             :with-images="category !== 'general'"
-            :sponsor="category === 'general' && result.page === 1 ? sponsorsStore.current : null"
+            :sponsor="sponsorsStore.current"
           />
+        </div>
+
+        <div v-else-if="result.failures.length" class="mt-8 flex flex-col gap-2 text-sm">
+          <p class="text-wntrs-title">Die Suchanbieter haben gerade nicht geantwortet.</p>
+          <ul class="text-wntrs-muted">
+            <li v-for="failure in result.failures" :key="failure.provider">
+              {{ engineLabels[failure.provider]?.label ?? failure.provider }}:
+              {{ failureLabels[failure.reason] ?? failure.reason }}
+            </li>
+          </ul>
+          <p class="text-wntrs-muted">
+            Versuche es in ein paar Minuten nochmals oder wähle unter Einstellungen → Datenschutz
+            ein anderes Netzwerk.
+          </p>
         </div>
 
         <p v-else class="text-wntrs-muted mt-8">Keine Treffer.</p>
@@ -119,7 +141,7 @@ import ResultList from '@/components/ResultList.vue'
 import SearchField from '@/components/SearchField.vue'
 import SearchHeader from '@/components/SearchHeader.vue'
 import { handedness } from '@/lib/handedness.js'
-import { categories, donateUrl } from '@/data/settings.js'
+import { categories, donateUrl, engineLabels, failureLabels } from '@/data/settings.js'
 import { useSearchStore } from '@/stores/search.js'
 import { useSponsorsStore } from '@/stores/sponsors.js'
 
@@ -155,6 +177,8 @@ export default {
     return {
       categories,
       donateUrl,
+      engineLabels,
+      failureLabels,
       loadingMore: false,
       moreError: '',
     }
