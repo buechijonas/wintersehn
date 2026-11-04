@@ -93,4 +93,6 @@ outgoing:
   extra_proxy_timeout: 2
   proxies:
     all://:
-      - socks5h://tor:9050
+      - socks5h://tor-1:9050
+      - socks5h://tor-2:9050
+      - socks5h://tor-3:9050

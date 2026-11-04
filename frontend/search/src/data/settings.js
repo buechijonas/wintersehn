@@ -37,7 +37,11 @@ export const settingsTabs = [
 export const donateUrl = 'https://buymeacoffee.com/wintersehn'
 
 export const engineLabels = {
-  brave: { label: 'Brave', description: 'Eigener Index, kein Nutzerprofil.' },
+  brave: {
+    label: 'Brave',
+    description:
+      'Eigener Index, kein Nutzerprofil. Läuft über die offizielle API, wenn eingerichtet.',
+  },
   duckduckgo: { label: 'DuckDuckGo', description: 'Kein Tracking, Ergebnisse u. a. von Bing.' },
   mojeek: { label: 'Mojeek', description: 'Eigener Index aus Grossbritannien, kein Tracking.' },
   qwant: { label: 'Qwant', description: 'Europäische Suchmaschine, kein Tracking.' },

@@ -152,6 +152,7 @@ services:
     environment:
       SEARXNG_BASE_SETTINGS: /usr/local/searxng/config/settings.dev.yml
       SEARXNG_CUSTOM_PROXY: ${SEARXNG_CUSTOM_PROXY:-}
+      SEARXNG_BRAVE_API_KEY: ${SEARXNG_BRAVE_API_KEY:-}
 
 volumes:
   postgres_data:
