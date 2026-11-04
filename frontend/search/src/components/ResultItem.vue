@@ -10,7 +10,10 @@
     />
     <span class="flex min-w-0 flex-1 flex-col gap-1">
       <span class="flex items-center justify-between gap-2">
-        <span class="text-xs text-wntrs-muted truncate">{{ item.host }}</span>
+        <span class="flex min-w-0 items-center gap-2 text-xs">
+          <slot name="prefix" />
+          <span class="text-wntrs-muted truncate">{{ item.host }}</span>
+        </span>
         <slot name="badge" />
       </span>
       <span class="text-lg text-wntrs-title group-hover:underline">{{ item.title }}</span>
