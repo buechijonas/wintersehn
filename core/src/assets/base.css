@@ -9,6 +9,11 @@
   --footer-height: calc(3.5rem + env(safe-area-inset-bottom));
 }
 
+html,
+body {
+  overscroll-behavior: none;
+}
+
 [data-theme="dark"] {
   --color-wntrs-muted: #8b96a3;
   --color-wntrs-slate: #a7b6c8;

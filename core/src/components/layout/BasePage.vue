@@ -28,7 +28,7 @@ export default {
     },
   },
   watch: {
-    $route() {
+    '$route.path'() {
       if (this.$refs.scrollArea) this.$refs.scrollArea.scrollTop = 0
     },
   },

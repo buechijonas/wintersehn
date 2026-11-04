@@ -50,3 +50,40 @@ class DestinationSerializer(serializers.ModelSerializer):
 class CountryMapSerializer(serializers.Serializer):
     destination = DestinationSerializer(allow_null=True)
     sections = CountrySectionSerializer(many=True)
+
+
+class FootprintCountrySerializer(serializers.Serializer):
+    label = serializers.CharField()
+    icon = serializers.CharField(allow_null=True)
+    value = serializers.IntegerField()
+    share = serializers.IntegerField()
+    weight = serializers.FloatField()
+    code = serializers.SerializerMethodField()
+    point = serializers.SerializerMethodField()
+
+    def get_code(self, item):
+        return COUNTRY_CODES.get(item["icon"])
+
+    def get_point(self, item):
+        return COUNTRY_POINTS.get(item["icon"])
+
+
+class FootprintRegionSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    icon = serializers.CharField(allow_null=True)
+    value = serializers.IntegerField()
+    share = serializers.IntegerField()
+
+
+class FootprintSummarySerializer(serializers.Serializer):
+    value = serializers.IntegerField()
+    max = serializers.IntegerField()
+    countries = FootprintCountrySerializer(many=True)
+    regions = FootprintRegionSerializer(many=True)
+
+
+class FootprintSerializer(serializers.Serializer):
+    before = FootprintSummarySerializer()
+    after = FootprintSummarySerializer()
+    reduction = serializers.IntegerField()
+    flags = serializers.DictField(child=serializers.CharField())

@@ -14,6 +14,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .footprint import footprint, privacy_section
 from .images import THUMBNAIL_SIZES, UPLOAD_NAME, build_thumbnail, thumbnail_path
 from .models import Destination, SiteContent
 from .permissions import CountriesPermission
@@ -26,6 +27,7 @@ from .rbac_serializers import PermissionSerializer, RoleSerializer
 from .serializers import (
     CountryMapSerializer,
     DestinationSerializer,
+    FootprintSerializer,
     SiteContentSerializer,
 )
 
@@ -95,6 +97,16 @@ class CountryMapView(APIView):
 
     def get(self, request):
         return country_map_response()
+
+
+class FootprintView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        section = privacy_section(SiteContent.objects.data("news", []))
+        if not section:
+            raise Http404
+        return Response(FootprintSerializer(footprint(section)).data)
 
 
 class DestinationView(APIView):
