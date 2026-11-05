@@ -7,12 +7,14 @@
         class="toggle toggle-primary"
         :aria-label="`${title} aktivieren`"
         :checked="enabled"
+        :disabled="locked"
         @change="$emit('update:enabled', $event.target.checked)"
       />
     </div>
     <BaseCard class="p-6 flex flex-col gap-4" :class="{ 'opacity-60': !enabled }">
       <p class="text-wntrs-muted">{{ description }}</p>
-      <form class="flex gap-2" @submit.prevent="add">
+      <slot name="notice" />
+      <form v-if="!locked" class="flex gap-2" @submit.prevent="add">
         <input
           v-model="input"
           type="text"
@@ -27,14 +29,16 @@
         </BaseButton>
       </form>
       <p v-if="invalid" class="text-error text-sm">Das ist kein gültiger Link.</p>
-      <ul v-if="domains.length" class="flex flex-wrap gap-2">
+      <ul v-if="domains.length" class="flex max-h-64 flex-wrap gap-2 overflow-y-auto">
         <li
           v-for="domain in domains"
           :key="domain"
-          class="flex items-center gap-1 rounded-full border border-wntrs-border pl-3 pr-1 text-sm"
+          class="flex items-center gap-1 rounded-full border border-wntrs-border pl-3 text-sm"
+          :class="locked ? 'pr-3' : 'pr-1'"
         >
           {{ domain }}
           <BaseButton
+            v-if="!locked"
             variant="ghost"
             size="xs"
             shape="circle"
@@ -49,6 +53,19 @@
           </BaseButton>
         </li>
       </ul>
+      <div v-if="domains.length" class="flex items-center justify-between gap-4">
+        <span class="text-sm text-wntrs-muted">{{ domains.length }} Einträge</span>
+        <BaseButton
+          v-if="!locked"
+          size="sm"
+          variant="error"
+          outline
+          @click="$emit('update:domains', [])"
+        >
+          <AppIcon name="trash" />
+          Liste leeren
+        </BaseButton>
+      </div>
     </BaseCard>
   </section>
 </template>
@@ -67,6 +84,7 @@ export default {
     description: { type: String, required: true },
     enabled: { type: Boolean, required: true },
     domains: { type: Array, required: true },
+    locked: { type: Boolean, default: false },
   },
   emits: ['update:enabled', 'update:domains'],
   data() {

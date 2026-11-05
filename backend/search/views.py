@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import lookalike, observatory
+from . import child_protection, lookalike, observatory
 from .models import SearchSettings, Sponsor
 from .permissions import SponsorsPermission
 from .serializers import (
@@ -18,16 +18,33 @@ from .throttling import HostRatingsThrottle
 class SearchSettingsView(APIView):
     def get(self, request):
         search_settings = SearchSettings.objects.filter(user=request.user).first()
+        data = SearchSettingsSerializer(search_settings or SearchSettings()).data
         return Response(
-            SearchSettingsSerializer(search_settings or SearchSettings()).data
+            {**data, "data": child_protection.protect(request.user, data["data"])}
         )
 
     def put(self, request):
         search_settings, _ = SearchSettings.objects.get_or_create(user=request.user)
         serializer = SearchSettingsSerializer(search_settings, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(
+            data=child_protection.protect(
+                request.user, serializer.validated_data["data"]
+            )
+        )
         return Response(serializer.data)
+
+
+class ChildProtectionView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response(
+            {
+                "required": child_protection.is_required(request.user),
+                "domains": child_protection.DOMAINS,
+            }
+        )
 
 
 class SponsorListCreateView(APIView):

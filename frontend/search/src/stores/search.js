@@ -11,6 +11,7 @@ const SAVE_DELAY = 500
 const HOST_PATTERN = /^([a-z0-9-]{1,63}\.)+[a-z]{2,63}$/
 const MAX_HOSTS = 30
 const CACHE_TTL = 5 * 60 * 1000
+const SIMILAR_WORDS = 8
 
 function storageFor(scope) {
   return scope === 'session' ? sessionStorage : localStorage
@@ -58,9 +59,9 @@ function saveAccountSettings(settings) {
 
 function isVisible(result, settings) {
   if (settings.httpLinks === 'hide' && result.url.startsWith('http:')) return false
-  if (settings.blocklistEnabled && matchesDomain(result.host, settings.blocklist)) return false
+  if (settings.blocklistEnabled && matchesDomain(result.url, settings.blocklist)) return false
   if (!settings.allowlistEnabled || !settings.allowlist.length) return true
-  return matchesDomain(result.host, settings.allowlist)
+  return matchesDomain(result.url, settings.allowlist)
 }
 
 function proxiedImage(src) {
@@ -72,6 +73,18 @@ function proxiedImage(src) {
 function withHttpLinks(item, mode) {
   if (mode !== 'upgrade' || !item.url.startsWith('http:')) return item
   return { ...item, url: `https:${item.url.slice(5)}` }
+}
+
+function toBlocked(answer) {
+  if (!answer) return null
+  const link = answer.url && {
+    key: answer.url,
+    url: answer.url,
+    host: new URL(answer.url).hostname,
+    title: answer.link_title,
+    content: answer.content,
+  }
+  return { message: answer.answer, link }
 }
 
 function toFailure([engine, reason]) {
@@ -92,7 +105,14 @@ function toResult(item) {
     host: new URL(item.url).hostname,
     content: item.content,
     image: proxiedImage(item.thumbnail_src || item.thumbnail || item.img_src),
+    full: proxiedImage(item.img_src),
+    resolution: item.resolution || null,
   }
+}
+
+function similarQuery(item) {
+  const words = (item.title || item.host).replace(/\.[a-z0-9]{2,4}$/i, '').split(/[\s_-]+/)
+  return words.filter(Boolean).slice(0, SIMILAR_WORDS).join(' ')
 }
 
 export const useSearchStore = defineStore('search', () => {
@@ -103,6 +123,7 @@ export const useSearchStore = defineStore('search', () => {
   const networks = ref(['tor'])
   const braveApi = ref(false)
   const onion = ref(null)
+  const childProtection = ref({ required: false, domains: [] })
   const hostRatings = ref({})
   const pendingHosts = ref([])
   const checkedHosts = new Set()
@@ -123,7 +144,24 @@ export const useSearchStore = defineStore('search', () => {
     saveTimer = setTimeout(() => saveAccountSettings(value), SAVE_DELAY)
   }
 
+  function enforceChildProtection() {
+    if (!childProtection.value.required) return
+    const { domains } = childProtection.value
+    const current = settings.value
+    if (current.allowlistEnabled && current.allowlist.join() === domains.join()) return
+    current.allowlist = [...domains]
+    current.allowlistEnabled = true
+  }
+
+  watch(settings, enforceChildProtection, { deep: true })
   watch(settings, persist, { deep: true })
+
+  async function fetchChildProtection() {
+    const response = await apiFetch('/api/search/child-protection/').catch(() => null)
+    if (!response?.ok) return
+    childProtection.value = await response.json()
+    enforceChildProtection()
+  }
 
   async function loadAccountSettings() {
     if (!usesAccount()) return
@@ -132,6 +170,7 @@ export const useSearchStore = defineStore('search', () => {
     const { data } = await response.json()
     loadingAccount = true
     settings.value = { ...defaultSearchSettings, ...data }
+    enforceChildProtection()
     await nextTick()
     loadingAccount = false
   }
@@ -228,6 +267,7 @@ export const useSearchStore = defineStore('search', () => {
       results: [...new Map(results.map((item) => [item.key, item])).values()],
       failures: [...new Map(failures.map((item) => [item.provider, item])).values()],
       suggestions: pages[0].suggestions,
+      blocked: toBlocked(pages[0].answers.find(({ category }) => category)),
     }
   }
 
@@ -268,6 +308,12 @@ export const useSearchStore = defineStore('search', () => {
     rateHosts(body.results)
   }
 
+  async function similarImages(item, page) {
+    const body = await cachedResults(similarQuery(item), page, 'images')
+    rateHosts(body.results)
+    return body.results.filter(({ key }) => key !== item.key)
+  }
+
   async function loadMore() {
     const current = latestSearch
     const { query: q, page, category } = result.value
@@ -290,12 +336,15 @@ export const useSearchStore = defineStore('search', () => {
     scope,
     networks,
     onion,
+    childProtection,
     hostRatings,
     pendingHosts,
     search,
     fetchNetworks,
+    fetchChildProtection,
     activeNetwork,
     loadMore,
+    similarImages,
     loadAccountSettings,
     setScope,
     clearLocalData,

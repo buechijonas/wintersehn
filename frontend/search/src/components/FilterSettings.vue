@@ -9,19 +9,39 @@
     <DomainListSettings
       v-model:enabled="settings.allowlistEnabled"
       v-model:domains="settings.allowlist"
+      :locked="childProtection.required"
       title="Whitelist"
       description="Es werden nur Treffer von diesen Seiten angezeigt. Subdomains sind eingeschlossen."
-    />
+    >
+      <template #notice>
+        <p v-if="childProtection.required" class="flex items-start gap-2 text-sm">
+          <AppIcon name="shield-check" class="mt-0.5 text-wntrs-secure" />
+          Kinderschutz ist aktiv, weil dein Konto jünger als 18 Jahre ist. Ab 18 kannst du die Liste
+          ändern, ausschalten oder leeren.
+        </p>
+      </template>
+    </DomainListSettings>
     <section>
       <h3 class="text-xl my-4">Vorlagen</h3>
-      <BaseCard class="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p class="text-wntrs-muted min-w-0">
-          Setzt Google, Meta, Amazon, Apple, Microsoft, TikTok und X auf die Blacklist.
-        </p>
-        <BaseButton class="shrink-0" @click="blockBigTech">
-          <AppIcon name="link-slash-alt" />
-          Big Tech ausblenden
-        </BaseButton>
+      <BaseCard tag="ul" class="divide-y divide-wntrs-border">
+        <li
+          v-for="template in templates"
+          :key="template.key"
+          class="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <span class="flex min-w-0 flex-col">
+            <span>{{ template.label }}</span>
+            <span class="text-sm text-wntrs-muted">{{ template.description }}</span>
+          </span>
+          <BaseButton
+            class="shrink-0"
+            :disabled="template.list === 'allowlist' && childProtection.required"
+            @click="apply(template)"
+          >
+            <AppIcon :name="template.icon" />
+            Übernehmen
+          </BaseButton>
+        </li>
       </BaseCard>
     </section>
   </div>
@@ -32,21 +52,33 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
 import DomainListSettings from '@/components/DomainListSettings.vue'
-import { bigTechDomains } from '@/data/settings.js'
+import { filterTemplates } from '@/data/settings.js'
 import { useSearchStore } from '@/stores/search.js'
 
 export default {
   name: 'FilterSettings',
   components: { AppIcon, BaseButton, BaseCard, DomainListSettings },
   computed: {
+    searchStore() {
+      return useSearchStore()
+    },
     settings() {
-      return useSearchStore().settings
+      return this.searchStore.settings
+    },
+    childProtection() {
+      return this.searchStore.childProtection
+    },
+    templates() {
+      return filterTemplates.map((template) => ({
+        ...template,
+        domains: template.domains ?? this.childProtection.domains,
+      }))
     },
   },
   methods: {
-    blockBigTech() {
-      this.settings.blocklist = [...new Set([...this.settings.blocklist, ...bigTechDomains])]
-      this.settings.blocklistEnabled = true
+    apply({ list, domains }) {
+      this.settings[list] = [...new Set([...this.settings[list], ...domains])]
+      this.settings[`${list}Enabled`] = true
     },
   },
 }

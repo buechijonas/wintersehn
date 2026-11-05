@@ -40,6 +40,7 @@ export default {
     window.addEventListener('focus', this.show)
     window.addEventListener('keydown', this.onKeydown)
     await Promise.all([useAuthStore().fetchMe(), this.$router.isReady()])
+    await useSearchStore().fetchChildProtection()
     await useSearchStore().loadAccountSettings()
     await useSearchStore().fetchNetworks()
     await useSponsorsStore()
