@@ -1,0 +1,30 @@
+child_abuse:
+  answer: "Darstellungen von sexuellem Missbrauch an Kindern sind weltweit verboten. Hinter jedem Bild steht ein echtes Kind."
+  link_title: "INTERPOL · Verbrechen gegen Kinder"
+  url: "https://www.interpol.int/en/Crimes/Crimes-against-children"
+  content: "Wie INTERPOL weltweit gegen sexuellen Missbrauch von Kindern vorgeht, Opfer identifiziert und mit Polizeibehörden in allen Mitgliedsländern zusammenarbeitet."
+non_consensual:
+  answer: "Intime Aufnahmen ohne Einwilligung zu suchen oder zu verbreiten ist eine Straftat und verletzt die Betroffenen schwer."
+  link_title: "INTERPOL · Cyberkriminalität"
+  url: "https://www.interpol.int/en/Crimes/Cybercrime"
+  content: "Wie INTERPOL Cyberkriminalität über Ländergrenzen hinweg bekämpft und Polizeibehörden bei Ermittlungen im Netz unterstützt."
+mass_harm:
+  answer: "Anleitungen und Bezugsquellen für chemische, biologische oder radiologische Waffen zeigt diese Suche nicht."
+  link_title: "INTERPOL · Terrorismus"
+  url: "https://www.interpol.int/en/Crimes/Terrorism"
+  content: "Wie INTERPOL Terrorismus bekämpft und vor chemischen, biologischen und radiologischen Bedrohungen schützt."
+weapons:
+  answer: "Bauanleitungen für Sprengsätze und illegale Bezugsquellen für Waffen zeigt diese Suche nicht."
+  link_title: "INTERPOL · Illegaler Waffenhandel"
+  url: "https://www.interpol.int/en/Crimes/Firearms-trafficking"
+  content: "Wie INTERPOL illegalen Waffenhandel verfolgt und Schusswaffen weltweit rückverfolgbar macht."
+drugs:
+  answer: "Angebote zum Kauf oder zur Herstellung von Drogen zeigt diese Suche nicht."
+  link_title: "INTERPOL · Drogenhandel"
+  url: "https://www.interpol.int/en/Crimes/Drug-trafficking"
+  content: "Wie INTERPOL den internationalen Drogenhandel bekämpft und mit Polizeibehörden weltweit zusammenarbeitet."
+sensitive_zh:
+  answer: "本搜索不提供该主题的结果。"
+  link_title: "中华人民共和国中央人民政府 · www.gov.cn"
+  url: "https://www.gov.cn/"
+  content: "中华人民共和国中央人民政府官方门户网站。"

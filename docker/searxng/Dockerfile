@@ -1,7 +1,8 @@
 FROM searxng/searxng:latest
 
 COPY settings.yml settings.dev.yml configure.py /usr/local/searxng/config/
-COPY image_proxy_rewrite.py /usr/local/searxng/searx/plugins/
+COPY image_proxy_rewrite.py query_guard.py /usr/local/searxng/searx/plugins/
+COPY query_guard /usr/local/searxng/config/query_guard
 
 ENV SEARXNG_BASE_SETTINGS=/usr/local/searxng/config/settings.yml
 ENV SEARXNG_SETTINGS_PATH=/tmp/settings.yml

@@ -58,6 +58,19 @@
         </div>
       </div>
 
+      <div v-else-if="result?.blocked" class="mt-8 flex max-w-160 flex-col gap-6">
+        <div role="alert" class="alert alert-error alert-soft items-start">
+          <AppIcon name="octagon-xmark" class="mt-0.5" />
+          <span>{{ result.blocked.message }}</span>
+        </div>
+        <ResultList
+          v-if="result.blocked.link"
+          :results="[result.blocked.link]"
+          :host-ratings="searchStore.hostRatings"
+          :pending-hosts="searchStore.pendingHosts"
+        />
+      </div>
+
       <template v-else-if="result">
         <p v-if="result.suggestions.length" class="text-sm text-wntrs-muted mt-6">
           Meintest du
@@ -80,7 +93,51 @@
               :sponsor="sponsorsStore.current"
               class="mb-6 max-w-160"
             />
-            <ImageGrid :results="result.results" />
+            <div ref="imageLayout" class="lg:grid lg:grid-cols-5 lg:gap-4">
+              <ImageGrid
+                :results="result.results"
+                :host-ratings="searchStore.hostRatings"
+                :pending-hosts="searchStore.pendingHosts"
+                :selected="selectedImage?.key"
+                :columns="gridColumns - (selectedImage ? previewColumns : 0)"
+                :class="spanClasses[gridColumns - (selectedImage ? previewColumns : 0)]"
+                @select="imageTrail = [$event]"
+              />
+              <div v-if="selectedImage" class="relative" :class="spanClasses[previewColumns]">
+                <div
+                  role="separator"
+                  aria-orientation="vertical"
+                  aria-label="Breite der Vorschau"
+                  :aria-valuenow="previewColumns"
+                  tabindex="0"
+                  class="group absolute inset-y-0 -left-4 hidden w-4 cursor-col-resize touch-none focus:outline-none lg:block"
+                  @pointerdown="startResize"
+                  @pointermove="resize"
+                  @pointerup="stopResize"
+                  @pointercancel="stopResize"
+                  @dblclick="previewColumns = defaultPreviewColumns"
+                  @keydown.left.prevent="previewColumns = clampPreviewColumns(previewColumns + 1)"
+                  @keydown.right.prevent="previewColumns = clampPreviewColumns(previewColumns - 1)"
+                >
+                  <div
+                    class="sticky top-40 flex h-[calc(100dvh-11rem)] items-center justify-center"
+                  >
+                    <span
+                      class="h-12 w-1 rounded-full transition-colors group-hover:bg-primary group-focus-visible:bg-primary"
+                      :class="resizing ? 'bg-primary' : 'bg-wntrs-border'"
+                    ></span>
+                  </div>
+                </div>
+                <ImagePreview
+                  :item="selectedImage"
+                  :columns="Math.max(previewColumns, 2)"
+                  :can-go-back="imageTrail.length > 1"
+                  @select="imageTrail = [...imageTrail, $event]"
+                  @back="imageTrail = imageTrail.slice(0, -1)"
+                  @close="imageTrail = []"
+                />
+              </div>
+            </div>
           </template>
           <ResultList
             v-else
@@ -144,18 +201,34 @@
 
 <script>
 import { RouterLink } from 'vue-router'
+import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import ImageGrid from '@/components/ImageGrid.vue'
+import ImagePreview from '@/components/ImagePreview.vue'
 import InfiniteSentinel from '@/components/InfiniteSentinel.vue'
 import ResultList from '@/components/ResultList.vue'
 import SearchField from '@/components/SearchField.vue'
 import SecureBadge from '@/components/SecureBadge.vue'
 import SearchHeader from '@/components/SearchHeader.vue'
 import { handedness } from '@/lib/handedness.js'
+import {
+  DEFAULT_PREVIEW_COLUMNS,
+  GRID_COLUMNS,
+  clampPreviewColumns,
+  previewColumns,
+} from '@/lib/previewColumns.js'
 import { categories, donateUrl, engineLabels, failureLabels } from '@/data/settings.js'
 import { useSearchStore } from '@/stores/search.js'
 import { useSponsorsStore } from '@/stores/sponsors.js'
+
+const SPAN_CLASSES = {
+  1: 'lg:col-span-1',
+  2: 'lg:col-span-2',
+  3: 'lg:col-span-3',
+  4: 'lg:col-span-4',
+  5: 'lg:col-span-5',
+}
 
 const RIGHT_LAYOUT = {
   grid: 'grid-cols-[1fr_auto] sm:grid-cols-[auto_minmax(0,40rem)_1fr]',
@@ -177,8 +250,10 @@ export default {
   name: 'ResultsView',
   components: {
     RouterLink,
+    AppIcon,
     BaseButton,
     ImageGrid,
+    ImagePreview,
     InfiniteSentinel,
     ResultList,
     SearchField,
@@ -194,6 +269,11 @@ export default {
       failureLabels,
       loadingMore: false,
       moreError: '',
+      imageTrail: [],
+      resizing: null,
+      gridColumns: GRID_COLUMNS,
+      spanClasses: SPAN_CLASSES,
+      defaultPreviewColumns: DEFAULT_PREVIEW_COLUMNS,
     }
   },
   computed: {
@@ -216,6 +296,17 @@ export default {
       const tab = this.$route.query.tab
       return categories.some(({ key }) => key === tab) ? tab : 'general'
     },
+    previewColumns: {
+      get() {
+        return previewColumns.value
+      },
+      set(columns) {
+        previewColumns.value = columns
+      },
+    },
+    selectedImage() {
+      return this.imageTrail.at(-1) ?? null
+    },
     isInfinite() {
       return this.searchStore.settings.pagination === 'infinite'
     },
@@ -232,7 +323,26 @@ export default {
     },
   },
   methods: {
+    clampPreviewColumns,
+    startResize(event) {
+      event.currentTarget.setPointerCapture(event.pointerId)
+      const { width } = this.$refs.imageLayout.getBoundingClientRect()
+      this.resizing = {
+        x: event.clientX,
+        columns: this.previewColumns,
+        columnWidth: width / GRID_COLUMNS,
+      }
+    },
+    resize(event) {
+      if (!this.resizing) return
+      const { x, columns, columnWidth } = this.resizing
+      this.previewColumns = clampPreviewColumns(columns + (x - event.clientX) / columnWidth)
+    },
+    stopResize() {
+      this.resizing = null
+    },
     search(query, page = 1) {
+      this.imageTrail = []
       this.sponsorsStore.rotate()
       return this.runAction(() => this.searchStore.search(query, page, this.category))
     },
