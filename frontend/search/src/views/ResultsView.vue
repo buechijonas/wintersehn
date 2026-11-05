@@ -90,6 +90,7 @@
             :host-ratings="searchStore.hostRatings"
             :pending-hosts="searchStore.pendingHosts"
             :risky-links="searchStore.settings.riskyLinks"
+            :confirm-links="searchStore.settings.confirmLinks"
           />
         </div>
 

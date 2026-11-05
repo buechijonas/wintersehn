@@ -25,14 +25,43 @@
       <h3 class="text-xl my-4">Unsichere Seiten</h3>
       <BaseCard class="p-6 flex flex-col gap-4">
         <p class="text-sm text-wntrs-muted">
-          Gilt für unverschlüsselte Seiten (http) und Seiten, die laut Mozilla Observatory schlecht
-          abgesichert sind. Warnen fragt vor dem Öffnen nach, Sperren macht den Link unanklickbar.
+          Gilt für unverschlüsselte Seiten (http), nachgeahmte Adressen und Seiten, die laut Mozilla
+          Observatory schlecht abgesichert sind. Warnen fragt vor dem Öffnen nach, Sperren macht den
+          Link unanklickbar.
         </p>
         <OptionButtons
           v-model="settings.riskyLinks"
           :options="searchChoices.riskyLinks"
           :labels="riskyLinkLabels"
         />
+      </BaseCard>
+    </section>
+    <section>
+      <h3 class="text-xl my-4">Unverschlüsselte Links</h3>
+      <BaseCard class="p-6 flex flex-col gap-4">
+        <p class="text-sm text-wntrs-muted">
+          Treffer mit http lassen sich auf HTTPS umstellen oder ganz ausblenden. Seiten ohne HTTPS
+          laden nach dem Umstellen unter Umständen nicht.
+        </p>
+        <OptionButtons
+          v-model="settings.httpLinks"
+          :options="searchChoices.httpLinks"
+          :labels="httpLinkLabels"
+        />
+      </BaseCard>
+    </section>
+    <section>
+      <BaseCard>
+        <label class="flex cursor-pointer items-center justify-between gap-4 p-4">
+          <span class="flex flex-col">
+            <span>Links bestätigen</span>
+            <span class="text-sm text-wntrs-muted">
+              Vor jedem Treffer erscheint die vollständige Adresse. So siehst du, wohin ein Link
+              wirklich führt.
+            </span>
+          </span>
+          <input v-model="settings.confirmLinks" type="checkbox" class="toggle toggle-primary" />
+        </label>
       </BaseCard>
     </section>
   </div>
@@ -43,7 +72,7 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
 import OptionButtons from '@/components/OptionButtons.vue'
 import { ratingIcons, ratingLegend } from '@/data/ratings.js'
-import { riskyLinkLabels, searchChoices } from '@/data/settings.js'
+import { httpLinkLabels, riskyLinkLabels, searchChoices } from '@/data/settings.js'
 import { useSearchStore } from '@/stores/search.js'
 
 export default {
@@ -53,6 +82,7 @@ export default {
     return {
       ratingIcons,
       ratingLegend,
+      httpLinkLabels,
       riskyLinkLabels,
       searchChoices,
     }

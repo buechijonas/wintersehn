@@ -1,10 +1,13 @@
 <template>
-  <BaseCard v-if="!authStore.ready" class="p-6">
-    <div class="skeleton h-5 w-48"></div>
-  </BaseCard>
+  <div class="flex flex-col gap-6">
+    <BaseCard v-if="!authStore.ready" class="p-6">
+      <div class="skeleton h-5 w-48"></div>
+    </BaseCard>
 
-  <div v-else-if="authStore.isAuthenticated" class="flex flex-col gap-6">
-    <BaseCard class="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <BaseCard
+      v-else-if="authStore.isAuthenticated"
+      class="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+    >
       <p class="text-wntrs-muted min-w-0">
         Angemeldet als {{ authStore.user.display_name }}. Profil, Passwort und Sicherheit verwaltest
         du im govex Account Center.
@@ -20,29 +23,30 @@
         </BaseButton>
       </div>
     </BaseCard>
-    <BaseCard class="p-6 flex flex-col gap-4">
+
+    <BaseCard v-else class="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <p class="text-wntrs-muted min-w-0">
+        Suchen geht auch ohne Konto. Angemeldet bleiben deine Einstellungen gespeichert.
+      </p>
+      <BaseButton variant="primary" class="shrink-0" to="/login">
+        <AppIcon name="enter" />
+        Anmelden
+      </BaseButton>
+    </BaseCard>
+
+    <BaseCard v-if="authStore.ready" class="p-6 flex flex-col gap-4">
       <p class="text-wntrs-muted">
-        Wo deine Sucheinstellungen gespeichert werden. Im Konto gelten sie auf allen Geräten, im
-        Browser nur hier.
+        Wo deine Sucheinstellungen gespeichert werden. Im Browser bleiben sie nur hier, «Nur diese
+        Sitzung» vergisst sie beim Schliessen des Tabs, im Konto gelten sie auf allen Geräten.
       </p>
       <OptionButtons
         :model-value="searchStore.scope"
-        :options="['browser', 'account']"
+        :options="scopes"
         :labels="storageLabels"
         @update:model-value="searchStore.setScope($event)"
       />
     </BaseCard>
   </div>
-
-  <BaseCard v-else class="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <p class="text-wntrs-muted min-w-0">
-      Suchen geht auch ohne Konto. Angemeldet bleiben deine Einstellungen gespeichert.
-    </p>
-    <BaseButton variant="primary" class="shrink-0" to="/login">
-      <AppIcon name="enter" />
-      Anmelden
-    </BaseButton>
-  </BaseCard>
 </template>
 
 <script>
@@ -68,6 +72,11 @@ export default {
     },
     searchStore() {
       return useSearchStore()
+    },
+    scopes() {
+      return this.authStore.isAuthenticated
+        ? ['browser', 'session', 'account']
+        : ['browser', 'session']
     },
   },
 }
