@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from . import observatory
+from . import lookalike, observatory
 from .models import SearchSettings, Sponsor
 from .permissions import SponsorsPermission
 from .serializers import (
@@ -66,4 +66,14 @@ class HostRatingsView(APIView):
         params = HostRatingsRequestSerializer(data=request.data)
         params.is_valid(raise_exception=True)
         hosts = sorted(set(params.validated_data["hosts"]))
-        return Response({"hosts": observatory.ratings(hosts)})
+        ratings = observatory.ratings(hosts)
+        flags = lookalike.lookalikes(hosts)
+        return Response(
+            {
+                "hosts": {
+                    host: {**flags.get(host, {}), **ratings.get(host, {})}
+                    for host in hosts
+                    if host in flags or host in ratings
+                }
+            }
+        )

@@ -176,6 +176,7 @@ services:
     environment:
       DOMAIN: ${DOMAIN}
       ACME_EMAIL: ${ACME_EMAIL}
+      SEARCH_ONION: ${SEARCH_ONION:-}
 
     volumes:
       - caddy_data:/data

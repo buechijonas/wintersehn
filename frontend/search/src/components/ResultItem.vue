@@ -7,11 +7,8 @@
       class="shrink-0"
       @click="openLink"
     >
-      <img
+      <ResultImage
         :src="item.image"
-        alt=""
-        loading="lazy"
-        decoding="async"
         class="aspect-video w-36 rounded-box object-cover bg-base-200"
       />
     </component>
@@ -57,14 +54,21 @@
 
 <script>
 import RatingMarker from '@/components/RatingMarker.vue'
+import ResultImage from '@/components/ResultImage.vue'
 
 const hostClasses = { secure: 'text-wntrs-secure', insecure: 'text-error' }
-const RISKY_RATINGS = ['insecure', 'http']
+const RISKY_RATINGS = ['insecure', 'http', 'lookalike']
 const linkAttributes = {
   warn: {
     role: 'button',
     tabindex: '0',
     title: 'Unsichere Seite: vor dem Öffnen wird nachgefragt',
+    class: 'cursor-pointer',
+  },
+  confirm: {
+    role: 'button',
+    tabindex: '0',
+    title: 'Vor dem Öffnen wird die Adresse angezeigt',
     class: 'cursor-pointer',
   },
   block: {
@@ -76,7 +80,7 @@ const linkAttributes = {
 
 export default {
   name: 'ResultItem',
-  components: { RatingMarker },
+  components: { RatingMarker, ResultImage },
   props: {
     item: { type: Object, required: true },
     withImage: { type: Boolean, default: false },
@@ -85,6 +89,7 @@ export default {
     report: { type: Object, default: null },
     pending: { type: Boolean, default: false },
     riskyLinks: { type: String, default: 'warn' },
+    confirmLinks: { type: Boolean, default: false },
   },
   emits: ['warn'],
   computed: {
@@ -92,7 +97,8 @@ export default {
       return hostClasses[this.rating] ?? 'text-wntrs-muted'
     },
     linkMode() {
-      return RISKY_RATINGS.includes(this.rating) ? this.riskyLinks : 'allow'
+      const mode = RISKY_RATINGS.includes(this.rating) ? this.riskyLinks : 'allow'
+      return mode === 'allow' && this.confirmLinks ? 'confirm' : mode
     },
     isBlocked() {
       return this.linkMode === 'block'
@@ -106,8 +112,13 @@ export default {
   },
   methods: {
     openLink() {
-      if (this.linkMode !== 'warn') return
-      this.$emit('warn', { ...this.item, rating: this.rating, grade: this.report?.grade })
+      if (!['warn', 'confirm'].includes(this.linkMode)) return
+      this.$emit('warn', {
+        ...this.item,
+        rating: this.linkMode === 'confirm' ? 'confirm' : this.rating,
+        grade: this.report?.grade,
+        unicode: this.report?.unicode,
+      })
     },
   },
 }

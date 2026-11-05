@@ -1,9 +1,11 @@
 import os
+import secrets
 from pathlib import Path
 
 import yaml
 
 UPSTREAM_SETTINGS = Path("/usr/local/searxng/searx/settings.yml")
+STRICT_CIRCUITS = 4
 PROXIES = {
     "vpn": os.environ.get("SEARXNG_VPN_PROXY", ""),
     "proxy": os.environ.get("SEARXNG_CUSTOM_PROXY", ""),
@@ -19,6 +21,14 @@ BRAVE_API = {
 
 def proxy_list(value):
     return [proxy.strip() for proxy in value.split(",") if proxy.strip()]
+
+
+def strict_proxies(tor_proxies):
+    return [
+        proxy.replace("://", f"://{secrets.token_hex(8)}:x@", 1)
+        for _ in range(STRICT_CIRCUITS)
+        for proxy in tor_proxies
+    ]
 
 
 def variant(engine, network):
@@ -49,7 +59,9 @@ def main():
         for name, value in PROXIES.items()
         if proxy_list(value)
     }
-    networks = {"direct": {}, **proxies}
+    tor_proxies = settings["outgoing"].get("proxies", {}).get("all://", [])
+    strict = {"strict": {"all://": strict_proxies(tor_proxies)}} if tor_proxies else {}
+    networks = {"direct": {}, **strict, **proxies}
 
     settings["outgoing"]["networks"] = {
         name: {"using_tor_proxy": False, "proxies": network_proxies}

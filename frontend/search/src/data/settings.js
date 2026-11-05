@@ -5,8 +5,10 @@ export const searchChoices = {
   pagination: ['pages', 'infinite'],
   pageLength: [1, 2, 3],
   timeout: [3, 5, 10],
-  network: ['tor', 'vpn', 'proxy', 'direct'],
+  network: ['tor', 'strict', 'vpn', 'proxy', 'direct'],
   riskyLinks: ['allow', 'warn', 'block'],
+  imageLoading: ['auto', 'click'],
+  httpLinks: ['keep', 'upgrade', 'hide'],
 }
 
 export const defaultSearchSettings = {
@@ -18,6 +20,11 @@ export const defaultSearchSettings = {
   timeout: 5,
   network: 'tor',
   riskyLinks: 'warn',
+  imageLoading: 'auto',
+  httpLinks: 'keep',
+  confirmLinks: false,
+  privacyScreen: false,
+  panicKey: false,
   blocklistEnabled: false,
   blocklist: [],
   allowlistEnabled: false,
@@ -35,6 +42,32 @@ export const settingsTabs = [
 ]
 
 export const donateUrl = 'https://buymeacoffee.com/wintersehn'
+
+export const panicUrl = 'https://www.wikipedia.org'
+
+export const independentEngines = ['brave', 'mojeek', 'wikipedia']
+
+export const bigTechDomains = [
+  'google.com',
+  'google.ch',
+  'google.de',
+  'youtube.com',
+  'blogger.com',
+  'facebook.com',
+  'instagram.com',
+  'threads.net',
+  'whatsapp.com',
+  'amazon.com',
+  'amazon.de',
+  'apple.com',
+  'microsoft.com',
+  'bing.com',
+  'msn.com',
+  'linkedin.com',
+  'tiktok.com',
+  'x.com',
+  'twitter.com',
+]
 
 export const engineLabels = {
   brave: {
@@ -76,6 +109,7 @@ export const methodLabels = {
 
 export const storageLabels = {
   browser: 'Dieser Browser',
+  session: 'Nur diese Sitzung',
   account: 'Konto',
 }
 
@@ -92,18 +126,32 @@ export const riskyLinkLabels = {
 
 export const networkLabels = {
   tor: 'Tor',
+  strict: 'Tor streng',
   vpn: 'VPN',
   proxy: 'Eigener Proxy',
   direct: 'Direkt',
 }
 
 export const networkDescriptions = {
+  strict:
+    'Wie Tor, aber aufeinanderfolgende Suchen nehmen jeweils einen anderen Weg. So lassen sich deine Suchen auch bei einem Anbieter kaum verknüpfen. Etwas langsamer.',
   tor: 'Anfragen laufen über Tor. Suchanbieter sehen weder dich noch den Server, dafür ist es langsamer und Captchas sind häufiger.',
   vpn: 'Anfragen laufen über einen VPN-Anbieter. Suchanbieter sehen dessen IP. Der VPN-Anbieter sieht, welche Suchanbieter angefragt werden, dank HTTPS aber nicht die Suchbegriffe.',
   direct:
     'Anfragen gehen ohne Umweg vom Server an die Suchanbieter. Am schnellsten und mit wenig Captchas. Die Anbieter sehen die IP des Servers, nie deine, können aber alle Anfragen dieses Servers einander zuordnen.',
   proxy:
     'Anfragen laufen über einen eigenen Proxy des Betreibers. Suchanbieter sehen die IP dieses Proxys. Der Proxy sieht, welche Suchanbieter angefragt werden, dank HTTPS aber nicht die Suchbegriffe.',
+}
+
+export const imageLoadingLabels = {
+  auto: 'Sofort',
+  click: 'Auf Klick',
+}
+
+export const httpLinkLabels = {
+  keep: 'Belassen',
+  upgrade: 'Auf HTTPS umstellen',
+  hide: 'Ausblenden',
 }
 
 export const timeoutLabels = {

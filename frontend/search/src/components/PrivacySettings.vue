@@ -86,6 +86,16 @@
           </label>
         </li>
       </BaseCard>
+      <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-wntrs-muted">
+          Brave, Mojeek und Wikipedia haben einen eigenen Index. Die anderen beziehen ihre Treffer
+          von Google oder Bing.
+        </p>
+        <BaseButton size="sm" class="shrink-0" @click="save({ engines: independentEngines })">
+          <AppIcon name="search" />
+          Nur eigene Indizes
+        </BaseButton>
+      </div>
     </section>
 
     <section>
@@ -157,17 +167,35 @@
             @update:model-value="save({ timeout: $event })"
           />
         </div>
+        <div class="flex flex-col gap-3">
+          <p class="text-sm text-wntrs-muted">
+            Vorschaubilder sofort laden oder erst, wenn du darauf tippst. Auf Klick spart Daten und
+            schickt weniger Anfragen an fremde Bildserver.
+          </p>
+          <OptionButtons
+            :model-value="settings.imageLoading"
+            :options="searchChoices.imageLoading"
+            :labels="imageLoadingLabels"
+            @update:model-value="save({ imageLoading: $event })"
+          />
+        </div>
       </BaseCard>
     </section>
+
+    <DiscretionSettings />
   </div>
 </template>
 
 <script>
 import AppIcon from '@core/components/common/AppIcon.vue'
+import BaseButton from '@core/components/common/BaseButton.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
+import DiscretionSettings from '@/components/DiscretionSettings.vue'
 import OptionButtons from '@/components/OptionButtons.vue'
 import {
   engineLabels,
+  imageLoadingLabels,
+  independentEngines,
   languageLabels,
   methodLabels,
   pageLengthLabels,
@@ -182,10 +210,12 @@ import { useSearchStore } from '@/stores/search.js'
 
 export default {
   name: 'PrivacySettings',
-  components: { AppIcon, BaseCard, OptionButtons },
+  components: { AppIcon, BaseButton, BaseCard, DiscretionSettings, OptionButtons },
   data() {
     return {
       engineLabels,
+      imageLoadingLabels,
+      independentEngines,
       languageLabels,
       methodLabels,
       pageLengthLabels,

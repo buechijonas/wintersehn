@@ -12,9 +12,13 @@ const HOST_PATTERN = /^([a-z0-9-]{1,63}\.)+[a-z]{2,63}$/
 const MAX_HOSTS = 30
 const CACHE_TTL = 5 * 60 * 1000
 
-function readSettings() {
+function storageFor(scope) {
+  return scope === 'session' ? sessionStorage : localStorage
+}
+
+function readSettings(scope) {
   try {
-    return { ...defaultSearchSettings, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) }
+    return { ...defaultSearchSettings, ...JSON.parse(storageFor(scope).getItem(STORAGE_KEY)) }
   } catch {
     return { ...defaultSearchSettings }
   }
@@ -22,15 +26,24 @@ function readSettings() {
 
 function readScope() {
   try {
-    return localStorage.getItem(SCOPE_KEY) === 'account' ? 'account' : 'browser'
+    const scope = localStorage.getItem(SCOPE_KEY)
+    return ['account', 'session'].includes(scope) ? scope : 'browser'
   } catch {
     return 'browser'
   }
 }
 
-function writeLocal(key, value) {
+function writeStorage(storage, key, value) {
   try {
-    localStorage.setItem(key, value)
+    storage.setItem(key, value)
+  } catch {
+    return
+  }
+}
+
+function removeStorage(storage, key) {
+  try {
+    storage.removeItem(key)
   } catch {
     return
   }
@@ -44,6 +57,7 @@ function saveAccountSettings(settings) {
 }
 
 function isVisible(result, settings) {
+  if (settings.httpLinks === 'hide' && result.url.startsWith('http:')) return false
   if (settings.blocklistEnabled && matchesDomain(result.host, settings.blocklist)) return false
   if (!settings.allowlistEnabled || !settings.allowlist.length) return true
   return matchesDomain(result.host, settings.allowlist)
@@ -53,6 +67,11 @@ function proxiedImage(src) {
   if (src?.startsWith('/')) return `/searxng${src}`
   if (src?.startsWith('data:image/')) return src
   return null
+}
+
+function withHttpLinks(item, mode) {
+  if (mode !== 'upgrade' || !item.url.startsWith('http:')) return item
+  return { ...item, url: `https:${item.url.slice(5)}` }
 }
 
 function toFailure([engine, reason]) {
@@ -79,10 +98,11 @@ function toResult(item) {
 export const useSearchStore = defineStore('search', () => {
   const query = ref('')
   const result = ref(null)
-  const settings = ref(readSettings())
   const scope = ref(readScope())
+  const settings = ref(readSettings(scope.value))
   const networks = ref(['tor'])
   const braveApi = ref(false)
+  const onion = ref(null)
   const hostRatings = ref({})
   const pendingHosts = ref([])
   const checkedHosts = new Set()
@@ -97,7 +117,8 @@ export const useSearchStore = defineStore('search', () => {
 
   function persist(value) {
     if (loadingAccount) return
-    if (!usesAccount()) return writeLocal(STORAGE_KEY, JSON.stringify(value))
+    if (!usesAccount())
+      return writeStorage(storageFor(scope.value), STORAGE_KEY, JSON.stringify(value))
     clearTimeout(saveTimer)
     saveTimer = setTimeout(() => saveAccountSettings(value), SAVE_DELAY)
   }
@@ -117,9 +138,20 @@ export const useSearchStore = defineStore('search', () => {
 
   function setScope(value) {
     scope.value = value
-    writeLocal(SCOPE_KEY, value)
+    writeStorage(localStorage, SCOPE_KEY, value)
+    removeStorage(value === 'session' ? localStorage : sessionStorage, STORAGE_KEY)
     if (value === 'account') return saveAccountSettings(settings.value)
-    writeLocal(STORAGE_KEY, JSON.stringify(settings.value))
+    writeStorage(storageFor(value), STORAGE_KEY, JSON.stringify(settings.value))
+  }
+
+  function clearLocalData() {
+    try {
+      localStorage.clear()
+      sessionStorage.clear()
+    } catch {
+      return
+    }
+    window.location.replace('/')
   }
 
   let latestSearch = 0
@@ -129,8 +161,10 @@ export const useSearchStore = defineStore('search', () => {
       () => null,
     )
     if (!response?.headers.get('content-type')?.includes('application/json')) return
+    const onionLocation = response.headers.get('onion-location')
+    onion.value = onionLocation ? new URL(onionLocation).origin : null
     const names = (await response.json()).engines.map(({ name }) => name)
-    const extra = ['vpn', 'proxy', 'direct'].filter((network) =>
+    const extra = ['strict', 'vpn', 'proxy', 'direct'].filter((network) =>
       names.some((name) => name.endsWith(` ${network}`)),
     )
     networks.value = ['tor', ...extra]
@@ -184,6 +218,7 @@ export const useSearchStore = defineStore('search', () => {
     const results = pages
       .flatMap((data) => data.results)
       .map(toResult)
+      .map((item) => withHttpLinks(item, settings.value.httpLinks))
       .filter((item) => isVisible(item, settings.value))
     const failures = pages.flatMap((data) => data.unresponsive_engines).map(toFailure)
     return {
@@ -254,6 +289,7 @@ export const useSearchStore = defineStore('search', () => {
     settings,
     scope,
     networks,
+    onion,
     hostRatings,
     pendingHosts,
     search,
@@ -262,6 +298,7 @@ export const useSearchStore = defineStore('search', () => {
     loadMore,
     loadAccountSettings,
     setScope,
+    clearLocalData,
   }
 })
 

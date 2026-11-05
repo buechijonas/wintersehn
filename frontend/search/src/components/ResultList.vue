@@ -15,16 +15,17 @@
         :item="item"
         :with-image="withImages"
         :rating="ratingOf(item, hostRatings)"
-        :report="hostRatings[item.host] ?? null"
+        :report="hostRatings[item.host]?.grade ? hostRatings[item.host] : null"
         :pending="pendingHosts.includes(item.host)"
         :risky-links="riskyLinks"
+        :confirm-links="confirmLinks"
         @warn="warn"
       />
     </li>
   </ul>
   <BaseDialog
     ref="warnDialog"
-    title="Unsichere Seite"
+    :title="warnTitle"
     :description="warnMessage"
     :buttons="warnButtons"
     @action="onWarnAction"
@@ -46,34 +47,47 @@ export default {
     hostRatings: { type: Object, default: () => ({}) },
     pendingHosts: { type: Array, default: () => [] },
     riskyLinks: { type: String, default: 'warn' },
+    confirmLinks: { type: Boolean, default: false },
   },
   data() {
     return {
       warnItem: null,
-      warnButtons: [
-        { value: 'cancel', label: 'Abbrechen', icon: 'cross' },
-        {
-          value: 'open',
-          label: 'Trotzdem öffnen',
-          variant: 'error',
-          outline: true,
-          icon: 'share-square',
-        },
-      ],
       sponsorLabelClass: 'shrink-0 text-xs font-medium text-wntrs-sponsor',
       cardClass:
         'max-sm:rounded-box max-sm:border max-sm:border-wntrs-border max-sm:px-3 max-sm:py-3',
     }
   },
   computed: {
+    isConfirm() {
+      return this.warnItem?.rating === 'confirm'
+    },
+    warnTitle() {
+      return this.isConfirm ? 'Link öffnen' : 'Unsichere Seite'
+    },
+    warnButtons() {
+      return [
+        { value: 'cancel', label: 'Abbrechen', icon: 'cross' },
+        this.isConfirm
+          ? { value: 'open', label: 'Öffnen', variant: 'primary', icon: 'share-square' }
+          : {
+              value: 'open',
+              label: 'Trotzdem öffnen',
+              variant: 'error',
+              outline: true,
+              icon: 'share-square',
+            },
+      ]
+    },
     warnMessage() {
       if (!this.warnItem) return ''
-      const { host, rating, grade } = this.warnItem
-      const reason =
-        rating === 'http'
-          ? 'verwendet keine Verschlüsselung (http)'
-          : `ist laut Mozilla Observatory schlecht abgesichert (Note ${grade})`
-      return `${host} ${reason}. Möchtest du die Seite trotzdem öffnen?`
+      const { host, rating, grade, unicode, url } = this.warnItem
+      if (rating === 'confirm') return `Du verlässt die Suche und öffnest ${url}`
+      const reasons = {
+        http: 'verwendet keine Verschlüsselung (http)',
+        lookalike: `wird als ${unicode} dargestellt und kann eine bekannte Seite nachahmen`,
+        insecure: `ist laut Mozilla Observatory schlecht abgesichert (Note ${grade})`,
+      }
+      return `${host} ${reasons[rating]}. Möchtest du die Seite trotzdem öffnen?`
     },
   },
   methods: {
