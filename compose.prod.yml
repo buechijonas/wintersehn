@@ -6,6 +6,7 @@ x-short-logs: &short-logs
   options:
     max-size: 1m
     max-file: "1"
+    compress: "false"
 
 services:
   db:
