@@ -52,8 +52,8 @@ echo "==> Removing the old backend (${old_id:0:12})"
 docker stop "$old_id" >/dev/null
 docker rm "$old_id" >/dev/null
 
-echo "==> Recreating tor, searxng, origin, anubis and edge with any new images"
-"${COMPOSE[@]}" up -d --remove-orphans tor-1 tor-2 tor-3 searxng origin anubis edge
+echo "==> Recreating tor, searxng, origin, anubis, edge and onion with any new images"
+"${COMPOSE[@]}" up -d --remove-orphans tor-1 tor-2 tor-3 searxng origin anubis edge onion
 
 echo "==> Done."
 "${COMPOSE[@]}" ps

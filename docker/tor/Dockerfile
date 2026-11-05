@@ -2,7 +2,9 @@ FROM alpine:3.22
 
 RUN apk add --no-cache tor
 
-COPY torrc /etc/tor/torrc
+RUN install -d -o tor -g tor -m 700 /var/lib/tor /var/lib/tor/onion
+
+COPY torrc onion.torrc /etc/tor/
 
 USER tor
 
