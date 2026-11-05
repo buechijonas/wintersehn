@@ -2,7 +2,20 @@
 	email {$ACME_EMAIL}
 }
 
+(headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		Referrer-Policy same-origin
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Cross-Origin-Opener-Policy same-origin
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=(), interest-cohort=()"
+		-Server
+	}
+}
+
 (app) {
+	import headers
 	reverse_proxy anubis:3000 {
 		header_up X-Real-IP {remote_host}
 		header_up X-Http-Version {http.request.proto}
@@ -21,4 +34,13 @@ monolith.{$DOMAIN} {
 
 search.{$DOMAIN} {
 	import app search
+}
+
+http://:8080 {
+	bind 127.0.0.1
+	import headers
+	reverse_proxy origin:80 {
+		header_up Host search.{$DOMAIN}
+		header_up X-Wintersehn-App search
+	}
 }

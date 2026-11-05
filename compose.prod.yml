@@ -1,7 +1,18 @@
+x-no-logs: &no-logs
+  driver: none
+
+x-short-logs: &short-logs
+  driver: local
+  options:
+    max-size: 1m
+    max-file: "1"
+
 services:
   db:
     image: postgres:17-alpine
     restart: unless-stopped
+
+    logging: *short-logs
 
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -21,6 +32,8 @@ services:
     image: buechijonas/wintersehn-backend:latest
 
     restart: unless-stopped
+
+    logging: *short-logs
 
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
@@ -70,6 +83,8 @@ services:
 
     restart: unless-stopped
 
+    logging: *no-logs
+
     environment:
       SEARXNG_SECRET: ${SEARXNG_SECRET:?see .env.example}
       SEARXNG_VPN_PROXY: ${SEARXNG_VPN_PROXY:-}
@@ -86,6 +101,8 @@ services:
 
     restart: unless-stopped
 
+    logging: *no-logs
+
   tor-2: *tor
 
   tor-3: *tor
@@ -95,6 +112,8 @@ services:
     profiles: ["vpn"]
 
     restart: unless-stopped
+
+    logging: *no-logs
 
     cap_add:
       - NET_ADMIN
@@ -116,6 +135,8 @@ services:
 
     restart: unless-stopped
 
+    logging: *no-logs
+
     depends_on:
       - backend
       - searxng
@@ -125,6 +146,8 @@ services:
     pull_policy: always
 
     restart: unless-stopped
+
+    logging: *no-logs
 
     environment:
       BIND: ":3000"
@@ -140,6 +163,8 @@ services:
     image: buechijonas/wintersehn-proxy:latest
 
     restart: unless-stopped
+
+    logging: *no-logs
 
     command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.edge", "--adapter", "caddyfile"]
 
@@ -158,8 +183,26 @@ services:
     depends_on:
       - anubis
 
+  onion:
+    image: buechijonas/wintersehn-tor:latest
+
+    restart: unless-stopped
+
+    logging: *no-logs
+
+    command: ["tor", "-f", "/etc/tor/onion.torrc"]
+
+    network_mode: service:edge
+
+    volumes:
+      - onion_data:/var/lib/tor/onion
+
+    depends_on:
+      - edge
+
 volumes:
   postgres_data:
   backend_media:
   caddy_data:
   caddy_config:
+  onion_data:
