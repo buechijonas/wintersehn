@@ -7,6 +7,7 @@ frontend/
   wintersehn/       wintersehn.ch
   monolith/         monolith.wintersehn.ch
   search/           search.wintersehn.ch
+  home/             home.wintersehn.ch
 docker/
   proxy/            Caddy edge and origin config, production image with all frontends
   searxng/          SearXNG image and settings used by search
@@ -21,6 +22,7 @@ docker compose up -d --build
 
 | App        | URL                          |
 | ---------- | ---------------------------- |
+| home       | http://localhost:5170        |
 | search     | http://localhost:5171        |
 | monolith   | http://localhost:5172        |
 | wintersehn | http://localhost:5173        |

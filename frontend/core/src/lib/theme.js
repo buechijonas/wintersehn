@@ -1,39 +1,14 @@
-import { ref, watch } from 'vue'
+import { sharedSetting } from '@core/lib/sharedSetting.js'
 
-const STORAGE_KEY = 'theme'
 const VALID_MODES = ['auto', 'light', 'dark']
+const THEMES = { light: 'wntrs', dark: 'dark' }
 
-function readStoredMode() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return VALID_MODES.includes(stored) ? stored : 'auto'
-  } catch {
-    return 'auto'
-  }
-}
-
-export const themeMode = ref(readStoredMode())
-
-function applyTheme(mode) {
-  const root = document.documentElement
-  if (mode === 'light') {
-    root.setAttribute('data-theme', 'wntrs')
-  } else if (mode === 'dark') {
-    root.setAttribute('data-theme', 'dark')
-  } else {
-    root.removeAttribute('data-theme')
-  }
-}
-
-watch(
-  themeMode,
-  (mode) => {
-    applyTheme(mode)
-    try {
-      localStorage.setItem(STORAGE_KEY, mode)
-    } catch {
-      return
-    }
+export const themeMode = sharedSetting('theme', {
+  parse: (value) => (VALID_MODES.includes(value) ? value : 'auto'),
+  serialize: (mode) => mode,
+  apply(mode) {
+    const root = document.documentElement
+    if (THEMES[mode]) root.setAttribute('data-theme', THEMES[mode])
+    else root.removeAttribute('data-theme')
   },
-  { immediate: true },
-)
+})

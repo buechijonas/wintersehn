@@ -97,6 +97,7 @@ docker buildx build --platform linux/amd64 \
   --build-context wintersehn=./frontend/wintersehn \
   --build-context monolith=./frontend/monolith \
   --build-context search=./frontend/search \
+  --build-context home=./frontend/home \
   -t "$PROXY_IMAGE:latest" -t "$PROXY_IMAGE:$tag" \
   --push ./docker/proxy
 

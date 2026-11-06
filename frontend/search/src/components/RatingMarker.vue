@@ -42,7 +42,7 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseDialog from '@core/components/common/BaseDialog.vue'
 import RatingReport from '@/components/RatingReport.vue'
 import { ratingIcons } from '@/data/ratings.js'
-import { closeMenu } from '@/lib/menu.js'
+import { closeMenu } from '@core/lib/menu.js'
 
 export default {
   name: 'RatingMarker',

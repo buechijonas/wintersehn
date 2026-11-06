@@ -1,6 +1,7 @@
 import { nextTick, ref, watch } from 'vue'
 import { acceptHMRUpdate, defineStore } from 'pinia'
 import { apiFetch } from '@core/lib/api.js'
+import { clearSharedSettings } from '@core/lib/sharedSetting.js'
 import { useAuthStore } from '@core/stores/auth.js'
 import { categories, defaultSearchSettings } from '@/data/settings.js'
 import { matchesDomain } from '@/lib/domains.js'
@@ -184,6 +185,7 @@ export const useSearchStore = defineStore('search', () => {
   }
 
   function clearLocalData() {
+    clearSharedSettings()
     try {
       localStorage.clear()
       sessionStorage.clear()
