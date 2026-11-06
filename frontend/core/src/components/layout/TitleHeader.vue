@@ -4,7 +4,7 @@
       to="/"
       class="mr-auto font-display font-bold tracking-tighter text-3xl text-wntrs-title"
     >
-      Home
+      {{ title }}
     </RouterLink>
     <span v-if="!authStore.ready" class="skeleton h-4 w-24"></span>
     <span v-else-if="authStore.isAuthenticated" class="text-sm">
@@ -25,7 +25,7 @@
       >
         <li>
           <RouterLink
-            v-if="$route.name === 'home'"
+            v-if="$route.name !== 'settings'"
             to="/settings"
             class="flex h-12 items-center gap-3"
             @click="closeMenu"
@@ -35,7 +35,7 @@
           </RouterLink>
           <RouterLink v-else to="/" class="flex h-12 items-center gap-3" @click="closeMenu">
             <AppIcon name="apps" class="size-6!" />
-            <span>Home</span>
+            <span>{{ title }}</span>
           </RouterLink>
         </li>
         <li v-if="authStore.ready">
@@ -60,8 +60,11 @@ import { useAuthStore } from '@core/stores/auth.js'
 import { closeMenu } from '@core/lib/menu.js'
 
 export default {
-  name: 'HomeHeader',
+  name: 'TitleHeader',
   components: { RouterLink, AppIcon },
+  props: {
+    title: { type: String, required: true },
+  },
   computed: {
     authStore() {
       return useAuthStore()

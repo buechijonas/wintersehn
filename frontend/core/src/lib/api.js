@@ -24,3 +24,14 @@ export function extractErrorMessage(data, fallback) {
   if (Array.isArray(firstField)) return firstField[0]
   return fallback
 }
+
+export async function request(url, fallback, options = {}) {
+  const response = await apiFetch(url, options)
+  const body = response.status === 204 ? null : await response.json().catch(() => null)
+  if (!response.ok) {
+    throw new Error(extractErrorMessage(body, fallback))
+  }
+  return body
+}
+
+export const json = (method, data) => ({ method, body: JSON.stringify(data) })

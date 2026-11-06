@@ -60,7 +60,7 @@ services:
       MONOLITH_URL: http://localhost:5172
       CONSENT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgpVJv0m39Ji0/wT/7\n37xarFQG3pV4fyrLw5BsQtekk2yhRANCAAQ3GaiyE0qkvPAeC4KfXCz9b3d1DakQ\n+bimnAbswixpvoxKACFN8M2DOjwDDJxSEd2O7hKELM98RG2hZHZ4E7dP\n-----END PRIVATE KEY-----"
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,backend,host.docker.internal
-      DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5172,http://127.0.0.1:5172,http://localhost:5171,http://127.0.0.1:5171,http://localhost:5170,http://127.0.0.1:5170
+      DJANGO_CSRF_TRUSTED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:5172,http://127.0.0.1:5172,http://localhost:5171,http://127.0.0.1:5171,http://localhost:5170,http://127.0.0.1:5170,http://localhost:5169,http://127.0.0.1:5169
 
     depends_on:
       db:
@@ -177,6 +177,30 @@ services:
       VITE_WINTERSEHN_URL: http://localhost:5173
       VITE_GOVEX_URL: http://localhost:5174
       VITE_SWISSFY_URL: http://localhost:5175
+      VITE_ATLAS_URL: http://localhost:5169
+
+    depends_on:
+      - backend
+
+  atlas:
+    build:
+      context: ./frontend/atlas
+
+    restart: unless-stopped
+
+    command: npm run dev -- --host 0.0.0.0 --port 5169 --strictPort
+
+    volumes:
+      - ./frontend/atlas:/app
+      - ./frontend/core:/core
+      - atlas_node_modules:/app/node_modules
+
+    ports:
+      - "5169:5169"
+
+    environment:
+      VITE_API_URL: http://localhost:8000
+      VITE_WINTERSEHN_URL: http://localhost:5173
 
     depends_on:
       - backend
@@ -187,3 +211,4 @@ volumes:
   monolith_node_modules:
   search_node_modules:
   home_node_modules:
+  atlas_node_modules:

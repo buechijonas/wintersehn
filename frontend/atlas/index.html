@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f766e">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ATLAS">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>ATLAS</title>
+    <script>
+      try {
+        const cookie = document.cookie.match(/(?:^|; )theme=([^;]*)/)
+        const mode = cookie ? cookie[1] : localStorage.getItem('theme')
+        if (mode === 'light') document.documentElement.setAttribute('data-theme', 'wntrs')
+        if (mode === 'dark') document.documentElement.setAttribute('data-theme', 'dark')
+      } catch {}
+    </script>
+    <style>
+      html {
+        background-color: oklch(100% 0 0);
+      }
+      [data-theme='dark'] {
+        background-color: oklch(25.33% 0.016 252.42);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme]) {
+          background-color: oklch(25.33% 0.016 252.42);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

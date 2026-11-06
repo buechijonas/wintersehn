@@ -6,6 +6,19 @@ export const apps = [
     url: import.meta.env.VITE_SEARCH_URL ?? 'https://search.wintersehn.ch',
   },
   {
+    key: 'atlas',
+    label: 'ATLAS',
+    description: 'Institutionen, Fächer, Dokumentationen und Lernsets mit Karteikarten.',
+    url: import.meta.env.VITE_ATLAS_URL ?? 'https://atlas.wintersehn.ch',
+  },
+  {
+    key: 'monolith',
+    label: 'MONOLITH',
+    description: 'Dossiers, Ereignisse und Netzwerke, verschlüsselt gespeichert.',
+    url: import.meta.env.VITE_MONOLITH_URL ?? 'https://monolith.wintersehn.ch',
+    permission: 'can_view_admin',
+  },
+  {
     key: 'govex',
     label: 'GOVEX',
     description: 'Ein Konto für alle Apps. Profil, Passwort und Sicherheit an einem Ort.',
@@ -16,13 +29,6 @@ export const apps = [
     label: 'Wintersehn',
     description: 'Portfolio mit Lebenslauf, Projekten, Reisen und Medien.',
     url: import.meta.env.VITE_WINTERSEHN_URL ?? 'https://wintersehn.ch',
-  },
-  {
-    key: 'monolith',
-    label: 'MONOLITH',
-    description: 'Dossiers, Ereignisse und Netzwerke, verschlüsselt gespeichert.',
-    url: import.meta.env.VITE_MONOLITH_URL ?? 'https://monolith.wintersehn.ch',
-    permission: 'can_view_admin',
   },
   {
     key: 'swissfy',

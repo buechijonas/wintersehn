@@ -98,6 +98,7 @@ docker buildx build --platform linux/amd64 \
   --build-context monolith=./frontend/monolith \
   --build-context search=./frontend/search \
   --build-context home=./frontend/home \
+  --build-context atlas=./frontend/atlas \
   -t "$PROXY_IMAGE:latest" -t "$PROXY_IMAGE:$tag" \
   --push ./docker/proxy
 

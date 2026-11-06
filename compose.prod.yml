@@ -39,8 +39,8 @@ services:
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DJANGO_DEBUG: "false"
-      DJANGO_ALLOWED_HOSTS: ${DOMAIN},monolith.${DOMAIN},search.${DOMAIN},home.${DOMAIN},backend,localhost
-      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN},https://monolith.${DOMAIN},https://search.${DOMAIN},https://home.${DOMAIN}
+      DJANGO_ALLOWED_HOSTS: ${DOMAIN},monolith.${DOMAIN},search.${DOMAIN},home.${DOMAIN},atlas.${DOMAIN},backend,localhost
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN},https://monolith.${DOMAIN},https://search.${DOMAIN},https://home.${DOMAIN},https://atlas.${DOMAIN}
       DJANGO_COOKIE_DOMAIN: .${DOMAIN}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}

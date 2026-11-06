@@ -1,5 +1,5 @@
 <template>
-  <BaseButton variant="error" outline shape="square" size="sm" title="Löschen">
+  <BaseButton variant="error" outline shape="square" :size="size" title="Löschen">
     <AppIcon name="trash" alt="Löschen" />
   </BaseButton>
 </template>
@@ -11,5 +11,8 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 export default {
   name: 'DeleteButton',
   components: { BaseButton, AppIcon },
+  props: {
+    size: { type: String, default: 'sm' },
+  },
 }
 </script>
