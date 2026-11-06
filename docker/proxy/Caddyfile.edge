@@ -32,6 +32,10 @@ monolith.{$DOMAIN} {
 	import app monolith
 }
 
+home.{$DOMAIN} {
+	import app home
+}
+
 search.{$DOMAIN} {
 	@onion expression `{env.SEARCH_ONION} != ""`
 	header @onion Onion-Location http://{env.SEARCH_ONION}{uri}

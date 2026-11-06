@@ -43,10 +43,26 @@ COPY --from=core . /core
 
 RUN npm run build
 
+FROM node:24-alpine AS home-build
+
+WORKDIR /app
+
+COPY --from=home package*.json ./
+
+RUN npm ci
+
+COPY --from=home index.html jsconfig.json vite.config.js ./
+COPY --from=home src ./src
+COPY --from=home public ./public
+COPY --from=core . /core
+
+RUN npm run build
+
 FROM caddy:2-alpine
 
 COPY --from=wintersehn-build /app/dist /srv/wintersehn
 COPY --from=monolith-build /app/dist /srv/monolith
 COPY --from=search-build /app/dist /srv/search
+COPY --from=home-build /app/dist /srv/home
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY Caddyfile.edge /etc/caddy/Caddyfile.edge

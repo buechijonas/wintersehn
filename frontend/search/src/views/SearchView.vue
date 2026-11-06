@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto flex w-full max-w-160 flex-1 flex-col justify-center px-6 pb-[42vh]">
+  <div class="mx-auto flex w-full max-w-160 flex-1 flex-col justify-center px-6 pb-[50vh]">
     <div class="mb-10 flex flex-col items-center">
       <h1 class="font-display font-bold tracking-tighter text-6xl text-wntrs-title -translate-x-6">
         Suche

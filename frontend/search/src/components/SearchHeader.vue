@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import { closeMenu } from '@/lib/menu.js'
+import { closeMenu } from '@core/lib/menu.js'
 import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/common/AppIcon.vue'
 import { useAuthStore } from '@core/stores/auth.js'

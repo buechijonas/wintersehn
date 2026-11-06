@@ -1,35 +1,11 @@
-import { ref, watch } from 'vue'
+import { sharedSetting } from '@core/lib/sharedSetting.js'
 
-const STORAGE_KEY = 'dyslexia-font'
-
-function readStoredValue() {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === 'on'
-  } catch {
-    return false
-  }
-}
-
-export const dyslexiaFont = ref(readStoredValue())
-
-function applyDyslexiaFont(enabled) {
-  const root = document.documentElement
-  if (enabled) {
-    root.setAttribute('data-dyslexia', 'on')
-  } else {
-    root.removeAttribute('data-dyslexia')
-  }
-}
-
-watch(
-  dyslexiaFont,
-  (enabled) => {
-    applyDyslexiaFont(enabled)
-    try {
-      localStorage.setItem(STORAGE_KEY, enabled ? 'on' : 'off')
-    } catch {
-      return
-    }
+export const dyslexiaFont = sharedSetting('dyslexia-font', {
+  parse: (value) => value === 'on',
+  serialize: (enabled) => (enabled ? 'on' : 'off'),
+  apply(enabled) {
+    const root = document.documentElement
+    if (enabled) root.setAttribute('data-dyslexia', 'on')
+    else root.removeAttribute('data-dyslexia')
   },
-  { immediate: true },
-)
+})

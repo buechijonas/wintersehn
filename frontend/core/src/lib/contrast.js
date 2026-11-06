@@ -1,35 +1,11 @@
-import { ref, watch } from 'vue'
+import { sharedSetting } from '@core/lib/sharedSetting.js'
 
-const STORAGE_KEY = 'contrast-mode'
-
-function readStoredValue() {
-  try {
-    return localStorage.getItem(STORAGE_KEY) === 'on'
-  } catch {
-    return false
-  }
-}
-
-export const contrastMode = ref(readStoredValue())
-
-function applyContrastMode(enabled) {
-  const root = document.documentElement
-  if (enabled) {
-    root.setAttribute('data-contrast', 'on')
-  } else {
-    root.removeAttribute('data-contrast')
-  }
-}
-
-watch(
-  contrastMode,
-  (enabled) => {
-    applyContrastMode(enabled)
-    try {
-      localStorage.setItem(STORAGE_KEY, enabled ? 'on' : 'off')
-    } catch {
-      return
-    }
+export const contrastMode = sharedSetting('contrast-mode', {
+  parse: (value) => value === 'on',
+  serialize: (enabled) => (enabled ? 'on' : 'off'),
+  apply(enabled) {
+    const root = document.documentElement
+    if (enabled) root.setAttribute('data-contrast', 'on')
+    else root.removeAttribute('data-contrast')
   },
-  { immediate: true },
-)
+})

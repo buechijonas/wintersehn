@@ -31,8 +31,8 @@
     <h3 class="text-xl my-4">Lokale Daten</h3>
     <BaseCard class="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <p class="text-sm text-wntrs-muted min-w-0">
-        Löscht alle Einstellungen, die diese Suche in deinem Browser gespeichert hat, auch
-        Darstellung und Händigkeit. Einstellungen im Konto bleiben erhalten.
+        Löscht alle Einstellungen, die diese Suche in deinem Browser gespeichert hat, auch die
+        Darstellung, die für alle Apps gilt. Einstellungen im Konto bleiben erhalten.
       </p>
       <BaseButton variant="error" outline class="shrink-0" @click="searchStore.clearLocalData()">
         <AppIcon name="trash" />
