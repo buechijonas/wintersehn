@@ -111,6 +111,7 @@ INSTALLED_APPS = [
     "wintersehn.content",
     "monolith",
     "search",
+    "atlas",
 ]
 
 REST_FRAMEWORK = {

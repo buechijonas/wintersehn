@@ -29,6 +29,7 @@ urlpatterns = [
     path("api/content/", include("wintersehn.content.urls")),
     path("api/monolith/", include("monolith.urls")),
     path("api/search/", include("search.urls")),
+    path("api/atlas/", include("atlas.urls")),
     path(
         "media/<path:path>",
         serve,

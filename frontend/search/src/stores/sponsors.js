@@ -1,19 +1,8 @@
 import { computed, ref } from 'vue'
 import { acceptHMRUpdate, defineStore } from 'pinia'
-import { apiFetch, extractErrorMessage } from '@core/lib/api.js'
+import { json, request } from '@core/lib/api.js'
 
 const ENDPOINT = '/api/search/sponsors/'
-
-async function request(url, fallback, options = {}) {
-  const response = await apiFetch(url, options)
-  const body = response.status === 204 ? null : await response.json().catch(() => null)
-  if (!response.ok) {
-    throw new Error(extractErrorMessage(body, fallback))
-  }
-  return body
-}
-
-const json = (method, data) => ({ method, body: JSON.stringify(data) })
 
 function toResult(sponsor) {
   return {

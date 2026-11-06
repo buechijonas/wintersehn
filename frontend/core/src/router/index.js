@@ -86,3 +86,19 @@ export function installGuards(router, appName, pageTitles, consentGates = []) {
     document.title = title ? `${title} – ${appName}` : appName
   })
 }
+
+const PUBLIC_ROUTES = new Set(['login', 'logout'])
+
+export function installAdminGuard(router, fallbackUrl) {
+  router.beforeEach((to) => {
+    const authStore = useAuthStore()
+    if (!authStore.ready || PUBLIC_ROUTES.has(to.name) || authStore.user?.can_view_admin) {
+      return true
+    }
+    if (!authStore.isAuthenticated) {
+      return '/login'
+    }
+    window.location.replace(fallbackUrl)
+    return false
+  })
+}

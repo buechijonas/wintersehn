@@ -1,5 +1,5 @@
 <template>
-  <BaseButton variant="neutral" shape="square" size="sm" title="Bearbeiten">
+  <BaseButton variant="neutral" shape="square" :size="size" title="Bearbeiten">
     <AppIcon name="pencil" alt="Bearbeiten" />
   </BaseButton>
 </template>
@@ -11,5 +11,8 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 export default {
   name: 'EditButton',
   components: { BaseButton, AppIcon },
+  props: {
+    size: { type: String, default: 'sm' },
+  },
 }
 </script>

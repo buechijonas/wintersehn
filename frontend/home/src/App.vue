@@ -1,6 +1,6 @@
 <template>
   <div class="flex min-h-[100dvh] flex-col bg-base-100">
-    <HomeHeader class="mt-5" />
+    <TitleHeader title="Home" class="mt-5" />
     <div class="mt-3 border-b border-wntrs-border"></div>
     <RouterView v-if="authStore.ready" />
   </div>
@@ -8,12 +8,12 @@
 
 <script>
 import { RouterView } from 'vue-router'
-import HomeHeader from '@/components/HomeHeader.vue'
+import TitleHeader from '@core/components/layout/TitleHeader.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 
 export default {
   name: 'App',
-  components: { RouterView, HomeHeader },
+  components: { RouterView, TitleHeader },
   computed: {
     authStore() {
       return useAuthStore()

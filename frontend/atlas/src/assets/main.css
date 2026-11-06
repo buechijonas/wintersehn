@@ -1,0 +1,110 @@
+@import 'tailwindcss';
+@import '../../../core/src/assets/base.css';
+@plugin "daisyui";
+@source "../../../core/src";
+
+@plugin "daisyui/theme" {
+  name: 'wntrs';
+  default: true;
+
+  --color-primary: #0f766e;
+  --color-primary-content: #ffffff;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: 'dark';
+  prefersdark: true;
+
+  --color-primary: #0f766e;
+  --color-primary-content: #ffffff;
+  --depth: 0;
+  --noise: 0;
+}
+
+@theme {
+  --color-wntrs-highlight: #e4e6e9;
+  --font-display: 'Manrope', sans-serif;
+  --color-wntrs-title: #202c46;
+}
+
+:root {
+  --footer-height: env(safe-area-inset-bottom);
+  --icon-tint-primary: brightness(0) saturate(100%) invert(53%) sepia(10%) saturate(531%)
+    hue-rotate(179deg) brightness(94%) contrast(87%);
+}
+
+[data-theme='dark'] {
+  --color-wntrs-highlight: #2f363f;
+  --color-wntrs-title: #c9d1e3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-wntrs-highlight: #2f363f;
+    --color-wntrs-title: #c9d1e3;
+  }
+}
+
+.atlas-markdown {
+  line-height: 1.7;
+}
+
+.atlas-markdown > * + * {
+  margin-top: 0.75rem;
+}
+
+.atlas-markdown h1 {
+  font-size: 1.75rem;
+  color: var(--color-wntrs-title);
+}
+
+.atlas-markdown h2 {
+  font-size: 1.375rem;
+  color: var(--color-wntrs-title);
+}
+
+.atlas-markdown h3 {
+  font-size: 1.125rem;
+  color: var(--color-wntrs-title);
+}
+
+.atlas-markdown ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.atlas-markdown ol {
+  list-style: decimal;
+  padding-left: 1.5rem;
+}
+
+.atlas-markdown a {
+  @apply link link-primary;
+}
+
+.atlas-markdown code {
+  @apply rounded bg-base-200 px-1 font-mono text-sm;
+}
+
+.atlas-markdown pre {
+  @apply overflow-x-auto rounded-box bg-base-200 p-4;
+}
+
+.atlas-markdown pre code {
+  @apply bg-transparent p-0;
+}
+
+.atlas-markdown img {
+  @apply rounded-box;
+  max-width: 100%;
+}
+
+.atlas-markdown blockquote {
+  @apply border-l-4 border-wntrs-border pl-4 text-wntrs-muted;
+}
+
+.atlas-markdown table {
+  @apply table;
+}

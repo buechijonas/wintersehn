@@ -64,6 +64,7 @@
 			monolith /srv/monolith
 			search /srv/search
 			home /srv/home
+			atlas /srv/atlas
 			default /srv/wintersehn
 		}
 		root * {app_root}
