@@ -55,5 +55,8 @@ docker rm "$old_id" >/dev/null
 echo "==> Recreating tor, searxng, origin, anubis, edge and onion with any new images"
 "${COMPOSE[@]}" up -d --remove-orphans tor-1 tor-2 tor-3 searxng origin anubis edge onion
 
+echo "==> Removing unused images"
+docker image prune -af >/dev/null
+
 echo "==> Done."
 "${COMPOSE[@]}" ps
