@@ -6,6 +6,7 @@ import yaml
 
 UPSTREAM_SETTINGS = Path("/usr/local/searxng/searx/settings.yml")
 STRICT_CIRCUITS = 4
+TOR_BLOCKED = {"mojeek", "mojeek images", "mojeek news"}
 PROXIES = {
     "vpn": os.environ.get("SEARXNG_VPN_PROXY", ""),
     "proxy": os.environ.get("SEARXNG_CUSTOM_PROXY", ""),
@@ -67,8 +68,19 @@ def main():
         name: {"using_tor_proxy": False, "proxies": network_proxies}
         for name, network_proxies in networks.items()
     }
-    variants = [variant(engine, name) for name in networks for engine in engines]
-    settings["engines"] = settings.get("engines", []) + variants
+    tor_networks = {"strict"}
+    variants = [
+        variant(engine, name)
+        for name in networks
+        for engine in engines
+        if not (name in tor_networks and engine["name"] in TOR_BLOCKED)
+    ]
+    settings["engines"] = [
+        engine
+        for engine in settings.get("engines", []) + variants
+        if engine["name"] not in TOR_BLOCKED
+    ]
+    keep_only[:] = [name for name in keep_only if name not in TOR_BLOCKED]
     keep_only.extend(engine["name"] for engine in variants)
 
     Path(os.environ["SEARXNG_SETTINGS_PATH"]).write_text(yaml.safe_dump(settings))
