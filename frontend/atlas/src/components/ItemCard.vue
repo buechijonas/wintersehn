@@ -9,6 +9,9 @@
       <span class="text-wntrs-title">{{ title }}</span>
       <span v-if="meta" class="text-sm text-wntrs-muted">{{ meta }}</span>
     </span>
+    <span v-if="$slots.aside" class="ml-auto self-center">
+      <slot name="aside" />
+    </span>
   </BaseCard>
 </template>
 
