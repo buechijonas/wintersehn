@@ -1,0 +1,80 @@
+@import 'tailwindcss';
+@import '../../../core/src/assets/base.css';
+@plugin "daisyui";
+@source "../../../core/src";
+
+@plugin "daisyui/theme" {
+  name: 'wntrs';
+  default: true;
+
+  --color-primary: #b45309;
+  --color-primary-content: #ffffff;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: 'dark';
+  prefersdark: true;
+
+  --color-primary: #b45309;
+  --color-primary-content: #ffffff;
+  --depth: 0;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: 'cinema';
+  color-scheme: dark;
+
+  --color-base-100: #141414;
+  --color-base-200: #1f1f1f;
+  --color-base-300: #2a2a2a;
+  --color-base-content: #e8e8e8;
+  --color-neutral: #2a2a2a;
+  --color-neutral-content: #e8e8e8;
+  --color-primary: #e50914;
+  --color-primary-content: #ffffff;
+  --depth: 0;
+  --noise: 0;
+}
+
+@theme {
+  --color-wntrs-highlight: #e4e6e9;
+  --font-display: 'Manrope', sans-serif;
+  --color-wntrs-title: #202c46;
+}
+
+:root {
+  --icon-tint-primary: brightness(0) saturate(100%) invert(53%) sepia(10%) saturate(531%)
+    hue-rotate(179deg) brightness(94%) contrast(87%);
+}
+
+[data-theme='dark'] {
+  --color-wntrs-highlight: #2f363f;
+  --color-wntrs-title: #c9d1e3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-wntrs-highlight: #2f363f;
+    --color-wntrs-title: #c9d1e3;
+  }
+}
+
+[data-theme='cinema'] {
+  --font-display: 'Bebas Neue', sans-serif;
+  --color-wntrs-logo: #e50914;
+  --color-wntrs-highlight: #2a2a2a;
+  --color-wntrs-title: #f5f5f5;
+  --color-wntrs-border: #2a2a2a;
+  --color-wntrs-muted: #9b9b9b;
+  --color-wntrs-slate: #b3b3b3;
+  --icon-tint-neutral: brightness(0) invert(1);
+  background-color: var(--color-base-100);
+}
+
+[data-theme='cinema'] .font-display {
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}

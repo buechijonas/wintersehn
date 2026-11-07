@@ -4,7 +4,10 @@
     <BaseTabs :tabs="tabs" :active="activeTab" />
     <div class="mt-6">
       <AccountCard v-if="activeTab === 'account'" />
-      <AppearanceSettings v-else-if="activeTab === 'appearance'" />
+      <template v-else-if="activeTab === 'appearance'">
+        <AppearanceSettings />
+        <component :is="app.appearanceSettings" v-if="app.appearanceSettings" />
+      </template>
       <LegalSettings v-else />
     </div>
   </div>
