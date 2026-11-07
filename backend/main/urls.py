@@ -30,6 +30,7 @@ urlpatterns = [
     path("api/monolith/", include("monolith.urls")),
     path("api/search/", include("search.urls")),
     path("api/atlas/", include("atlas.urls")),
+    path("api/lumon/", include("lumon.urls")),
     path(
         "media/<path:path>",
         serve,

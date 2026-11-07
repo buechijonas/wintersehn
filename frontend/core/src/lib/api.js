@@ -5,15 +5,15 @@ function getCookie(name) {
 
 export async function apiFetch(url, options = {}) {
   const isUnsafe = options.method && options.method !== 'GET'
-  const isFormData = options.body instanceof FormData
+  const isRaw = options.body instanceof FormData || options.body instanceof Blob
   return fetch(url, {
     credentials: 'include',
+    ...options,
     headers: {
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      ...(isRaw ? {} : { 'Content-Type': 'application/json' }),
       ...(isUnsafe ? { 'X-CSRFToken': getCookie('wntrs_csrftoken') } : {}),
       ...options.headers,
     },
-    ...options,
   })
 }
 

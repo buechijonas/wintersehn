@@ -3,6 +3,7 @@
   --color-wntrs-slate: #6c829c;
   --color-wntrs-border: #e3e5e8;
   --text-title: 2.5rem;
+  --color-wntrs-logo: var(--color-wntrs-title);
 }
 
 :root {

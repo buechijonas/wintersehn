@@ -3,13 +3,16 @@
     class="flex h-14 w-full items-center gap-3 px-6"
     :class="reverse ? 'flex-row-reverse justify-end' : 'justify-end'"
   >
-    <RouterLink
-      v-if="!hideTitle && $route.name !== 'settings'"
-      to="/"
-      class="mr-auto font-display font-bold tracking-tighter text-3xl text-wntrs-title"
-    >
-      {{ title }}
-    </RouterLink>
+    <div class="mr-auto flex min-w-0 items-center gap-8">
+      <RouterLink
+        v-if="!hideTitle && $route.name !== 'settings'"
+        to="/"
+        class="shrink-0 font-display font-bold tracking-tighter text-3xl text-wntrs-logo"
+      >
+        {{ title }}
+      </RouterLink>
+      <slot />
+    </div>
     <span v-if="!authStore.ready" class="skeleton h-4 w-24"></span>
     <span v-else-if="authStore.isAuthenticated" class="text-sm">
       {{ authStore.user.display_name }}
