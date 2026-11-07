@@ -1,10 +1,6 @@
 use_default_settings:
   engines:
     keep_only:
-      - brave
-      - brave.images
-      - brave.videos
-      - brave.news
       - duckduckgo
       - duckduckgo images
       - duckduckgo videos
@@ -12,10 +8,6 @@ use_default_settings:
       - mojeek
       - mojeek images
       - mojeek news
-      - qwant
-      - qwant images
-      - qwant videos
-      - qwant news
       - startpage
       - startpage images
       - startpage news
@@ -36,14 +28,6 @@ engines:
     inactive: false
   - name: startpage news
     inactive: false
-  - name: qwant
-    disabled: false
-  - name: qwant images
-    disabled: false
-  - name: qwant videos
-    disabled: false
-  - name: qwant news
-    disabled: false
 
 general:
   instance_name: wintersehn

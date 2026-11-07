@@ -123,6 +123,7 @@ export const useSearchStore = defineStore('search', () => {
   const settings = ref(readSettings(scope.value))
   const networks = ref(['tor'])
   const braveApi = ref(false)
+  const engineNames = ref(null)
   const onion = ref(null)
   const childProtection = ref({ required: false, domains: [] })
   const hostRatings = ref({})
@@ -210,6 +211,17 @@ export const useSearchStore = defineStore('search', () => {
     )
     networks.value = ['tor', ...extra]
     braveApi.value = names.includes('braveapi')
+    engineNames.value = names
+  }
+
+  function hasEngine(name) {
+    if (!engineNames.value) return true
+    return engineNames.value.some((item) => item === name || item.startsWith(`${name} `))
+  }
+
+  function isAvailable(engine) {
+    if (engine === 'brave' && braveApi.value) return true
+    return categories.some(({ engines }) => engines[engine] && hasEngine(engines[engine]))
   }
 
   function activeNetwork() {
@@ -223,7 +235,7 @@ export const useSearchStore = defineStore('search', () => {
     const useBraveApi = braveApi.value && category === 'general'
     return settings.value.engines
       .map((engine) => (useBraveApi && engine === 'brave' ? 'braveapi' : engines[engine]))
-      .filter(Boolean)
+      .filter((engine) => engine && hasEngine(engine))
       .map((engine) => `${engine}${suffix}`)
   }
 
@@ -343,6 +355,7 @@ export const useSearchStore = defineStore('search', () => {
     pendingHosts,
     search,
     fetchNetworks,
+    isAvailable,
     fetchChildProtection,
     activeNetwork,
     loadMore,

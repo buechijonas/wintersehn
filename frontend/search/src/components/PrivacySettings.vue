@@ -71,16 +71,27 @@
       </p>
       <BaseCard tag="ul" class="divide-y divide-wntrs-border">
         <li v-for="engine in searchChoices.engines" :key="engine">
-          <label class="flex cursor-pointer items-center justify-between gap-4 p-4">
+          <label
+            class="flex items-center justify-between gap-4 p-4"
+            :class="
+              searchStore.isAvailable(engine) ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+            "
+          >
             <span class="flex flex-col">
               <span>{{ engineLabels[engine].label }}</span>
-              <span class="text-sm text-wntrs-muted">{{ engineLabels[engine].description }}</span>
+              <span class="text-sm text-wntrs-muted">
+                {{
+                  searchStore.isAvailable(engine)
+                    ? engineLabels[engine].description
+                    : 'Derzeit nicht verfügbar.'
+                }}
+              </span>
             </span>
             <input
               type="checkbox"
               class="toggle toggle-primary"
-              :checked="settings.engines.includes(engine)"
-              :disabled="isLastEngine(engine)"
+              :checked="searchStore.isAvailable(engine) && settings.engines.includes(engine)"
+              :disabled="!searchStore.isAvailable(engine) || isLastEngine(engine)"
               @change="toggleEngine(engine)"
             />
           </label>
@@ -245,7 +256,8 @@ export default {
   },
   methods: {
     isLastEngine(engine) {
-      return this.settings.engines.length === 1 && this.settings.engines.includes(engine)
+      const engines = this.settings.engines.filter((item) => this.searchStore.isAvailable(item))
+      return engines.length === 1 && engines.includes(engine)
     },
     toggleEngine(engine) {
       const engines = this.settings.engines.includes(engine)
