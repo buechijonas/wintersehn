@@ -10,7 +10,7 @@ COPY . .
 
 EXPOSE 8000
 
-ENV GUNICORN_WORKERS=3
-ENV GUNICORN_THREADS=4
+ENV GUNICORN_WORKERS=1
+ENV GUNICORN_THREADS=8
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py createcachetable && python manage.py bootstrap_admin && python manage.py collectstatic --noinput && gunicorn main.wsgi:application --bind 0.0.0.0:8000 --worker-class gthread --workers $GUNICORN_WORKERS --threads $GUNICORN_THREADS"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py createcachetable && python manage.py bootstrap_admin && python manage.py collectstatic --noinput && gunicorn main.wsgi:application --bind 0.0.0.0:8000 --worker-class gthread --workers $GUNICORN_WORKERS --threads $GUNICORN_THREADS --max-requests 1000 --max-requests-jitter 100"]
