@@ -4,7 +4,6 @@ import { coreRoutes, installGuards, CONSENT_GATES } from '@core/router/index.js'
 import HomeView from '@/views/HomeView.vue'
 import MediaView from '@/views/MediaView.vue'
 import ArticleView from '@/views/ArticleView.vue'
-import NewsView from '@/views/NewsView.vue'
 import NewsSectionView from '@/views/NewsSectionView.vue'
 import ArticlePostView from '@/views/ArticlePostView.vue'
 import AboutView from '@/views/AboutView.vue'
@@ -73,15 +72,17 @@ const router = createRouter({
     {
       path: '/news',
       name: 'news',
-      component: NewsView,
-      meta: { activeNavigation: 'news' },
+      component: NewsSectionView,
+      meta: { section: 'news', activeNavigation: 'news' },
     },
     {
-      path: '/news/:key',
-      name: 'news-section',
+      path: '/apps',
+      name: 'apps',
       component: NewsSectionView,
-      meta: { activeNavigation: 'news' },
+      meta: { section: 'apps', activeNavigation: 'dashboard' },
     },
+    { path: '/news/news', redirect: '/news' },
+    { path: '/news/apps', redirect: '/apps' },
     {
       path: '/about',
       name: 'about',
@@ -332,7 +333,7 @@ const PAGE_TITLES = {
   article: 'Artikeln',
   'article-post': 'Artikel',
   news: 'Medien',
-  'news-section': 'Medien',
+  apps: 'Apps & Software',
   about: 'Über mich',
   ethos: 'Ethos',
   cv: 'Lebenslauf',

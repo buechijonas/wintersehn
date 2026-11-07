@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-200">
       <h2 class="text-xl my-4">{{ label }}</h2>
 
@@ -38,12 +38,10 @@
       </div>
     </div>
   </div>
-  <BaseFooter />
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import AppIcon from '@core/components/common/AppIcon.vue'
 import { useAuthStore } from '@core/stores/auth.js'
@@ -56,6 +54,7 @@ const SECTION_LABELS = {
   cv: 'Lebenslauf',
   countries: 'Länder',
   media: 'Kanäle',
+  now: 'Jetzt',
   impressum: 'Impressum',
   privacy: 'Datenschutzerklärung',
   cookies: 'Cookierichtlinien',
@@ -73,7 +72,7 @@ const CHANGE_PERMISSION_BY_KEY = {
 
 export default {
   name: 'AdminContentView',
-  components: { BaseBreadcrumbs, BaseFooter, BaseButton, AppIcon },
+  components: { BaseBreadcrumbs, BaseButton, AppIcon },
   mixins: [asyncActionMixin],
   data() {
     return {

@@ -7,18 +7,19 @@ import '@core/lib/contrast.js'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
-import App from './App.vue'
+import App from '@core/App.vue'
 import router from './router'
-import { apps } from '@/data/apps.js'
 
 const app = createApp(App)
 
 app.use(createPinia())
 app.use(router)
 app.provide('app', {
-  footerLinks: [],
+  title: 'Home',
+  layout: 'sidebar',
+  navigationItems: [],
+  legalLinks: [],
   hideBreadcrumbs: true,
-  appSwitches: apps,
 })
 
 app.mount('#app')

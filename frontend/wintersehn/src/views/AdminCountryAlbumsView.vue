@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-200">
       <h2 class="text-xl my-4">{{ country?.label }}</h2>
 
@@ -43,7 +43,6 @@
     @confirm="onConfirmDelete"
   />
 
-  <BaseFooter />
 </template>
 
 <script>
@@ -52,7 +51,6 @@ import BaseButton from '@core/components/common/BaseButton.vue'
 import AlbumCard from '@/components/common/AlbumCard.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
 import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 import countryAlbumRouteMixin from '@/mixins/countryAlbumRouteMixin.js'
 import confirmDeleteMixin from '@core/mixins/confirmDeleteMixin.js'
@@ -60,7 +58,7 @@ import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminCountryAlbumsView',
-  components: { BaseBreadcrumbs, BaseButton, AlbumCard, DeleteButton, ConfirmDialog, BaseFooter },
+  components: { BaseBreadcrumbs, BaseButton, AlbumCard, DeleteButton, ConfirmDialog },
   mixins: [countryAlbumRouteMixin, confirmDeleteMixin, asyncActionMixin],
   data() {
     return {

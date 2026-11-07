@@ -84,9 +84,8 @@ services:
 
     environment:
       VITE_API_URL: http://localhost:8000
-      VITE_MONOLITH_URL: http://localhost:5172
       VITE_SEARCH_URL: http://localhost:5171
-      VITE_GOVEX_URL: http://localhost:5174
+      VITE_ATLAS_URL: http://localhost:5169
 
     depends_on:
       - backend
@@ -135,9 +134,7 @@ services:
     environment:
       VITE_API_URL: http://localhost:8000
       VITE_WINTERSEHN_URL: http://localhost:5173
-      VITE_MONOLITH_URL: http://localhost:5172
-      VITE_SWISSFY_URL: http://localhost:5175
-      VITE_GOVEX_URL: http://localhost:5174
+      VITE_ATLAS_URL: http://localhost:5169
 
     depends_on:
       - backend
@@ -201,6 +198,7 @@ services:
     environment:
       VITE_API_URL: http://localhost:8000
       VITE_WINTERSEHN_URL: http://localhost:5173
+      VITE_SEARCH_URL: http://localhost:5171
 
     depends_on:
       - backend

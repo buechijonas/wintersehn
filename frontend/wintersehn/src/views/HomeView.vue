@@ -1,50 +1,98 @@
 <template>
-  <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex h-[calc(100dvh-192px)] px-6">
-    <div class="flex flex-col mx-auto my-32">
-      <h1 class="text-title my-8 text-center font-light">Herzlich Willkommen</h1>
-      <div v-if="!authStore.ready" class="flex items-center gap-4 mx-auto mb-8">
-        <div class="skeleton size-16 rounded-full"></div>
-        <div class="flex flex-col gap-2">
-          <div class="skeleton h-4 w-20"></div>
-          <div class="skeleton h-4 w-28"></div>
-        </div>
-      </div>
-      <div v-else-if="authStore.isAuthenticated" class="flex items-center gap-4 mx-auto mb-8">
-        <img class="size-16" :src="avatarSrc" alt="" />
-        <div class="flex flex-col gap-1 items-start">
-          <span class="badge badge-primary badge-sm">{{ authStore.user.role ?? 'Keine Rolle' }}</span>
-          <span class="font-medium">{{ authStore.user.username }}</span>
-        </div>
-      </div>
-      <p class="subtitle mx-auto text-wntrs-muted font-light">wintersehn.ch</p>
+  <div class="mx-auto flex w-full max-w-240 flex-1 flex-col gap-10 px-6 pt-10 pb-16">
+    <section class="flex flex-col gap-3">
+      <p class="text-sm font-medium text-primary">Portfolio</p>
+      <h1 class="font-display text-5xl font-bold tracking-tighter text-wntrs-title">
+        {{ app.displayName(authStore.user) }}
+      </h1>
+      <p class="max-w-150 text-lg text-wntrs-slate">{{ intro }}</p>
+    </section>
+
+    <p v-if="error" class="text-sm text-error">{{ error }}</p>
+
+    <div v-else-if="!dashboard" class="grid gap-4 lg:grid-cols-2">
+      <div v-for="n in 4" :key="n" class="skeleton h-40"></div>
     </div>
+
+    <template v-else>
+      <section class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <BaseCard v-for="stat in dashboard.stats" :key="stat.label" class="flex flex-col gap-1 p-4">
+          <span class="font-display text-3xl font-bold text-wntrs-title">
+            {{ stat.value ?? '–' }}{{ stat.value === null ? '' : stat.unit }}
+          </span>
+          <span class="text-sm text-wntrs-muted">{{ stat.label }}</span>
+        </BaseCard>
+      </section>
+
+      <div class="grid gap-4 lg:grid-cols-2">
+        <section v-if="dashboard.now.length" class="flex flex-col gap-2">
+          <SectionTitle title="Jetzt" />
+          <BaseCard tag="ul" class="flex flex-1 flex-col divide-y divide-wntrs-border">
+            <li v-for="entry in dashboard.now" :key="entry.label" class="flex flex-col gap-0.5 p-4">
+              <span class="text-xs text-wntrs-muted">{{ entry.label }}</span>
+              <span>{{ entry.value }}</span>
+            </li>
+          </BaseCard>
+        </section>
+
+        <section v-if="dashboard.alternative" class="flex flex-col gap-2">
+          <SectionTitle title="Alternative" to="/apps" />
+          <RecommendationCard :item="dashboard.alternative" class="flex-1" />
+        </section>
+
+        <section v-if="dashboard.medium" class="flex flex-col gap-2">
+          <SectionTitle title="Medium" to="/news" />
+          <RecommendationCard :item="dashboard.medium" class="flex-1" />
+        </section>
+
+        <section v-if="dashboard.retrospect" class="flex flex-col gap-2">
+          <SectionTitle title="Rückblick" to="/cv" />
+          <BaseCard class="flex flex-1 flex-col gap-1 p-4">
+            <span class="text-xs text-wntrs-muted">
+              {{ retrospectLabel }} · {{ dashboard.retrospect.year }} ·
+              {{ dashboard.retrospect.section }}
+            </span>
+            <span class="font-medium">{{ dashboard.retrospect.title }}</span>
+            <span class="text-sm text-wntrs-muted">{{ dashboard.retrospect.description }}</span>
+          </BaseCard>
+        </section>
+      </div>
+    </template>
   </div>
-  <BaseFooter />
 </template>
 
 <script>
-import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
-import { icons } from '@core/assets/icons.js'
-import { profiles } from '@core/assets/images.js'
+import BaseCard from '@core/components/common/BaseCard.vue'
+import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import { useAuthStore } from '@core/stores/auth.js'
+import RecommendationCard from '@/components/common/RecommendationCard.vue'
+import SectionTitle from '@/components/common/SectionTitle.vue'
+import { useDashboardStore } from '@/stores/dashboard.js'
 
 export default {
   name: 'HomeView',
-  components: { BaseBreadcrumbs, BaseFooter },
-  data() {
-    return {
-      breadcrumbs: [{ label: 'Home', to: '/' }],
-    }
-  },
+  components: { BaseCard, RecommendationCard, SectionTitle },
+  mixins: [asyncActionMixin],
+  inject: ['app'],
   computed: {
     authStore() {
       return useAuthStore()
     },
-    avatarSrc() {
-      return profiles[this.authStore.user?.avatar] ?? icons.user
+    dashboard() {
+      return useDashboardStore().dashboard
     },
+    intro() {
+      return this.authStore.user?.verified
+        ? 'Persönliches Portfolio mit Lebenslauf, Projekten, Reisen und Medien.'
+        : 'Artikel, Projekte und Kanäle an einem Ort.'
+    },
+    retrospectLabel() {
+      const years = this.dashboard.retrospect.years_ago
+      return years === 1 ? 'Vor einem Jahr' : `Vor ${years} Jahren`
+    },
+  },
+  mounted() {
+    this.runAction(() => useDashboardStore().fetchDashboard())
   },
 }
 </script>

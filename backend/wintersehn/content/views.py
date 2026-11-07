@@ -14,6 +14,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .dashboard import dashboard
 from .footprint import footprint, privacy_section
 from .images import THUMBNAIL_SIZES, UPLOAD_NAME, build_thumbnail, thumbnail_path
 from .models import Destination, SiteContent
@@ -26,6 +27,7 @@ from .rbac import (
 from .rbac_serializers import PermissionSerializer, RoleSerializer
 from .serializers import (
     CountryMapSerializer,
+    DashboardSerializer,
     DestinationSerializer,
     FootprintSerializer,
     SiteContentSerializer,
@@ -107,6 +109,13 @@ class FootprintView(APIView):
         if not section:
             raise Http404
         return Response(FootprintSerializer(footprint(section)).data)
+
+
+class DashboardView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response(DashboardSerializer(dashboard(request.user)).data)
 
 
 class DestinationView(APIView):

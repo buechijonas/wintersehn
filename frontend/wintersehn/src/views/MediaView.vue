@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-150">
       <div v-if="loading" class="mt-4 flex flex-col gap-4">
         <div v-for="row in 2" :key="row" class="flex flex-col gap-2">
@@ -24,13 +24,11 @@
       </BaseCard>
     </div>
   </div>
-  <BaseFooter />
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import AppIcon from '@core/components/common/AppIcon.vue'
 import { social } from '@core/assets/images.js'
@@ -39,7 +37,7 @@ import { useContentStore } from '@core/stores/content.js'
 
 export default {
   name: 'MediaView',
-  components: { BaseBreadcrumbs, BaseCard, BaseFooter, BaseButton, AppIcon },
+  components: { BaseBreadcrumbs, BaseCard, BaseButton, AppIcon },
   data() {
     return {
       social,

@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-200">
       <div class="flex items-center justify-between gap-4 my-4">
         <h2 class="text-xl">Ethos</h2>
@@ -86,7 +86,6 @@
 
   <SectionDialog ref="sectionDialog" @confirm="addSection" />
 
-  <BaseFooter />
 </template>
 
 <script>
@@ -94,7 +93,6 @@ import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
 import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import AddButton from '@core/components/common/AddButton.vue'
 import SectionDialog from '@core/components/common/SectionDialog.vue'
 import SortableList from '@core/components/common/SortableList.vue'
@@ -111,7 +109,6 @@ export default {
     BaseCard,
     DeleteButton,
     ConfirmDialog,
-    BaseFooter,
     SortableList,
     AddButton,
     SectionDialog,

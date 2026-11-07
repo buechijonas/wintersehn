@@ -19,7 +19,7 @@ app.provide('app', {
   name: packageJson.name,
   version: packageJson.version,
   navigationItems,
-  footerLinks: [],
+  legalLinks: [],
   hasAdmin: false,
   appSwitches: [
     { label: 'GOVEX', url: import.meta.env.VITE_GOVEX_URL ?? 'https://auth.neotyra.com' },
