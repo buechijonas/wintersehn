@@ -1,4 +1,4 @@
-export const footerLinks = [
+export const legalLinks = [
   { label: 'Impressum', icon: 'shield-trust', to: '/impressum' },
   { label: 'Datenschutzerklärung', icon: 'incognito', to: '/privacy' },
   { label: 'Cookierichtlinien', icon: 'cookie-lock', to: '/cookies' },

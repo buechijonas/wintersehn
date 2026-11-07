@@ -18,6 +18,7 @@ urlpatterns = [
         views.DestinationView.as_view(),
         name="country-destination",
     ),
+    path("dashboard/", views.DashboardView.as_view(), name="dashboard"),
     path("news/footprint/", views.FootprintView.as_view(), name="news-footprint"),
     path("<slug:key>/", views.SiteContentView.as_view(), name="site-content"),
 ]

@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col gap-4 pb-12 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col gap-4 pb-12 px-6 flex-1">
     <CardGridSkeleton v-if="loading" :rows="1" />
     <div v-else class="mx-auto w-full max-w-200">
       <h2 class="text-xl my-4 text-center lg:text-left">{{ country?.label }}</h2>
@@ -16,19 +16,17 @@
       </div>
     </div>
   </div>
-  <BaseFooter />
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
 import AlbumCard from '@/components/common/AlbumCard.vue'
 import CardGridSkeleton from '@core/components/common/CardGridSkeleton.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import countryAlbumRouteMixin from '@/mixins/countryAlbumRouteMixin.js'
 
 export default {
   name: 'CountryDetailView',
-  components: { BaseBreadcrumbs, AlbumCard, CardGridSkeleton, BaseFooter },
+  components: { BaseBreadcrumbs, AlbumCard, CardGridSkeleton },
   mixins: [countryAlbumRouteMixin],
   computed: {
     albums() {

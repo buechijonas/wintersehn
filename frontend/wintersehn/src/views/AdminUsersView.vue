@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-8 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-8 flex-1">
     <div class="w-full">
       <h2 class="text-xl my-4">Nutzer</h2>
 
@@ -58,12 +58,10 @@
       </div>
     </div>
   </div>
-  <BaseFooter />
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import { profiles } from '@core/assets/images.js'
 import { icons } from '@core/assets/icons.js'
 import { useAuthStore } from '@core/stores/auth.js'
@@ -72,7 +70,7 @@ import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 
 export default {
   name: 'AdminUsersView',
-  components: { BaseBreadcrumbs, BaseFooter },
+  components: { BaseBreadcrumbs },
   mixins: [asyncActionMixin],
   data() {
     return {

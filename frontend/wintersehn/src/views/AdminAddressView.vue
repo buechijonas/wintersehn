@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-200">
       <h2 class="text-xl my-4">Adresse</h2>
 
@@ -41,7 +41,6 @@
     </div>
   </div>
 
-  <BaseFooter />
 </template>
 
 <script>
@@ -49,7 +48,6 @@ import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import SortableList from '@core/components/common/SortableList.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 import { useContentStore } from '@core/stores/content.js'
@@ -62,7 +60,6 @@ export default {
     BaseCard,
     BaseButton,
     DeleteButton,
-    BaseFooter,
     SortableList,
   },
   mixins: [asyncActionMixin],

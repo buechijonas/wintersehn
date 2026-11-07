@@ -15,18 +15,13 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.provide('app', {
-  footerLinks: [],
+  legalLinks: [],
   hideBreadcrumbs: true,
   appSwitches: [
-    {
-      label: 'swissfy',
-      url: import.meta.env.VITE_SWISSFY_URL ?? 'https://swissfy.ch',
-      icon: '/icons/apps/swissfy.png',
-    },
     { label: 'Wintersehn', url: import.meta.env.VITE_WINTERSEHN_URL ?? 'https://wintersehn.ch' },
     {
-      label: 'MONOLITH',
-      url: import.meta.env.VITE_MONOLITH_URL ?? 'https://monolith.wintersehn.ch',
+      label: 'ATLAS',
+      url: import.meta.env.VITE_ATLAS_URL ?? 'https://atlas.wintersehn.ch',
       permission: 'can_view_admin',
     },
   ],

@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-200">
       <h2 class="text-xl my-4">Artikeln</h2>
 
@@ -49,7 +49,6 @@
     @confirm="onConfirmDelete"
   />
 
-  <BaseFooter />
 </template>
 
 <script>
@@ -58,7 +57,6 @@ import BaseCard from '@core/components/common/BaseCard.vue'
 import AlbumCard from '@/components/common/AlbumCard.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
 import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import SortableList from '@core/components/common/SortableList.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 import { useContentStore } from '@core/stores/content.js'
@@ -73,7 +71,6 @@ export default {
     AlbumCard,
     DeleteButton,
     ConfirmDialog,
-    BaseFooter,
     SortableList,
   },
   mixins: [confirmDeleteMixin, asyncActionMixin],

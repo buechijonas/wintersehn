@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="flex flex-col gap-4">
       <CardCategory
         v-for="category in categories"
@@ -10,17 +10,15 @@
       />
     </div>
   </div>
-  <BaseFooter />
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
 import CardCategory from '@/components/common/CardCategory.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 
 export default {
   name: 'AdminView',
-  components: { BaseBreadcrumbs, CardCategory, BaseFooter },
+  components: { BaseBreadcrumbs, CardCategory },
   data() {
     return {
       breadcrumbs: [{ label: 'Admin', to: '/' }],
@@ -37,6 +35,7 @@ export default {
           items: [
             { icon: 'country_flags/switzerland', label: 'Über mich', to: '/admin/about' },
             { icon: 'integrity', label: 'Ethos', to: '/admin/ethos' },
+            { icon: 'calendar_and_date/hourglass', label: 'Jetzt', to: '/admin/now' },
             { icon: 'cover-letter', label: 'Lebenslauf', to: '/admin/cv' },
             { icon: 'destination', label: 'Länder', to: '/admin/countries' },
             { icon: 'job_resume/application', label: 'Artikeln', to: '/admin/article' },

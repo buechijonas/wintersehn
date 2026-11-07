@@ -275,3 +275,81 @@ class FootprintTests(APITestCase):
         SiteContent.objects.filter(key="news").update(data=[])
         response = self.client.get("/api/content/news/footprint/")
         self.assertEqual(response.status_code, 404)
+
+
+DASHBOARD_CV = [
+    {
+        "items": [
+            {
+                "key": "professional",
+                "label": "Beruflicher Werdegang",
+                "timeline": [
+                    {"year": "2021", "title": "4teamwork AG", "description": "EFZ"},
+                    {"year": "2999", "title": "Zukunft"},
+                ],
+            }
+        ]
+    }
+]
+
+DASHBOARD_NEWS = [
+    {
+        "items": [
+            {
+                "key": "news",
+                "groups": [{"items": [{"name": "SRF", "url": "https://www.srf.ch"}]}],
+            },
+            {
+                "key": "apps",
+                "groups": [
+                    {
+                        "items": [
+                            {
+                                "name": "Signal",
+                                "replaces": [{"name": "WhatsApp", "icon": "whatsapp"}],
+                            },
+                            {"name": "Ohne Ersatz"},
+                        ]
+                    }
+                ],
+            }
+        ]
+    }
+]
+
+
+class DashboardTests(APITestCase):
+    def setUp(self):
+        SiteContent.objects.update_or_create(key="cv", defaults={"data": DASHBOARD_CV})
+        SiteContent.objects.update_or_create(key="news", defaults={"data": DASHBOARD_NEWS})
+        SiteContent.objects.update_or_create(
+            key="now", defaults={"data": [{"label": "Arbeite an", "value": "ATLAS"}]}
+        )
+
+    def stats(self, response):
+        return {stat["label"]: stat for stat in response.data["stats"]}
+
+    def test_guest_sees_now_without_retrospect(self):
+        response = self.client.get("/api/content/dashboard/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data["now"], [{"label": "Arbeite an", "value": "ATLAS"}]
+        )
+        self.assertIsNone(response.data["retrospect"])
+
+    def test_cv_viewer_sees_past_retrospect(self):
+        self.client.force_authenticate(create_user("viewer", "view_cv"))
+        response = self.client.get("/api/content/dashboard/")
+        self.assertEqual(response.data["retrospect"]["title"], "4teamwork AG")
+        self.assertEqual(
+            response.data["retrospect"]["years_ago"], timezone.localdate().year - 2021
+        )
+
+    def test_alternative_only_from_items_with_replacements(self):
+        response = self.client.get("/api/content/dashboard/")
+        self.assertEqual(response.data["alternative"]["name"], "Signal")
+        self.assertEqual(self.stats(response)["Alternative"]["value"], 1)
+
+    def test_medium_from_news_section(self):
+        response = self.client.get("/api/content/dashboard/")
+        self.assertEqual(response.data["medium"]["name"], "SRF")

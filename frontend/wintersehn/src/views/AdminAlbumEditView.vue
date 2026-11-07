@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-200">
       <input
         type="text"
@@ -67,7 +67,6 @@
     @confirm="onConfirmDelete"
   />
 
-  <BaseFooter />
 </template>
 
 <script>
@@ -78,7 +77,6 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 import ImageUploadField from '@core/components/common/ImageUploadField.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
 import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import SortableList from '@core/components/common/SortableList.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 import countryAlbumRouteMixin from '@/mixins/countryAlbumRouteMixin.js'
@@ -95,7 +93,6 @@ export default {
     ImageUploadField,
     DeleteButton,
     ConfirmDialog,
-    BaseFooter,
     SortableList,
   },
   mixins: [countryAlbumRouteMixin, confirmDeleteMixin, asyncActionMixin],

@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-8 max-h-[calc(100dvh-101px-var(--footer-height))] overflow-y-auto lg:max-h-none lg:overflow-y-visible lg:flex-1">
+  <div class="flex flex-col pb-8 px-8 flex-1">
     <div class="w-full">
       <div class="flex items-center justify-between gap-4 my-4">
         <h2 class="text-xl">Rollen &amp; Rechte</h2>
@@ -103,12 +103,10 @@
     @confirm="onConfirmDelete"
   />
 
-  <BaseFooter />
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
-import BaseFooter from '@core/components/common/BaseFooter.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
 import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
 import AddButton from '@core/components/common/AddButton.vue'
@@ -162,7 +160,6 @@ export default {
   name: 'AdminRolesView',
   components: {
     BaseBreadcrumbs,
-    BaseFooter,
     DeleteButton,
     ConfirmDialog,
     EditButton,

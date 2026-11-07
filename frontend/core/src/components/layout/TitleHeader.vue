@@ -1,6 +1,10 @@
 <template>
-  <div class="flex h-14 w-full items-center gap-3 px-6">
+  <div
+    class="flex h-14 w-full items-center gap-3 px-6"
+    :class="reverse ? 'flex-row-reverse justify-end' : 'justify-end'"
+  >
     <RouterLink
+      v-if="!hideTitle && $route.name !== 'settings'"
       to="/"
       class="mr-auto font-display font-bold tracking-tighter text-3xl text-wntrs-title"
     >
@@ -10,7 +14,11 @@
     <span v-else-if="authStore.isAuthenticated" class="text-sm">
       {{ authStore.user.display_name }}
     </span>
-    <div class="group dropdown dropdown-end" @keydown.esc="closeMenu">
+    <div
+      class="group dropdown"
+      :class="reverse ? 'dropdown-start' : 'dropdown-end'"
+      @keydown.esc="closeMenu"
+    >
       <div
         tabindex="0"
         role="button"
@@ -34,11 +42,21 @@
             <span>Einstellungen</span>
           </RouterLink>
           <RouterLink v-else to="/" class="flex h-12 items-center gap-3" @click="closeMenu">
-            <AppIcon name="apps" class="size-6!" />
+            <AppIcon :name="homeIcon" class="size-6!" />
             <span>{{ title }}</span>
           </RouterLink>
         </li>
-        <li v-if="authStore.ready">
+        <li
+          v-for="(target, index) in switches"
+          :key="target.url"
+          :class="{ 'mt-1 border-t border-wntrs-border pt-1': index === 0 }"
+        >
+          <a :href="target.url" class="flex h-12 items-center gap-3">
+            <img :src="target.icon" alt="" class="size-6" />
+            <span>{{ target.label }}</span>
+          </a>
+        </li>
+        <li v-if="authStore.ready" class="mt-1 border-t border-wntrs-border pt-1">
           <RouterLink
             :to="authStore.isAuthenticated ? '/logout' : '/login'"
             class="flex h-12 items-center gap-3"
@@ -64,6 +82,10 @@ export default {
   components: { RouterLink, AppIcon },
   props: {
     title: { type: String, required: true },
+    switches: { type: Array, default: () => [] },
+    homeIcon: { type: String, default: 'apps' },
+    hideTitle: { type: Boolean, default: false },
+    reverse: { type: Boolean, default: false },
   },
   computed: {
     authStore() {

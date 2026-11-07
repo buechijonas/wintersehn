@@ -28,7 +28,6 @@
 }
 
 :root {
-  --footer-height: env(safe-area-inset-bottom);
   --icon-tint-primary: brightness(0) saturate(100%) invert(53%) sepia(10%) saturate(531%)
     hue-rotate(179deg) brightness(94%) contrast(87%);
 }

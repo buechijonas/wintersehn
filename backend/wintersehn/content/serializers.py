@@ -87,3 +87,47 @@ class FootprintSerializer(serializers.Serializer):
     after = FootprintSummarySerializer()
     reduction = serializers.IntegerField()
     flags = serializers.DictField(child=serializers.CharField())
+
+
+class NowSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    value = serializers.CharField()
+
+
+class StatSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    value = serializers.IntegerField(allow_null=True)
+    unit = serializers.CharField()
+
+
+class RetrospectSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    description = serializers.CharField(default="")
+    year = serializers.CharField()
+    years_ago = serializers.IntegerField()
+    section = serializers.CharField()
+
+
+class ReplacedSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    icon = serializers.CharField(default=None)
+
+
+class MediumSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    icon = serializers.CharField(default=None)
+    url = serializers.CharField(default=None)
+    category = serializers.CharField(default="")
+    reason = serializers.CharField(default="")
+
+
+class AlternativeSerializer(MediumSerializer):
+    replaces = ReplacedSerializer(many=True)
+
+
+class DashboardSerializer(serializers.Serializer):
+    now = NowSerializer(many=True)
+    stats = StatSerializer(many=True)
+    retrospect = RetrospectSerializer(allow_null=True)
+    alternative = AlternativeSerializer(allow_null=True)
+    medium = MediumSerializer(allow_null=True)

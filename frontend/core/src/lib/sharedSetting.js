@@ -1,7 +1,7 @@
 import { ref, watch } from 'vue'
 
 const MAX_AGE = 60 * 60 * 24 * 365
-const keys = []
+const settings = []
 
 function cookieDomain() {
   const { hostname } = window.location
@@ -27,8 +27,8 @@ function readStored(key) {
 }
 
 export function sharedSetting(key, { parse, serialize, apply }) {
-  keys.push(key)
   const setting = ref(parse(readStored(key)))
+  settings.push({ key, setting, parse })
   watch(
     setting,
     (value) => {
@@ -41,5 +41,12 @@ export function sharedSetting(key, { parse, serialize, apply }) {
 }
 
 export function clearSharedSettings() {
-  keys.forEach((key) => writeCookie(key, '', 0))
+  settings.forEach(({ key }) => writeCookie(key, '', 0))
 }
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return
+  settings.forEach(({ key, setting, parse }) => {
+    setting.value = parse(readStored(key))
+  })
+})
