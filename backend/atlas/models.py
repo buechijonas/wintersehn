@@ -1,20 +1,58 @@
 import random
 import unicodedata
 import uuid
+from decimal import ROUND_HALF_UP, Decimal
 
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.functions import Collate
 
 from . import markdown
 
 CHOICE_COUNT = 4
+PASSING_GRADE = Decimal("4")
+GOOD_GRADE = Decimal("5")
+GRADE_VALIDATORS = [MinValueValidator(Decimal("1")), MaxValueValidator(Decimal("6"))]
+WEIGHT_VALIDATORS = [MinValueValidator(Decimal("0.01"))]
 NAME_ORDER = Collate("name", "de-CH-x-icu")
 TITLE_ORDER = Collate("title", "de-CH-x-icu")
 
 
 def normalize(text):
     return " ".join(unicodedata.normalize("NFKC", text).casefold().split())
+
+
+def weighted_average(pairs):
+    pairs = [(grade, weight) for grade, weight in pairs if grade is not None]
+    total = sum(weight for _, weight in pairs)
+    if not total:
+        return None
+    return sum(grade * weight for grade, weight in pairs) / total
+
+
+def round_half(value):
+    if value is None:
+        return None
+    return (value * 2).quantize(Decimal("1"), rounding=ROUND_HALF_UP) / 2
+
+
+def grade_tone(value):
+    if value is None:
+        return None
+    if value < PASSING_GRADE:
+        return "error"
+    return "success" if value >= GOOD_GRADE else "warning"
+
+
+class Graded:
+    @property
+    def rounded(self):
+        return round_half(self.average)
+
+    @property
+    def tone(self):
+        return grade_tone(self.rounded)
 
 
 class InstitutionQuerySet(models.QuerySet):
@@ -24,7 +62,7 @@ class InstitutionQuerySet(models.QuerySet):
         )
 
 
-class Institution(models.Model):
+class Institution(Graded, models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -37,6 +75,11 @@ class Institution(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def average(self):
+        grades = [subject.rounded for subject in self.subjects.all()]
+        return weighted_average((grade, 1) for grade in grades)
+
 
 class SubjectQuerySet(models.QuerySet):
     def with_counts(self):
@@ -46,7 +89,7 @@ class SubjectQuerySet(models.QuerySet):
         ).order_by(NAME_ORDER)
 
 
-class Subject(models.Model):
+class Subject(Graded, models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     institution = models.ForeignKey(
         Institution, on_delete=models.CASCADE, related_name="subjects"
@@ -61,6 +104,10 @@ class Subject(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def average(self):
+        return weighted_average((exam.result, exam.weight) for exam in self.exams.all())
 
 
 class Documentation(models.Model):
@@ -205,3 +252,55 @@ class Flashcard(models.Model):
         self.save(
             update_fields=["last_known", "reviewed_at", "known_count", "unknown_count"]
         )
+
+
+class Exam(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="exams")
+    name = models.CharField(max_length=200)
+    weight = models.DecimalField(
+        max_digits=5, decimal_places=2, default=1, validators=WEIGHT_VALIDATORS
+    )
+    grade = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=GRADE_VALIDATORS,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def result(self):
+        parts = self.parts.all()
+        if not parts:
+            return self.grade
+        return weighted_average((part.grade, part.weight) for part in parts)
+
+    @property
+    def tone(self):
+        return grade_tone(self.result)
+
+
+class ExamPart(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="parts")
+    name = models.CharField(max_length=200)
+    weight = models.DecimalField(
+        max_digits=5, decimal_places=2, default=1, validators=WEIGHT_VALIDATORS
+    )
+    grade = models.DecimalField(
+        max_digits=3, decimal_places=2, validators=GRADE_VALIDATORS
+    )
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "id"]
+
+    def __str__(self):
+        return self.name

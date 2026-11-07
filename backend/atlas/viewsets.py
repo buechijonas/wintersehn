@@ -12,7 +12,15 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from monolith.images import encode_image, image_name, thumbnail
 
 from . import markdown, serializers
-from .models import Documentation, Flashcard, Image, Institution, LearningSet, Subject
+from .models import (
+    Documentation,
+    Exam,
+    Flashcard,
+    Image,
+    Institution,
+    LearningSet,
+    Subject,
+)
 from .permissions import CanViewAtlas
 
 
@@ -61,7 +69,10 @@ class InstitutionViewSet(ModelViewSet, AtlasViewSet):
         if self.action == "list":
             return Institution.objects.with_counts()
         return Institution.objects.prefetch_related(
-            Prefetch("subjects", queryset=Subject.objects.with_counts())
+            Prefetch(
+                "subjects",
+                queryset=Subject.objects.with_counts().prefetch_related("exams__parts"),
+            )
         )
 
     def get_serializer_class(self):
@@ -79,6 +90,7 @@ class InstitutionViewSet(ModelViewSet, AtlasViewSet):
 class SubjectViewSet(EditViewSet):
     queryset = Subject.objects.select_related("institution").prefetch_related(
         "documentations",
+        "exams__parts",
         Prefetch("learning_sets", queryset=LearningSet.objects.with_progress()),
     )
     serializer_class = serializers.SubjectDetailSerializer
@@ -89,6 +101,12 @@ class SubjectViewSet(EditViewSet):
             request,
             serializers.DocumentationDetailSerializer,
             subject=self.get_object(),
+        )
+
+    @action(detail=True, methods=["post"])
+    def exams(self, request, uuid):
+        return self.create_child(
+            request, serializers.ExamSerializer, subject=self.get_object()
         )
 
     @action(detail=True, methods=["post"], url_path="learning-sets")
@@ -154,6 +172,13 @@ class LearningSetViewSet(mixins.ListModelMixin, EditViewSet):
             learning_set=learning_set,
             position=learning_set.cards.count(),
         )
+
+
+class ExamViewSet(EditViewSet):
+    queryset = Exam.objects.select_related("subject__institution").prefetch_related(
+        "parts"
+    )
+    serializer_class = serializers.ExamSerializer
 
 
 class FlashcardViewSet(mixins.UpdateModelMixin, mixins.DestroyModelMixin, AtlasViewSet):

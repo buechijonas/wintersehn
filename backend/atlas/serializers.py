@@ -1,8 +1,25 @@
 from rest_framework import serializers
 
-from .models import Documentation, Flashcard, Image, Institution, LearningSet, Subject
+from .models import (
+    Documentation,
+    Exam,
+    ExamPart,
+    Flashcard,
+    Image,
+    Institution,
+    LearningSet,
+    Subject,
+)
 
 NAME = {"trim_whitespace": True, "allow_blank": False}
+
+
+def average_field():
+    return serializers.DecimalField(max_digits=4, decimal_places=2, read_only=True)
+
+
+def rounded_field():
+    return serializers.DecimalField(max_digits=3, decimal_places=1, read_only=True)
 
 
 class ImageSerializer(serializers.ModelSerializer):
@@ -29,10 +46,18 @@ class InstitutionRefSerializer(serializers.ModelSerializer):
 class SubjectSerializer(serializers.ModelSerializer):
     documentation_count = serializers.IntegerField(read_only=True)
     learning_set_count = serializers.IntegerField(read_only=True)
+    rounded = rounded_field()
 
     class Meta:
         model = Subject
-        fields = ["uuid", "name", "documentation_count", "learning_set_count"]
+        fields = [
+            "uuid",
+            "name",
+            "documentation_count",
+            "learning_set_count",
+            "rounded",
+            "tone",
+        ]
         extra_kwargs = {"name": NAME}
 
 
@@ -46,10 +71,12 @@ class SubjectRefSerializer(serializers.ModelSerializer):
 
 class InstitutionDetailSerializer(serializers.ModelSerializer):
     subjects = SubjectSerializer(many=True, read_only=True)
+    average = average_field()
+    rounded = rounded_field()
 
     class Meta:
         model = Institution
-        fields = ["uuid", "name", "subjects"]
+        fields = ["uuid", "name", "subjects", "average", "rounded", "tone"]
         extra_kwargs = {"name": NAME}
 
 
@@ -79,14 +106,88 @@ class LearningSetSerializer(serializers.ModelSerializer):
         extra_kwargs = {"title": NAME}
 
 
+class ExamPartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamPart
+        fields = ["name", "weight", "grade"]
+        extra_kwargs = {"name": NAME}
+
+
+class ExamSerializer(serializers.ModelSerializer):
+    parts = ExamPartSerializer(many=True, required=False)
+    result = average_field()
+    subject = SubjectRefSerializer(read_only=True)
+
+    class Meta:
+        model = Exam
+        fields = [
+            "uuid",
+            "name",
+            "weight",
+            "grade",
+            "parts",
+            "result",
+            "tone",
+            "subject",
+        ]
+        extra_kwargs = {"name": NAME}
+
+    def validate(self, data):
+        current = {"grade": None, "parts": []}
+        if self.instance:
+            current = {
+                "grade": self.instance.grade,
+                "parts": list(self.instance.parts.all()),
+            }
+        exam = {**current, **data}
+        if exam["grade"] is None and not exam["parts"]:
+            raise serializers.ValidationError(
+                {"grade": "Gib eine Note oder mindestens eine Teilnote an."}
+            )
+        return data
+
+    def save_parts(self, exam, parts):
+        exam.parts.all().delete()
+        ExamPart.objects.bulk_create(
+            ExamPart(exam=exam, position=position, **part)
+            for position, part in enumerate(parts)
+        )
+
+    def create(self, validated_data):
+        parts = validated_data.pop("parts", [])
+        exam = super().create(validated_data)
+        self.save_parts(exam, parts)
+        return exam
+
+    def update(self, instance, validated_data):
+        parts = validated_data.pop("parts", None)
+        exam = super().update(instance, validated_data)
+        if parts is not None:
+            self.save_parts(exam, parts)
+        return exam
+
+
 class SubjectDetailSerializer(serializers.ModelSerializer):
     institution = InstitutionRefSerializer(read_only=True)
     documentations = DocumentationSerializer(many=True, read_only=True)
     learning_sets = LearningSetSerializer(many=True, read_only=True)
+    exams = ExamSerializer(many=True, read_only=True)
+    average = average_field()
+    rounded = rounded_field()
 
     class Meta:
         model = Subject
-        fields = ["uuid", "name", "institution", "documentations", "learning_sets"]
+        fields = [
+            "uuid",
+            "name",
+            "institution",
+            "documentations",
+            "learning_sets",
+            "exams",
+            "average",
+            "rounded",
+            "tone",
+        ]
         extra_kwargs = {"name": NAME}
 
 

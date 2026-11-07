@@ -53,6 +53,18 @@ const router = createRouter({
       meta: { ...section('learning-sets'), form: 'learningSet', mode: 'create' },
     },
     {
+      path: '/subjects/:uuid/exams/new',
+      name: 'exam-new',
+      component: () => import('@/views/ExamFormView.vue'),
+      meta: { ...section('institutions'), mode: 'create' },
+    },
+    {
+      path: '/exams/:uuid/edit',
+      name: 'exam-edit',
+      component: () => import('@/views/ExamFormView.vue'),
+      meta: { ...section('institutions'), mode: 'edit' },
+    },
+    {
       path: '/learning-sets/:uuid/edit',
       name: 'learning-set-edit',
       component: FormView,
@@ -133,6 +145,8 @@ installGuards(router, 'ATLAS', {
   'institution-edit': 'Institution bearbeiten',
   'subject-edit': 'Fach bearbeiten',
   'learning-set-edit': 'Lernset bearbeiten',
+  'exam-new': 'Neue Prüfung',
+  'exam-edit': 'Prüfung bearbeiten',
   subject: 'Fach',
   documentations: 'Dokumentationen',
   documentation: 'Dokumentation',

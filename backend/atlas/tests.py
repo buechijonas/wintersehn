@@ -1,3 +1,4 @@
+from decimal import Decimal
 from io import BytesIO
 
 from django.contrib.auth import get_user_model
@@ -8,7 +9,15 @@ from rest_framework.test import APITestCase
 
 from wintersehn.accounts.models import UserProfile
 
-from .models import Flashcard, Institution, LearningSet, Subject
+from .models import (
+    Exam,
+    Flashcard,
+    Institution,
+    LearningSet,
+    Subject,
+    grade_tone,
+    round_half,
+)
 
 
 def create_user(username, admin=True):
@@ -155,3 +164,80 @@ class AtlasTests(APITestCase):
             format="json",
         ).json()
         self.assertEqual(card["front_image_url"], image["url"])
+
+
+class GradeTests(APITestCase):
+    def setUp(self):
+        self.client.force_authenticate(create_user("admin"))
+        self.institution = Institution.objects.create(name="gibb BMS")
+        self.math = Subject.objects.create(
+            institution=self.institution, name="Mathematik"
+        )
+        self.german = Subject.objects.create(
+            institution=self.institution, name="Deutsch"
+        )
+
+    def exam(self, subject, data):
+        return self.client.post(
+            f"/api/atlas/subjects/{subject.uuid}/exams/", data, format="json"
+        )
+
+    def test_rounds_to_half_grades(self):
+        self.assertEqual(round_half(Decimal("4.25")), Decimal("4.5"))
+        self.assertEqual(round_half(Decimal("4.24")), Decimal("4"))
+        self.assertEqual(round_half(Decimal("5.75")), Decimal("6"))
+
+    def test_tone_follows_thresholds(self):
+        self.assertEqual(grade_tone(Decimal("3.5")), "error")
+        self.assertEqual(grade_tone(Decimal("4")), "warning")
+        self.assertEqual(grade_tone(Decimal("4.5")), "warning")
+        self.assertEqual(grade_tone(Decimal("5")), "success")
+
+    def test_requires_grade_or_parts(self):
+        response = self.exam(self.math, {"name": "Leer"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_exam_result_from_weighted_parts(self):
+        parts = [
+            {"name": "Theorie", "weight": "2", "grade": "5.5"},
+            {"name": "Praxis", "weight": "1", "grade": "4"},
+        ]
+        exam = self.exam(self.math, {"name": "Algebra", "parts": parts}).json()
+        self.assertEqual(exam["result"], "5.00")
+        self.assertEqual(exam["tone"], "success")
+        self.assertEqual(
+            [part["name"] for part in exam["parts"]], ["Theorie", "Praxis"]
+        )
+
+    def test_subject_and_institution_averages(self):
+        self.exam(self.math, {"name": "A", "weight": "2", "grade": "4.5"})
+        self.exam(self.math, {"name": "B", "weight": "1", "grade": "5.25"})
+        self.exam(self.german, {"name": "C", "grade": "3.6"})
+        math = self.client.get(f"/api/atlas/subjects/{self.math.uuid}/").json()
+        self.assertEqual(
+            (math["average"], math["rounded"], math["tone"]), ("4.75", "5.0", "success")
+        )
+        institution = self.client.get(
+            f"/api/atlas/institutions/{self.institution.uuid}/"
+        ).json()
+        subjects = {subject["name"]: subject for subject in institution["subjects"]}
+        self.assertEqual(
+            (subjects["Deutsch"]["rounded"], subjects["Deutsch"]["tone"]),
+            ("3.5", "error"),
+        )
+        self.assertEqual(institution["average"], "4.25")
+        self.assertEqual(
+            (institution["rounded"], institution["tone"]), ("4.5", "warning")
+        )
+
+    def test_update_replaces_parts(self):
+        exam = self.exam(
+            self.math, {"name": "A", "parts": [{"name": "x", "grade": "6"}]}
+        ).json()
+        response = self.client.patch(
+            f"/api/atlas/exams/{exam['uuid']}/",
+            {"parts": [{"name": "y", "grade": "3"}, {"name": "z", "grade": "4"}]},
+            format="json",
+        ).json()
+        self.assertEqual(response["result"], "3.50")
+        self.assertEqual(Exam.objects.get().parts.count(), 2)

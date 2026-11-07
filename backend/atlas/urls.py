@@ -14,6 +14,7 @@ router.register(
     "learning-sets", viewsets.LearningSetViewSet, basename="atlas-learning-set"
 )
 router.register("cards", viewsets.FlashcardViewSet, basename="atlas-card")
+router.register("exams", viewsets.ExamViewSet, basename="atlas-exam")
 router.register("images", viewsets.ImageViewSet, basename="atlas-image")
 
 urlpatterns = router.urls
