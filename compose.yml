@@ -57,7 +57,6 @@ services:
       SWISSFY_INTERNAL_URL: http://host.docker.internal:8001
       SWISSFY_API_TOKEN: monolith-dev-token
       SWISSFY_PUBLIC_URL: http://localhost:5175
-      TMDB_API_KEY: ${TMDB_API_KEY:-}
       FRONTEND_URL: http://localhost:5173
       MONOLITH_URL: http://localhost:5172
       CONSENT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\nMIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgpVJv0m39Ji0/wT/7\n37xarFQG3pV4fyrLw5BsQtekk2yhRANCAAQ3GaiyE0qkvPAeC4KfXCz9b3d1DakQ\n+bimnAbswixpvoxKACFN8M2DOjwDDJxSEd2O7hKELM98RG2hZHZ4E7dP\n-----END PRIVATE KEY-----"

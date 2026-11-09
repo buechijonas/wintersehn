@@ -1,221 +1,123 @@
 import re
+from functools import partial
 from itertools import zip_longest
 
-from . import tmdb
+from . import posters
 from .models import MediaFile, Title
+from .sources import tvmaze, wikidata
+from .sources.http import CatalogUnavailable, parallel
 
-CATEGORIES = {
-    "sci-fi": {
-        "label": "Sci-Fi",
-        Title.MOVIE: {"with_genres": "878"},
-        Title.TV: {"with_genres": "10765"},
-    },
-    "anime": {
-        "label": "Anime",
-        Title.MOVIE: {"with_genres": "16", "with_original_language": "ja"},
-        Title.TV: {"with_genres": "16", "with_original_language": "ja"},
-    },
-    "horror": {
-        "label": "Horror",
-        Title.MOVIE: {"with_genres": "27"},
-    },
-    "comedy": {
-        "label": "Komödie",
-        Title.MOVIE: {"with_genres": "35"},
-        Title.TV: {"with_genres": "35"},
-    },
-}
+SOURCES = {Title.MOVIE: wikidata, Title.TV: tvmaze}
 MEDIA_TYPES = [Title.MOVIE, Title.TV]
+CATEGORIES = {
+    "sci-fi": "Sci-Fi",
+    "anime": "Anime",
+    "horror": "Horror",
+    "comedy": "Komödie",
+}
 
 
-def year(date):
-    return int(date[:4]) if date and date[:4].isdigit() else None
-
-
-def item(result, media_type, saved):
-    return {
-        "tmdb_id": result["id"],
-        "media_type": media_type,
-        "title": result.get("title") or result.get("name") or "",
-        "year": year(result.get("release_date") or result.get("first_air_date")),
-        "poster": tmdb.image(result.get("poster_path")),
-        "saved": saved.get((media_type, result["id"])),
-    }
-
-
-def items(results, media_type, saved):
-    return [item(result, media_type, saved) for result in results]
-
-
-def matches(result, filters):
-    genres = {str(genre) for genre in result.get("genre_ids", [])}
-    wanted = set(filters.get("with_genres", "").split(",")) - {""}
-    language = filters.get("with_original_language")
-    return wanted <= genres and (
-        not language or result.get("original_language") == language
-    )
-
-
-def discover(media_type, filters, saved):
-    results = tmdb.get(
-        f"/discover/{media_type}",
-        sort_by="popularity.desc",
-        watch_region=tmdb.REGION,
-        **filters,
-    )["results"]
-    return items(results, media_type, saved)
+def mark(entries, saved):
+    return [
+        {**entry, "saved": saved.get((entry["media_type"], entry["catalog_id"]))}
+        for entry in entries
+    ]
 
 
 def interleave(groups):
     return [entry for row in zip_longest(*groups) for entry in row if entry]
 
 
-def search(query, category, media_types, saved):
-    filters = CATEGORIES[category] if category else {}
-    media_types = [
-        media_type
-        for media_type in media_types
-        if not category or media_type in filters
-    ]
+def results(source, query, category):
     if query:
-        results = tmdb.get("/search/multi", query=query, include_adult="false")[
-            "results"
-        ]
-        return [
-            item(result, result["media_type"], saved)
-            for result in results
-            if result.get("media_type") in media_types
-            and (not category or matches(result, filters[result["media_type"]]))
-        ]
+        return source.search(query, category)
     if category:
-        groups = [
-            discover(media_type, filters[media_type], saved)
+        return source.category(category)
+    return source.popular()
+
+
+def search(query, category, media_types, saved):
+    groups = parallel(
+        [
+            partial(results, SOURCES[media_type], query, category)
             for media_type in media_types
         ]
-        return interleave(groups)
-    results = tmdb.get("/trending/all/week")["results"]
-    return [
-        item(result, result["media_type"], saved)
-        for result in results
-        if result.get("media_type") in media_types
-    ]
+    )
+    return mark(interleave(groups), saved)
+
+
+def row(key, title, load, saved):
+    try:
+        entries = load()
+    except CatalogUnavailable:
+        entries = []
+    return {"key": key, "title": title, "items": mark(entries, saved)}
+
+
+def details(media_type, catalog_id):
+    return SOURCES[media_type].detail(catalog_id)
+
+
+def media(media_type, catalog_id):
+    if media_type == Title.MOVIE:
+        return MediaFile.objects.movie(catalog_id)
+    return MediaFile.objects.next_up(catalog_id)
+
+
+def detail(media_type, catalog_id, saved):
+    result = details(media_type, catalog_id)
+    return {**mark([result], saved)[0], "media": media(media_type, catalog_id)}
+
+
+def featured(media_type, rows, saved):
+    first = next((row["items"][0] for row in rows if row["items"]), None)
+    if not first:
+        return None
+    try:
+        return detail(media_type, first["catalog_id"], saved)
+    except CatalogUnavailable:
+        return None
+
+
+def library_items(media_type, saved):
+    return mark(
+        [
+            details(media_type, catalog_id)
+            for catalog_id in MediaFile.objects.library(media_type)
+        ],
+        saved,
+    )
 
 
 def browse(media_type, library, saved):
-    media = [
-        item(details(media_type, tmdb_id), media_type, saved)
-        for tmdb_id in MediaFile.objects.library(media_type)
-    ]
-    rows = [
-        {
-            "key": "popular",
-            "title": "Beliebt",
-            "items": items(
-                tmdb.get(f"/{media_type}/popular", region=tmdb.REGION)["results"],
-                media_type,
-                saved,
-            ),
-        }
-    ]
-    rows += [
-        {
-            "key": key,
-            "title": category["label"],
-            "items": discover(media_type, category[media_type], saved),
-        }
-        for key, category in CATEGORIES.items()
-        if media_type in category
-    ]
+    source = SOURCES[media_type]
+    rows = parallel(
+        [partial(row, "popular", "Beliebt", source.popular, saved)]
+        + [
+            partial(row, key, label, partial(source.category, key), saved)
+            for key, label in CATEGORIES.items()
+        ]
+    )
     if library:
         rows.insert(0, {"key": "library", "title": "Meine Liste", "items": library})
-    if media:
-        rows.insert(0, {"key": "media", "title": "Mediathek", "items": media})
-    featured = next((row["items"][0] for row in rows if row["items"]), None)
-    return {
-        "featured": (
-            detail(media_type, featured["tmdb_id"], saved) if featured else None
-        ),
-        "rows": rows,
-    }
+    media_row = row("media", "Mediathek", partial(library_items, media_type, saved), {})
+    if media_row["items"]:
+        rows.insert(0, media_row)
+    return {"featured": featured(media_type, rows, saved), "rows": rows}
 
 
-def providers(result):
-    region = result.get("watch/providers", {}).get("results", {}).get(tmdb.REGION, {})
-    return {
-        "link": region.get("link"),
-        **{
-            kind: [
-                {
-                    "name": provider["provider_name"],
-                    "logo": tmdb.image(provider["logo_path"], "w92"),
-                }
-                for provider in region.get(kind, [])
-            ]
-            for kind in ("flatrate", "free", "ads", "rent", "buy")
-        },
-    }
+def artwork(media_type, catalog_id, kind):
+    result = details(media_type, catalog_id)
+    if kind == "backdrop":
+        return posters.backdrop(result["genres"])
+    return posters.poster(result["title"], result["year"], result["genres"])
 
 
-def details(media_type, tmdb_id):
-    return tmdb.get(f"/{media_type}/{tmdb_id}", append_to_response="watch/providers")
-
-
-def seasons(result):
+def season_episodes(catalog_id, number):
+    available = MediaFile.objects.episodes(catalog_id, number)
     return [
-        {
-            "number": season["season_number"],
-            "name": season.get("name") or f"Staffel {season['season_number']}",
-            "episodes": season.get("episode_count", 0),
-        }
-        for season in result.get("seasons", [])
-        if season.get("season_number")
-    ]
-
-
-def detail(media_type, tmdb_id, saved):
-    result = details(media_type, tmdb_id)
-    return {
-        **item(result, media_type, saved),
-        "media": (
-            MediaFile.objects.movie(tmdb_id)
-            if media_type == Title.MOVIE
-            else MediaFile.objects.next_up(tmdb_id)
-        ),
-        "overview": result.get("overview", ""),
-        "backdrop": tmdb.image(result.get("backdrop_path"), "w1280"),
-        "genres": [genre["name"] for genre in result.get("genres", [])],
-        "rating": (
-            round(result["vote_average"], 1) if result.get("vote_count") else None
-        ),
-        "runtime": result.get("runtime"),
-        "seasons": seasons(result),
-        "providers": providers(result),
-    }
-
-
-def title_fields(media_type, tmdb_id):
-    result = details(media_type, tmdb_id)
-    return {
-        "title": result.get("title") or result.get("name") or "",
-        "poster_path": result.get("poster_path") or "",
-        "year": year(result.get("release_date") or result.get("first_air_date")),
-    }
-
-
-def season_episodes(tmdb_id, number):
-    result = tmdb.get(f"/tv/{tmdb_id}/season/{number}")
-    available = MediaFile.objects.episodes(tmdb_id, number)
-    return [
-        {
-            "number": episode["episode_number"],
-            "title": episode.get("name") or f"Folge {episode['episode_number']}",
-            "overview": episode.get("overview", ""),
-            "still": tmdb.image(episode.get("still_path"), "w300"),
-            "runtime": episode.get("runtime"),
-            "air_date": episode.get("air_date"),
-            "media": available.get(episode["episode_number"]),
-        }
-        for episode in result.get("episodes", [])
+        {**episode, "media": available.get(episode["number"])}
+        for episode in tvmaze.episodes(catalog_id, number)
     ]
 
 
@@ -240,8 +142,8 @@ def parse_episode(filename, default_season):
     return default_season, None
 
 
-def detect(tmdb_id, filenames, default_season):
-    numbers = {entry["number"] for entry in seasons(details("tv", tmdb_id))}
+def detect(catalog_id, filenames, default_season):
+    numbers = {entry["number"] for entry in tvmaze.detail(catalog_id)["seasons"]}
     titles = {}
     detections = []
     for filename in filenames:
@@ -250,7 +152,7 @@ def detect(tmdb_id, filenames, default_season):
             season, episode = None, None
         if season and season not in titles:
             titles[season] = {
-                entry["number"]: entry for entry in season_episodes(tmdb_id, season)
+                entry["number"]: entry for entry in season_episodes(catalog_id, season)
             }
         known = titles.get(season, {}).get(episode)
         detections.append(
@@ -263,3 +165,12 @@ def detect(tmdb_id, filenames, default_season):
             }
         )
     return detections
+
+
+def title_fields(media_type, catalog_id):
+    result = details(media_type, catalog_id)
+    return {
+        "title": result["title"],
+        "year": result["year"],
+        "poster": result["poster"] or "",
+    }

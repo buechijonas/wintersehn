@@ -6,7 +6,7 @@
       <PosterRow v-for="n in 3" :key="n" title="Laden" loading />
     </template>
     <PosterRow v-for="row in rows" :key="row.key" :title="row.title" :items="row.items" />
-    <TmdbNotice class="mt-auto" />
+    <SourceNotice class="mt-auto" />
   </div>
 </template>
 
@@ -14,13 +14,13 @@
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import FeaturedHero from '@/components/FeaturedHero.vue'
 import PosterRow from '@/components/PosterRow.vue'
-import TmdbNotice from '@/components/TmdbNotice.vue'
+import SourceNotice from '@/components/SourceNotice.vue'
 import { lumonStyle } from '@/lib/style.js'
 import { useLumonStore } from '@/stores/lumon.js'
 
 export default {
   name: 'BrowseView',
-  components: { FeaturedHero, PosterRow, TmdbNotice },
+  components: { FeaturedHero, PosterRow, SourceNotice },
   mixins: [asyncActionMixin],
   data() {
     return { featured: null, rows: [] }

@@ -4,15 +4,15 @@ from urllib.parse import quote
 from django.db import models
 from django.db.models import Max, Q
 
-from . import library, tmdb
+from . import library
 
 
 class TitleQuerySet(models.QuerySet):
     def saved(self):
         return {
-            (media_type, tmdb_id): key
-            for media_type, tmdb_id, key in self.values_list(
-                "media_type", "tmdb_id", "uuid"
+            (media_type, catalog_id): key
+            for media_type, catalog_id, key in self.values_list(
+                "media_type", "catalog_id", "uuid"
             )
         }
 
@@ -23,10 +23,10 @@ class Title(models.Model):
     MEDIA_TYPES = [(MOVIE, "Film"), (TV, "Serie")]
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    tmdb_id = models.PositiveIntegerField()
+    catalog_id = models.PositiveIntegerField()
     media_type = models.CharField(max_length=5, choices=MEDIA_TYPES)
     title = models.CharField(max_length=255)
-    poster_path = models.CharField(max_length=255, blank=True)
+    poster = models.CharField(max_length=500, blank=True)
     year = models.PositiveSmallIntegerField(null=True, blank=True)
     added_at = models.DateTimeField(auto_now_add=True)
 
@@ -36,36 +36,32 @@ class Title(models.Model):
         ordering = ["-added_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=["tmdb_id", "media_type"], name="lumon_unique_title"
+                fields=["catalog_id", "media_type"], name="lumon_unique_title"
             )
         ]
 
     def __str__(self):
         return self.title
 
-    @property
-    def poster(self):
-        return tmdb.image(self.poster_path)
-
 
 class MediaFileQuerySet(models.QuerySet):
     def library(self, media_type):
         return (
             self.filter(media_type=media_type)
-            .values_list("tmdb_id", flat=True)
+            .values_list("catalog_id", flat=True)
             .annotate(latest=Max("uploaded_at"))
             .order_by("-latest")
         )
 
-    def movie(self, tmdb_id):
-        return self.filter(media_type=Title.MOVIE, tmdb_id=tmdb_id).first()
+    def movie(self, catalog_id):
+        return self.filter(media_type=Title.MOVIE, catalog_id=catalog_id).first()
 
     def register(self, path, **identity):
         relative = str(path.relative_to(library.root()))
         media = self.filter(
             **{
                 key: identity[key]
-                for key in ("media_type", "tmdb_id", "season", "episode")
+                for key in ("media_type", "catalog_id", "season", "episode")
             }
         ).first()
         if media and media.path != relative:
@@ -78,15 +74,15 @@ class MediaFileQuerySet(models.QuerySet):
             return media
         return self.create(path=relative, **identity)
 
-    def next_up(self, tmdb_id):
-        episodes = self.filter(media_type=Title.TV, tmdb_id=tmdb_id)
+    def next_up(self, catalog_id):
+        episodes = self.filter(media_type=Title.TV, catalog_id=catalog_id)
         return episodes.filter(played=False).first() or episodes.first()
 
-    def episodes(self, tmdb_id, season):
+    def episodes(self, catalog_id, season):
         return {
             media.episode: media
             for media in self.filter(
-                media_type=Title.TV, tmdb_id=tmdb_id, season=season
+                media_type=Title.TV, catalog_id=catalog_id, season=season
             )
         }
 
@@ -94,7 +90,7 @@ class MediaFileQuerySet(models.QuerySet):
 class MediaFile(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     media_type = models.CharField(max_length=5, choices=Title.MEDIA_TYPES)
-    tmdb_id = models.PositiveIntegerField()
+    catalog_id = models.PositiveIntegerField()
     season = models.PositiveSmallIntegerField(null=True, blank=True)
     episode = models.PositiveSmallIntegerField(null=True, blank=True)
     title = models.CharField(max_length=255)
@@ -107,10 +103,10 @@ class MediaFile(models.Model):
     objects = MediaFileQuerySet.as_manager()
 
     class Meta:
-        ordering = ["tmdb_id", "season", "episode"]
+        ordering = ["catalog_id", "season", "episode"]
         constraints = [
             models.UniqueConstraint(
-                fields=["media_type", "tmdb_id", "season", "episode"],
+                fields=["media_type", "catalog_id", "season", "episode"],
                 name="lumon_unique_media_file",
                 nulls_distinct=False,
             )
@@ -134,7 +130,7 @@ class MediaFile(models.Model):
         if self.media_type == Title.MOVIE:
             return None
         return (
-            MediaFile.objects.filter(media_type=Title.TV, tmdb_id=self.tmdb_id)
+            MediaFile.objects.filter(media_type=Title.TV, catalog_id=self.catalog_id)
             .filter(
                 Q(season=self.season, episode__gt=self.episode)
                 | Q(season__gt=self.season)
@@ -152,7 +148,7 @@ class Upload(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     media_type = models.CharField(max_length=5, choices=Title.MEDIA_TYPES)
-    tmdb_id = models.PositiveIntegerField()
+    catalog_id = models.PositiveIntegerField()
     season = models.PositiveSmallIntegerField(null=True, blank=True)
     episode = models.PositiveSmallIntegerField(null=True, blank=True)
     extension = models.CharField(max_length=4)
@@ -161,7 +157,7 @@ class Upload(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.media_type} {self.tmdb_id}"
+        return f"{self.media_type} {self.catalog_id}"
 
     @property
     def partial(self):
@@ -181,9 +177,9 @@ class Upload(models.Model):
 
     def target(self, fields):
         if self.media_type == Title.MOVIE:
-            return library.movie_path(fields, self.tmdb_id, self.extension)
+            return library.movie_path(fields, self.catalog_id, self.extension)
         return library.episode_path(
-            fields, self.tmdb_id, self.season, self.episode, self.extension
+            fields, self.catalog_id, self.season, self.episode, self.extension
         )
 
     def complete(self, fields):
@@ -197,7 +193,7 @@ class Upload(models.Model):
         media = MediaFile.objects.register(
             path,
             media_type=self.media_type,
-            tmdb_id=self.tmdb_id,
+            catalog_id=self.catalog_id,
             season=self.season,
             episode=self.episode,
             title=fields["title"],

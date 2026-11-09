@@ -8,7 +8,7 @@
       <PosterCard
         v-for="item in items"
         v-else
-        :key="`${item.media_type}-${item.tmdb_id}`"
+        :key="`${item.media_type}-${item.catalog_id}`"
         :item="item"
         class="w-36 shrink-0 snap-start"
       />

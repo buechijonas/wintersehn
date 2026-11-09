@@ -27,7 +27,7 @@
     <p v-else-if="!saving && !results.length" class="text-wntrs-muted">Nichts gefunden.</p>
     <PosterGrid :items="results" :loading="saving" />
 
-    <TmdbNotice class="mt-auto" />
+    <SourceNotice class="mt-auto" />
   </div>
 </template>
 
@@ -36,14 +36,14 @@ import AppIcon from '@core/components/common/AppIcon.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import PosterGrid from '@/components/PosterGrid.vue'
-import TmdbNotice from '@/components/TmdbNotice.vue'
+import SourceNotice from '@/components/SourceNotice.vue'
 import { useLumonStore } from '@/stores/lumon.js'
 
 const DELAY = 300
 
 export default {
   name: 'SearchView',
-  components: { AppIcon, BaseButton, PosterGrid, TmdbNotice },
+  components: { AppIcon, BaseButton, PosterGrid, SourceNotice },
   mixins: [asyncActionMixin],
   data() {
     return { categories: [], results: [], timer: null }

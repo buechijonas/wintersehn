@@ -1,5 +1,8 @@
 <template>
-  <RouterLink :to="`/${item.media_type}/${item.tmdb_id}`" class="group flex min-w-0 flex-col gap-2">
+  <RouterLink
+    :to="`/${item.media_type}/${item.catalog_id}`"
+    class="group flex min-w-0 flex-col gap-2"
+  >
     <div
       class="relative aspect-[2/3] overflow-hidden rounded-box border border-wntrs-border bg-base-200"
     >

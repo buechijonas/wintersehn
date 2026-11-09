@@ -87,7 +87,7 @@ export default {
   components: { AppIcon, BaseButton, BaseCard },
   mixins: [asyncActionMixin],
   props: {
-    tmdbId: { type: Number, required: true },
+    catalogId: { type: Number, required: true },
     seasons: { type: Array, required: true },
     defaultSeason: { type: Number, required: true },
   },
@@ -121,7 +121,7 @@ export default {
       if (!files.length) return
       this.runAction(async () => {
         const detections = await this.store.detect(
-          this.tmdbId,
+          this.catalogId,
           files.map((file) => file.name),
           this.defaultSeason,
         )
@@ -160,7 +160,7 @@ export default {
             await this.store.upload(
               {
                 media_type: 'tv',
-                tmdb_id: this.tmdbId,
+                catalog_id: this.catalogId,
                 season: row.season,
                 episode: row.episode,
               },
