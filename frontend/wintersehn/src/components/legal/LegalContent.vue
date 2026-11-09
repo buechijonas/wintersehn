@@ -12,12 +12,16 @@
         <LegalAddress />
       </template>
     </LegalSection>
-    <LegalIllustration v-if="page.illustration" :src="undraws[page.illustration]" :alt="page.title" />
+    <LegalIllustration
+      v-if="page.illustration"
+      :src="undraws[page.illustration]"
+      :alt="page.title"
+    />
     <div
       v-if="
         page.consentField && authStore.isAuthenticated && !authStore.user.consent[page.consentField]
       "
-      class="flex gap-4 mt-6"
+      class="flex gap-4"
     >
       <CancelButton class="flex-1" to="/logout" />
       <BaseButton variant="primary" class="flex-1" :disabled="accepting" @click="onAccept">
@@ -39,7 +43,14 @@ import { useAuthStore } from '@core/stores/auth.js'
 
 export default {
   name: 'LegalContent',
-  components: { LegalPage, LegalSection, LegalAddress, LegalIllustration, BaseButton, CancelButton },
+  components: {
+    LegalPage,
+    LegalSection,
+    LegalAddress,
+    LegalIllustration,
+    BaseButton,
+    CancelButton,
+  },
   props: {
     page: {
       type: Object,

@@ -1,6 +1,7 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col gap-4 pb-12 px-6 flex-1">
+  <div class="mx-auto flex w-full max-w-200 flex-1 flex-col gap-12 px-6 pt-4 pb-16">
+    <h1 class="font-display text-5xl font-bold tracking-tighter text-wntrs-title">Ethos</h1>
     <CardGridSkeleton v-if="loading" />
     <CardCategory
       v-for="category in ethosCategories"

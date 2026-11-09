@@ -1,13 +1,13 @@
 <template>
-  <section class="my-6">
-    <h3 v-if="title" class="font-medium">{{ title }}</h3>
-    <p v-if="subtitle" class="font-light text-wntrs-slate">{{ subtitle }}</p>
-    <p v-if="text" class="font-light">{{ text }}</p>
-    <ul v-if="items.length" class="ps-6 mt-4">
-      <li v-for="item in items" :key="item.listtitle" class="mb-3">
+  <section class="flex flex-col gap-3">
+    <h2 v-if="title" class="text-xl">{{ title }}</h2>
+    <p v-if="subtitle" class="text-wntrs-slate">{{ subtitle }}</p>
+    <p v-if="text" class="text-wntrs-muted">{{ text }}</p>
+    <ul v-if="items.length" class="flex flex-col gap-3 ps-6">
+      <li v-for="item in items" :key="item.listtitle">
         <span class="font-medium">{{ item.listtitle }}</span>
         <ul v-if="item.texttitle" class="ps-6">
-          <li class="font-light">{{ item.texttitle }}</li>
+          <li class="text-wntrs-muted">{{ item.texttitle }}</li>
         </ul>
       </li>
     </ul>
