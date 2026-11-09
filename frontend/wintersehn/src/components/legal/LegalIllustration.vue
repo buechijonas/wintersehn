@@ -1,5 +1,5 @@
 <template>
-  <div class="flex justify-center my-8">
+  <div class="flex">
     <img class="max-h-64" :src="src" :alt="alt" />
   </div>
 </template>

@@ -1,21 +1,13 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
   <LegalContent v-if="page" :page="page" />
-  <div v-else class="flex flex-col overflow-y-auto lg:flex-1">
-    <div class="mx-auto w-full max-w-150 px-6">
-      <div class="skeleton mt-4 mb-4 h-7 w-48"></div>
-      <div
-        class="list bg-base-100 rounded-box shadow-none border-wntrs-border border-solid border-1 p-8"
-      >
-        <div class="flex flex-col gap-3">
-          <div class="skeleton h-4 w-full"></div>
-          <div class="skeleton h-4 w-full"></div>
-          <div class="skeleton h-4 w-3/4"></div>
-          <div class="skeleton mt-4 h-4 w-1/3"></div>
-          <div class="skeleton h-4 w-full"></div>
-          <div class="skeleton h-4 w-5/6"></div>
-        </div>
-      </div>
+  <div v-else class="mx-auto flex w-full max-w-200 flex-1 flex-col gap-12 px-6 pt-4 pb-16">
+    <div class="skeleton h-12 w-64"></div>
+    <div class="flex max-w-150 flex-col gap-3">
+      <div class="skeleton h-6 w-48"></div>
+      <div class="skeleton h-4 w-full"></div>
+      <div class="skeleton h-4 w-full"></div>
+      <div class="skeleton h-4 w-3/4"></div>
     </div>
   </div>
 </template>

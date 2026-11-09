@@ -1,5 +1,7 @@
 <template>
-  <p v-for="line in lines" :key="line" class="font-light">{{ line }}</p>
+  <address class="text-wntrs-muted not-italic">
+    <p v-for="line in lines" :key="line">{{ line }}</p>
+  </address>
 </template>
 
 <script>
