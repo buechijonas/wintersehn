@@ -99,6 +99,7 @@ docker buildx build --platform linux/amd64 \
   --build-context search=./frontend/search \
   --build-context home=./frontend/home \
   --build-context atlas=./frontend/atlas \
+  --build-context lumon=./frontend/lumon \
   -t "$PROXY_IMAGE:latest" -t "$PROXY_IMAGE:$tag" \
   --push ./docker/proxy
 

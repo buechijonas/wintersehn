@@ -39,8 +39,8 @@ services:
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DJANGO_DEBUG: "false"
-      DJANGO_ALLOWED_HOSTS: ${DOMAIN},monolith.${DOMAIN},search.${DOMAIN},home.${DOMAIN},atlas.${DOMAIN},backend,localhost
-      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN},https://monolith.${DOMAIN},https://search.${DOMAIN},https://home.${DOMAIN},https://atlas.${DOMAIN}
+      DJANGO_ALLOWED_HOSTS: ${DOMAIN},monolith.${DOMAIN},search.${DOMAIN},home.${DOMAIN},atlas.${DOMAIN},lumon.${DOMAIN},backend,localhost
+      DJANGO_CSRF_TRUSTED_ORIGINS: https://${DOMAIN},https://monolith.${DOMAIN},https://search.${DOMAIN},https://home.${DOMAIN},https://atlas.${DOMAIN},https://lumon.${DOMAIN}
       DJANGO_COOKIE_DOMAIN: .${DOMAIN}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
@@ -67,6 +67,7 @@ services:
 
     volumes:
       - backend_media:/app/media
+      - lumon_media:/lumon-media
 
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health/', timeout=3)"]
@@ -138,6 +139,9 @@ services:
 
     logging: *no-logs
 
+    volumes:
+      - lumon_media:/lumon-media:ro
+
     depends_on:
       - backend
       - searxng
@@ -205,6 +209,7 @@ services:
 volumes:
   postgres_data:
   backend_media:
+  lumon_media:
   caddy_data:
   caddy_config:
   onion_data:

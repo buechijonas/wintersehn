@@ -73,6 +73,21 @@ COPY --from=core . /core
 
 RUN npm run build
 
+FROM node:24-alpine AS lumon-build
+
+WORKDIR /app
+
+COPY --from=lumon package*.json ./
+
+RUN npm ci
+
+COPY --from=lumon index.html jsconfig.json vite.config.js ./
+COPY --from=lumon src ./src
+COPY --from=lumon public ./public
+COPY --from=core . /core
+
+RUN npm run build
+
 FROM caddy:2-alpine
 
 COPY --from=wintersehn-build /app/dist /srv/wintersehn
@@ -80,5 +95,6 @@ COPY --from=monolith-build /app/dist /srv/monolith
 COPY --from=search-build /app/dist /srv/search
 COPY --from=home-build /app/dist /srv/home
 COPY --from=atlas-build /app/dist /srv/atlas
+COPY --from=lumon-build /app/dist /srv/lumon
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY Caddyfile.edge /etc/caddy/Caddyfile.edge

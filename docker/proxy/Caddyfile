@@ -49,6 +49,20 @@
 		}
 	}
 
+	@lumon_media {
+		header X-Wintersehn-App lumon
+		path /lumon-media/*
+	}
+
+	handle @lumon_media {
+		forward_auth backend:8000 {
+			uri /api/lumon/media/auth/
+		}
+		header Cache-Control "private, max-age=86400"
+		root * /
+		file_server
+	}
+
 	@searxng {
 		header X-Wintersehn-App search
 		path /searxng/search /searxng/image /searxng/config
@@ -65,6 +79,7 @@
 			search /srv/search
 			home /srv/home
 			atlas /srv/atlas
+			lumon /srv/lumon
 			default /srv/wintersehn
 		}
 		root * {app_root}
@@ -72,7 +87,7 @@
 		header @assets Cache-Control "public, max-age=31536000, immutable"
 		@pages not path /assets/*
 		header @pages Cache-Control "no-cache"
-		header @pages Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-hfrY0cAn0CeU3407Sei42lVqyeWCHww1//Fh6pFndCE='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://wintersehn.ch https://*.wintersehn.ch https://swissfy.ch https://auth.neotyra.com; font-src 'self' data:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+		header @pages Content-Security-Policy "default-src 'self'; script-src 'self' 'sha256-hfrY0cAn0CeU3407Sei42lVqyeWCHww1//Fh6pFndCE='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://wintersehn.ch https://*.wintersehn.ch https://swissfy.ch https://auth.neotyra.com https://static.tvmaze.com; font-src 'self' data:; connect-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
 		try_files {path} /index.html
 		file_server
 	}
