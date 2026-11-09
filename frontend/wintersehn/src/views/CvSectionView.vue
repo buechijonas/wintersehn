@@ -1,72 +1,74 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 flex-1">
-    <div class="mx-auto w-full max-w-200">
-      <h2 class="text-xl my-4">{{ section?.label }}</h2>
+  <div class="mx-auto flex w-full max-w-200 flex-1 flex-col gap-12 px-6 pt-4 pb-16">
+    <h1 class="font-display text-5xl font-bold tracking-tighter text-wntrs-title">
+      {{ section?.label }}
+    </h1>
 
-      <p v-if="!section?.timeline?.length" class="text-wntrs-muted font-light">
-        Inhalt folgt in Kürze.
-      </p>
+    <p v-if="!section?.timeline?.length" class="text-wntrs-muted">Inhalt folgt in Kürze.</p>
 
-      <ul v-else class="timeline timeline-snap-icon max-md:timeline-compact timeline-vertical">
-        <li
-          v-for="(entry, index) in section.timeline"
-          :key="`${entry.year}-${entry.title}`"
-        >
-          <hr :class="{ invisible: index === 0 }" />
-          <div class="timeline-middle font-mono italic text-wntrs-muted">{{ entry.year }}</div>
-          <div
-            :class="
-              entry.side === 'start'
-                ? 'timeline-start mb-10 flex justify-end'
-                : 'timeline-end mb-10 flex justify-start'
-            "
-          >
-            <div class="flex flex-col items-center gap-1">
-              <BaseCard
-                class="size-40 flex flex-col items-center justify-center text-center gap-4 p-2"
-              >
-                <img
-                  class="size-16"
-                  :alt="entry.title"
-                  :src="flats[entry.icon ?? section.icon]"
-                />
-                <div>
-                  <div class="text-wntrs-slate text-xs font-bold">{{ entry.title }}</div>
-                  <p class="text-wntrs-slate font-light text-xs">{{ entry.description }}</p>
-                </div>
-              </BaseCard>
+    <ol v-else class="-my-8 flex flex-col">
+      <li
+        v-for="entry in section.timeline"
+        :key="`${entry.year}-${entry.title}`"
+        class="group grid grid-cols-[0.625rem_minmax(0,1fr)] gap-4"
+      >
+        <div class="flex flex-col items-center">
+          <span class="h-11.75 w-px shrink-0 bg-wntrs-border group-first:invisible"></span>
+          <span class="size-2.5 shrink-0 rounded-full bg-primary"></span>
+          <span class="w-px flex-1 bg-wntrs-border group-last:invisible"></span>
+        </div>
+        <div class="py-8">
+          <div class="flex flex-wrap items-start gap-x-4 gap-y-3">
+            <img
+              class="size-10 shrink-0"
+              :alt="entry.title"
+              :src="flats[entry.icon ?? section.icon]"
+            />
+            <div class="flex min-w-0 flex-1 flex-col wrap-break-word">
+              <span class="text-xs font-medium tracking-wide text-primary">{{ entry.year }}</span>
+              <h2 class="font-medium">{{ entry.title }}</h2>
+              <p v-if="entry.description" class="text-sm text-wntrs-muted">
+                {{ entry.description }}
+              </p>
+            </div>
+            <div
+              v-if="entry.links?.length"
+              class="grid w-full grid-cols-2 gap-2 pl-14 sm:grid-flow-col sm:grid-cols-none sm:auto-cols-[8rem]"
+            >
               <BaseButton
-                v-for="link in entry.links ?? []"
+                v-for="link in entry.links"
                 :key="link.url"
                 variant="primary"
+                outline
                 size="sm"
-                class="w-40"
+                class="min-w-0 flex-nowrap"
                 :href="link.url"
                 target="_blank"
                 rel="noopener noreferrer"
+                :title="link.label"
               >
-                {{ link.label }}
+                <span class="truncate">{{ link.label }}</span>
+                <AppIcon name="share-square" class="shrink-0" />
               </BaseButton>
             </div>
           </div>
-          <hr :class="{ invisible: index === section.timeline.length - 1 }" />
-        </li>
-      </ul>
-    </div>
+        </div>
+      </li>
+    </ol>
   </div>
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
-import BaseCard from '@core/components/common/BaseCard.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
+import AppIcon from '@core/components/common/AppIcon.vue'
 import { flats } from '@core/assets/images.js'
 import { useContentStore } from '@core/stores/content.js'
 
 export default {
   name: 'CvSectionView',
-  components: { BaseBreadcrumbs, BaseCard, BaseButton },
+  components: { BaseBreadcrumbs, BaseButton, AppIcon },
   data() {
     return { flats }
   },
@@ -83,10 +85,7 @@ export default {
         .find((item) => item.key === this.$route.params.key)
     },
     breadcrumbs() {
-      return [
-        { label: 'Lebenslauf', to: '/cv' },
-        { label: this.section?.label ?? '' },
-      ]
+      return [{ label: 'Lebenslauf', to: '/cv' }, { label: this.section?.label ?? '' }]
     },
   },
   mounted() {
