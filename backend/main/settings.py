@@ -112,6 +112,7 @@ INSTALLED_APPS = [
     "wintersehn.content",
     "monolith",
     "search",
+    "commons",
     "atlas",
     "lumon",
 ]

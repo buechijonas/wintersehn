@@ -47,7 +47,7 @@ import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import AtlasPage from '@/components/AtlasPage.vue'
 import DeleteAction from '@/components/DeleteAction.vue'
 import ImageUploadButton from '@/components/ImageUploadButton.vue'
-import MarkdownContent from '@/components/MarkdownContent.vue'
+import MarkdownContent from '@core/components/common/MarkdownContent.vue'
 import { subjectBreadcrumbs } from '@/lib/breadcrumbs.js'
 import { useAtlasStore } from '@/stores/atlas.js'
 

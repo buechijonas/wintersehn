@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from commons.serializers import UUIDModelSerializer
+
 from .models import (
     Documentation,
     Exam,
@@ -22,88 +24,157 @@ def rounded_field():
     return serializers.DecimalField(max_digits=3, decimal_places=1, read_only=True)
 
 
-class ImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Image
-        fields = ["uuid", "name", "url"]
+def image_url(source):
+    return serializers.CharField(source=f"{source}.url", read_only=True, default=None)
 
 
-class InstitutionSerializer(serializers.ModelSerializer):
-    subject_count = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = Institution
-        fields = ["uuid", "name", "subject_count"]
-        extra_kwargs = {"name": NAME}
+def image_field():
+    return serializers.SlugRelatedField(
+        slug_field="uuid", queryset=Image.objects.all(), allow_null=True, required=False
+    )
 
 
-class InstitutionRefSerializer(serializers.ModelSerializer):
+class InstitutionReferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Institution
         fields = ["uuid", "name"]
 
 
-class SubjectSerializer(serializers.ModelSerializer):
-    documentation_count = serializers.IntegerField(read_only=True)
-    learning_set_count = serializers.IntegerField(read_only=True)
-    rounded = rounded_field()
-
-    class Meta:
-        model = Subject
-        fields = [
-            "uuid",
-            "name",
-            "documentation_count",
-            "learning_set_count",
-            "rounded",
-            "tone",
-        ]
-        extra_kwargs = {"name": NAME}
-
-
-class SubjectRefSerializer(serializers.ModelSerializer):
-    institution = InstitutionRefSerializer(read_only=True)
+class SubjectReferenceSerializer(serializers.ModelSerializer):
+    institution = InstitutionReferenceSerializer(read_only=True)
 
     class Meta:
         model = Subject
         fields = ["uuid", "name", "institution"]
 
 
-class InstitutionDetailSerializer(serializers.ModelSerializer):
-    subjects = SubjectSerializer(many=True, read_only=True)
-    average = average_field()
-    rounded = rounded_field()
-
-    class Meta:
-        model = Institution
-        fields = ["uuid", "name", "subjects", "average", "rounded", "tone"]
-        extra_kwargs = {"name": NAME}
+class ImageModelSerializer(UUIDModelSerializer):
+    class read(UUIDModelSerializer.read):
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Image
+            fields = ["uuid", "name", "url"]
 
 
-class DocumentationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Documentation
-        fields = ["uuid", "title", "updated_at"]
-        extra_kwargs = {"title": NAME}
+class DocumentationModelSerializer(UUIDModelSerializer):
+    class list(UUIDModelSerializer.read):
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Documentation
+            fields = ["uuid", "title", "updated_at"]
+
+    class retrieve(UUIDModelSerializer.read):
+        subject = SubjectReferenceSerializer(read_only=True)
+
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Documentation
+            fields = ["uuid", "title", "body", "html", "updated_at", "subject"]
+
+    class write(UUIDModelSerializer.write):
+        class Meta(UUIDModelSerializer.write.Meta):
+            model = Documentation
+            fields = ["title", "body"]
+            extra_kwargs = {"title": NAME}
 
 
-class DocumentationDetailSerializer(serializers.ModelSerializer):
-    subject = SubjectRefSerializer(read_only=True)
+class FlashcardModelSerializer(UUIDModelSerializer):
+    class read(UUIDModelSerializer.read):
+        front_image = serializers.SlugRelatedField(slug_field="uuid", read_only=True)
+        back_image = serializers.SlugRelatedField(slug_field="uuid", read_only=True)
+        front_image_url = image_url("front_image")
+        back_image_url = image_url("back_image")
 
-    class Meta:
-        model = Documentation
-        fields = ["uuid", "title", "body", "html", "updated_at", "subject"]
-        extra_kwargs = {"title": NAME}
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Flashcard
+            fields = [
+                "uuid",
+                "front",
+                "back",
+                "front_image",
+                "back_image",
+                "front_image_url",
+                "back_image_url",
+                "last_known",
+            ]
+
+    class write(UUIDModelSerializer.write):
+        front_image = image_field()
+        back_image = image_field()
+
+        class Meta(UUIDModelSerializer.write.Meta):
+            model = Flashcard
+            fields = ["front", "back", "front_image", "back_image"]
+
+        def validate(self, data):
+            current = {"front": "", "front_image": None}
+            if self.instance:
+                current = {
+                    "front": self.instance.front,
+                    "front_image": self.instance.front_image,
+                }
+            card = {**current, **data}
+            if not (card["front"].strip() or card["front_image"]):
+                raise serializers.ValidationError(
+                    {"front": "Die Vorderseite braucht Text oder ein Bild."}
+                )
+            return data
+
+    class option(UUIDModelSerializer.read):
+        image_url = image_url("back_image")
+
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Flashcard
+            fields = ["uuid", "back", "image_url"]
+
+    class quiz(UUIDModelSerializer.read):
+        front_image_url = image_url("front_image")
+        options = serializers.SerializerMethodField()
+
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Flashcard
+            fields = ["uuid", "front", "front_image_url", "writable", "options"]
+
+        def get_options(self, card):
+            return FlashcardModelSerializer.option(
+                card.options(self.context["pool"]), many=True
+            ).data
+
+    class answer(UUIDModelSerializer.read):
+        back_image_url = image_url("back_image")
+
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Flashcard
+            fields = ["uuid", "back", "back_image_url"]
 
 
-class LearningSetSerializer(serializers.ModelSerializer):
-    card_count = serializers.IntegerField(read_only=True)
-    known_count = serializers.IntegerField(read_only=True)
+class LearningSetModelSerializer(UUIDModelSerializer):
+    class list(UUIDModelSerializer.read):
+        card_count = serializers.IntegerField(read_only=True)
+        known_count = serializers.IntegerField(read_only=True)
 
-    class Meta:
-        model = LearningSet
-        fields = ["uuid", "title", "description", "card_count", "known_count"]
-        extra_kwargs = {"title": NAME}
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = LearningSet
+            fields = ["uuid", "title", "description", "card_count", "known_count"]
+
+    class retrieve(list):
+        subject = SubjectReferenceSerializer(read_only=True)
+        cards = FlashcardModelSerializer.read(many=True, read_only=True)
+
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = LearningSet
+            fields = [
+                "uuid",
+                "title",
+                "description",
+                "card_count",
+                "known_count",
+                "subject",
+                "cards",
+            ]
+
+    class write(UUIDModelSerializer.write):
+        class Meta(UUIDModelSerializer.write.Meta):
+            model = LearningSet
+            fields = ["title", "description"]
+            extra_kwargs = {"title": NAME}
 
 
 class ExamPartSerializer(serializers.ModelSerializer):
@@ -113,205 +184,159 @@ class ExamPartSerializer(serializers.ModelSerializer):
         extra_kwargs = {"name": NAME}
 
 
-class ExamSerializer(serializers.ModelSerializer):
-    parts = ExamPartSerializer(many=True, required=False)
-    result = average_field()
-    subject = SubjectRefSerializer(read_only=True)
+class ExamModelSerializer(UUIDModelSerializer):
+    class read(UUIDModelSerializer.read):
+        parts = ExamPartSerializer(many=True, read_only=True)
+        result = average_field()
+        subject = SubjectReferenceSerializer(read_only=True)
 
-    class Meta:
-        model = Exam
-        fields = [
-            "uuid",
-            "name",
-            "weight",
-            "grade",
-            "parts",
-            "result",
-            "tone",
-            "subject",
-        ]
-        extra_kwargs = {"name": NAME}
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Exam
+            fields = [
+                "uuid",
+                "name",
+                "weight",
+                "grade",
+                "parts",
+                "result",
+                "tone",
+                "subject",
+            ]
 
-    def validate(self, data):
-        current = {"grade": None, "parts": []}
-        if self.instance:
-            current = {
-                "grade": self.instance.grade,
-                "parts": list(self.instance.parts.all()),
-            }
-        exam = {**current, **data}
-        if exam["grade"] is None and not exam["parts"]:
-            raise serializers.ValidationError(
-                {"grade": "Gib eine Note oder mindestens eine Teilnote an."}
-            )
-        return data
+    class write(UUIDModelSerializer.write):
+        parts = ExamPartSerializer(many=True, required=False)
 
-    def save_parts(self, exam, parts):
-        exam.parts.all().delete()
-        ExamPart.objects.bulk_create(
-            ExamPart(exam=exam, position=position, **part)
-            for position, part in enumerate(parts)
-        )
+        class Meta(UUIDModelSerializer.write.Meta):
+            model = Exam
+            fields = ["name", "weight", "grade", "parts"]
+            extra_kwargs = {"name": NAME}
 
-    def create(self, validated_data):
-        parts = validated_data.pop("parts", [])
-        exam = super().create(validated_data)
-        self.save_parts(exam, parts)
-        return exam
+        def validate(self, data):
+            current = {"grade": None, "parts": []}
+            if self.instance:
+                current = {
+                    "grade": self.instance.grade,
+                    "parts": list(self.instance.parts.all()),
+                }
+            exam = {**current, **data}
+            if exam["grade"] is None and not exam["parts"]:
+                raise serializers.ValidationError(
+                    {"grade": "Gib eine Note oder mindestens eine Teilnote an."}
+                )
+            return data
 
-    def update(self, instance, validated_data):
-        parts = validated_data.pop("parts", None)
-        exam = super().update(instance, validated_data)
-        if parts is not None:
-            self.save_parts(exam, parts)
-        return exam
+        def create(self, validated_data):
+            parts = validated_data.pop("parts", [])
+            exam = super().create(validated_data)
+            exam.replace_parts(parts)
+            return exam
 
-
-class SubjectDetailSerializer(serializers.ModelSerializer):
-    institution = InstitutionRefSerializer(read_only=True)
-    documentations = DocumentationSerializer(many=True, read_only=True)
-    learning_sets = LearningSetSerializer(many=True, read_only=True)
-    exams = ExamSerializer(many=True, read_only=True)
-    average = average_field()
-    rounded = rounded_field()
-
-    class Meta:
-        model = Subject
-        fields = [
-            "uuid",
-            "name",
-            "institution",
-            "documentations",
-            "learning_sets",
-            "exams",
-            "average",
-            "rounded",
-            "tone",
-        ]
-        extra_kwargs = {"name": NAME}
+        def update(self, instance, validated_data):
+            parts = validated_data.pop("parts", None)
+            exam = super().update(instance, validated_data)
+            if parts is not None:
+                exam.replace_parts(parts)
+            return exam
 
 
-class FlashcardSerializer(serializers.ModelSerializer):
-    front_image = serializers.SlugRelatedField(
-        slug_field="uuid", queryset=Image.objects.all(), allow_null=True, required=False
-    )
-    back_image = serializers.SlugRelatedField(
-        slug_field="uuid", queryset=Image.objects.all(), allow_null=True, required=False
-    )
-    front_image_url = serializers.CharField(
-        source="front_image.url", read_only=True, default=None
-    )
-    back_image_url = serializers.CharField(
-        source="back_image.url", read_only=True, default=None
-    )
+class SubjectModelSerializer(UUIDModelSerializer):
+    class list(UUIDModelSerializer.read):
+        documentation_count = serializers.IntegerField(read_only=True)
+        learning_set_count = serializers.IntegerField(read_only=True)
+        rounded = rounded_field()
 
-    class Meta:
-        model = Flashcard
-        fields = [
-            "uuid",
-            "front",
-            "back",
-            "front_image",
-            "back_image",
-            "front_image_url",
-            "back_image_url",
-            "last_known",
-        ]
-        read_only_fields = ["last_known"]
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Subject
+            fields = [
+                "uuid",
+                "name",
+                "documentation_count",
+                "learning_set_count",
+                "rounded",
+                "tone",
+            ]
 
-    def validate(self, data):
-        current = {"front": "", "front_image": None}
-        if self.instance:
-            current = {
-                "front": self.instance.front,
-                "front_image": self.instance.front_image,
-            }
-        card = {**current, **data}
-        if not (card["front"].strip() or card["front_image"]):
-            raise serializers.ValidationError(
-                {"front": "Die Vorderseite braucht Text oder ein Bild."}
-            )
-        return data
+    class retrieve(UUIDModelSerializer.read):
+        institution = InstitutionReferenceSerializer(read_only=True)
+        documentations = DocumentationModelSerializer.list(many=True, read_only=True)
+        learning_sets = LearningSetModelSerializer.list(many=True, read_only=True)
+        exams = ExamModelSerializer.read(many=True, read_only=True)
+        average = average_field()
+        rounded = rounded_field()
+
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Subject
+            fields = [
+                "uuid",
+                "name",
+                "institution",
+                "documentations",
+                "learning_sets",
+                "exams",
+                "average",
+                "rounded",
+                "tone",
+            ]
+
+    class write(UUIDModelSerializer.write):
+        class Meta(UUIDModelSerializer.write.Meta):
+            model = Subject
+            fields = ["name"]
+            extra_kwargs = {"name": NAME}
+
+    class documentations(UUIDModelSerializer.read):
+        items = DocumentationModelSerializer.list(source="documentations", many=True)
+
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Subject
+            fields = ["uuid", "name", "items"]
+
+    class learning_sets(UUIDModelSerializer.read):
+        items = LearningSetModelSerializer.list(source="learning_sets", many=True)
+
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Subject
+            fields = ["uuid", "name", "items"]
 
 
-class LearningSetDetailSerializer(LearningSetSerializer):
-    subject = SubjectRefSerializer(read_only=True)
-    cards = FlashcardSerializer(many=True, read_only=True)
+class InstitutionModelSerializer(UUIDModelSerializer):
+    class list(UUIDModelSerializer.read):
+        subject_count = serializers.IntegerField(read_only=True)
 
-    class Meta(LearningSetSerializer.Meta):
-        fields = [*LearningSetSerializer.Meta.fields, "subject", "cards"]
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Institution
+            fields = ["uuid", "name", "subject_count"]
 
+    class retrieve(UUIDModelSerializer.read):
+        subjects = SubjectModelSerializer.list(many=True, read_only=True)
+        average = average_field()
+        rounded = rounded_field()
 
-class OptionSerializer(serializers.ModelSerializer):
-    image_url = serializers.CharField(
-        source="back_image.url", read_only=True, default=None
-    )
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Institution
+            fields = ["uuid", "name", "subjects", "average", "rounded", "tone"]
 
-    class Meta:
-        model = Flashcard
-        fields = ["uuid", "back", "image_url"]
+    class write(UUIDModelSerializer.write):
+        class Meta(UUIDModelSerializer.write.Meta):
+            model = Institution
+            fields = ["name"]
+            extra_kwargs = {"name": NAME}
 
+    class documentations(UUIDModelSerializer.read):
+        subjects = SubjectModelSerializer.documentations(many=True)
 
-class QuizCardSerializer(serializers.ModelSerializer):
-    front_image_url = serializers.CharField(
-        source="front_image.url", read_only=True, default=None
-    )
-    options = serializers.SerializerMethodField()
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Institution
+            fields = ["uuid", "name", "subjects"]
 
-    class Meta:
-        model = Flashcard
-        fields = ["uuid", "front", "front_image_url", "writable", "options"]
+    class learning_sets(UUIDModelSerializer.read):
+        subjects = SubjectModelSerializer.learning_sets(many=True)
 
-    def get_options(self, card):
-        return OptionSerializer(card.options(self.context["pool"]), many=True).data
+        class Meta(UUIDModelSerializer.read.Meta):
+            model = Institution
+            fields = ["uuid", "name", "subjects"]
 
 
 class AnswerSerializer(serializers.Serializer):
     mode = serializers.ChoiceField(choices=["choice", "write"])
     answer = serializers.CharField(allow_blank=True, trim_whitespace=False)
-
-
-class AnswerResultSerializer(serializers.ModelSerializer):
-    back_image_url = serializers.CharField(
-        source="back_image.url", read_only=True, default=None
-    )
-
-    class Meta:
-        model = Flashcard
-        fields = ["uuid", "back", "back_image_url"]
-
-
-class PreviewSerializer(serializers.Serializer):
-    body = serializers.CharField(allow_blank=True, trim_whitespace=False)
-
-
-class DocumentationGroupSerializer(serializers.ModelSerializer):
-    items = DocumentationSerializer(source="documentations", many=True)
-
-    class Meta:
-        model = Subject
-        fields = ["uuid", "name", "items"]
-
-
-class LearningSetGroupSerializer(serializers.ModelSerializer):
-    items = LearningSetSerializer(source="learning_sets", many=True)
-
-    class Meta:
-        model = Subject
-        fields = ["uuid", "name", "items"]
-
-
-class DocumentationOverviewSerializer(serializers.ModelSerializer):
-    subjects = DocumentationGroupSerializer(many=True)
-
-    class Meta:
-        model = Institution
-        fields = ["uuid", "name", "subjects"]
-
-
-class LearningSetOverviewSerializer(serializers.ModelSerializer):
-    subjects = LearningSetGroupSerializer(many=True)
-
-    class Meta:
-        model = Institution
-        fields = ["uuid", "name", "subjects"]

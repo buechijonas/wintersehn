@@ -1,38 +1,31 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { apiFetch, extractErrorMessage } from '@core/lib/api.js'
+import { json, request } from '@core/lib/api.js'
 
 export const useCountriesStore = defineStore('countries', () => {
   const map = ref(null)
 
-  async function request(url, options, fallback) {
-    const response = await apiFetch(url, options)
-    const body = await response.json().catch(() => null)
-    if (!response.ok) {
-      throw new Error(extractErrorMessage(body, fallback))
-    }
-    map.value = body
-    return body
+  async function load(url, fallback, options) {
+    map.value = await request(url, fallback, options)
+    return map.value
   }
 
   function fetchMap() {
-    return request('/api/content/countries/map/', {}, 'Karte konnte nicht geladen werden.')
+    return load('/api/content/countries/map/', 'Karte konnte nicht geladen werden.')
   }
 
   function saveDestination(destination) {
-    return request(
+    return load(
       '/api/content/countries/destination/',
-      { method: 'PUT', body: JSON.stringify(destination) },
       'Speichern fehlgeschlagen.',
+      json('PUT', destination),
     )
   }
 
   function clearDestination() {
-    return request(
-      '/api/content/countries/destination/',
-      { method: 'DELETE' },
-      'Löschen fehlgeschlagen.',
-    )
+    return load('/api/content/countries/destination/', 'Löschen fehlgeschlagen.', {
+      method: 'DELETE',
+    })
   }
 
   return { map, fetchMap, saveDestination, clearDestination }

@@ -4,15 +4,17 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
+
+from commons.permissions import IsAdmin
+from commons.views import BaseViewSet, CreateModelMixin
 
 from . import catalog, serializers
 from .models import MediaFile, Title, Upload, UploadError
-from .permissions import CanViewLumon
 
 
-class LumonViewSet(GenericViewSet):
-    permission_classes = [IsAuthenticated, CanViewLumon]
+class LumonViewSet(BaseViewSet):
+    permission_classes = [IsAuthenticated, IsAdmin]
+    lookup_field = "uuid"
 
 
 def media_types(value):
@@ -22,16 +24,12 @@ def media_types(value):
 
 
 class TitleViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    LumonViewSet,
+    mixins.ListModelMixin, CreateModelMixin, mixins.DestroyModelMixin, LumonViewSet
 ):
-    serializer_class = serializers.TitleSerializer
-    lookup_field = "uuid"
+    serializer_class = serializers.TitleModelSerializer
 
     def get_queryset(self):
-        return Title.objects.filter(
+        return Title.objects.apply_acl(self.request.user).filter(
             media_type__in=media_types(self.request.query_params.get("type"))
         )
 
@@ -62,7 +60,7 @@ class CatalogViewSet(LumonViewSet):
         library = Title.objects.filter(media_type=media_type)
         overview = catalog.browse(
             media_type,
-            serializers.TitleSerializer(library, many=True).data,
+            serializers.TitleModelSerializer.read(library, many=True).data,
             Title.objects.saved(),
         )
         return Response(serializers.BrowseSerializer(overview).data)
@@ -102,13 +100,14 @@ class CatalogViewSet(LumonViewSet):
 
 
 class MediaViewSet(mixins.RetrieveModelMixin, LumonViewSet):
-    queryset = MediaFile.objects.all()
-    serializer_class = serializers.PlaybackSerializer
-    lookup_field = "uuid"
+    serializer_class = serializers.MediaFileModelSerializer
+
+    def get_queryset(self):
+        return MediaFile.objects.apply_acl(self.request.user)
 
     @action(detail=True, methods=["post"])
     def progress(self, request, uuid):
-        serializer = serializers.ProgressSerializer(
+        serializer = serializers.MediaFileModelSerializer.write(
             self.get_object(), data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
@@ -120,10 +119,11 @@ class MediaViewSet(mixins.RetrieveModelMixin, LumonViewSet):
         return Response(status=204)
 
 
-class UploadViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, LumonViewSet):
-    queryset = Upload.objects.all()
-    serializer_class = serializers.UploadSerializer
-    lookup_field = "uuid"
+class UploadViewSet(CreateModelMixin, mixins.DestroyModelMixin, LumonViewSet):
+    serializer_class = serializers.UploadModelSerializer
+
+    def get_queryset(self):
+        return Upload.objects.apply_acl(self.request.user)
 
     def perform_destroy(self, upload):
         upload.discard()
@@ -148,4 +148,4 @@ class UploadViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, LumonView
             media = upload.complete(fields)
         except UploadError as error:
             raise ValidationError({"detail": str(error)}) from error
-        return Response(serializers.MediaSerializer(media).data)
+        return Response(serializers.MediaFileModelSerializer.read(media).data)

@@ -1,21 +1,14 @@
 from datetime import date
 from unittest import mock
 
-from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from rest_framework.test import APITestCase
 
-from wintersehn.accounts.models import UserProfile
+from commons.testing import create_user
 
 from .child_protection import DOMAINS, age
 from .lookalike import check
 from .models import SearchSettings
-
-
-def create_user(username, birthdate):
-    user = get_user_model().objects.create_user(username)
-    UserProfile.objects.create(user=user, birthdate=birthdate, verified=True)
-    return user
 
 
 def years_ago(years):
@@ -71,18 +64,18 @@ class ChildProtectionTests(APITestCase):
         self.assertEqual(response.json()["domains"], DOMAINS)
 
     def test_minor_is_protected(self):
-        self.client.force_authenticate(create_user("kid", years_ago(17)))
+        self.client.force_authenticate(create_user("kid", birthdate=years_ago(17)))
         response = self.client.get("/api/search/child-protection/")
         self.assertTrue(response.json()["required"])
 
     def test_adult_and_unknown_birthdate_are_not_protected(self):
         for username, birthdate in [("adult", years_ago(19)), ("unknown", None)]:
-            self.client.force_authenticate(create_user(username, birthdate))
+            self.client.force_authenticate(create_user(username, birthdate=birthdate))
             response = self.client.get("/api/search/child-protection/")
             self.assertFalse(response.json()["required"])
 
     def test_minor_cannot_change_allowlist(self):
-        self.client.force_authenticate(create_user("kid", years_ago(12)))
+        self.client.force_authenticate(create_user("kid", birthdate=years_ago(12)))
         data = {
             "allowlist": ["example.com"],
             "allowlistEnabled": False,
@@ -97,7 +90,7 @@ class ChildProtectionTests(APITestCase):
         self.assertEqual(saved["language"], "en")
 
     def test_minor_gets_protected_settings(self):
-        user = create_user("kid", years_ago(12))
+        user = create_user("kid", birthdate=years_ago(12))
         SearchSettings.objects.create(user=user, data={"allowlistEnabled": False})
         self.client.force_authenticate(user)
         saved = self.client.get("/api/search/settings/").json()["data"]
@@ -105,7 +98,7 @@ class ChildProtectionTests(APITestCase):
         self.assertTrue(saved["allowlistEnabled"])
 
     def test_adult_can_change_allowlist(self):
-        self.client.force_authenticate(create_user("adult", years_ago(30)))
+        self.client.force_authenticate(create_user("adult", birthdate=years_ago(30)))
         data = {"allowlist": [], "allowlistEnabled": False}
         response = self.client.put(
             "/api/search/settings/", {"data": data}, format="json"

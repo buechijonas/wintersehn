@@ -3,13 +3,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.core.management import call_command
 from django.test import SimpleTestCase, override_settings
 from rest_framework.test import APITestCase
 
-from wintersehn.accounts.models import UserProfile
+from commons.testing import create_admin, create_user
 
 from . import catalog, library
 from .models import MediaFile, Title, Upload
@@ -126,18 +124,6 @@ def fake_http(url, ttl, **params):
     }
 
 
-def create_user(username, admin=True):
-    user = get_user_model().objects.create_user(username)
-    UserProfile.objects.create(user=user, verified=True)
-    if admin:
-        user.user_permissions.add(
-            Permission.objects.get(
-                codename="view_admin", content_type__app_label="content"
-            )
-        )
-    return user
-
-
 def media_file(**identity):
     return MediaFile.objects.create(
         **{
@@ -155,10 +141,10 @@ def media_file(**identity):
 @patch("lumon.sources.http.get", side_effect=fake_http)
 class CatalogTests(APITestCase):
     def setUp(self):
-        self.client.force_authenticate(create_user("admin"))
+        self.client.force_authenticate(create_admin())
 
     def test_non_admin_is_forbidden(self, http):
-        self.client.force_authenticate(create_user("guest", admin=False))
+        self.client.force_authenticate(create_user("guest"))
         self.assertEqual(self.client.get("/api/lumon/catalog/search/").status_code, 403)
 
     def test_categories_are_listed(self, http):
@@ -258,7 +244,7 @@ class CatalogTests(APITestCase):
 @patch("lumon.sources.http.get", side_effect=fake_http)
 class MediaLibraryTests(APITestCase):
     def setUp(self):
-        self.client.force_authenticate(create_user("admin"))
+        self.client.force_authenticate(create_admin())
 
     def test_browse_starts_with_media_library(self, http):
         media_file(
@@ -326,7 +312,7 @@ class MediaLibraryTests(APITestCase):
 
     def test_stream_auth_requires_admin(self, http):
         self.assertEqual(self.client.get("/api/lumon/media/auth/").status_code, 204)
-        self.client.force_authenticate(create_user("guest", admin=False))
+        self.client.force_authenticate(create_user("guest"))
         self.assertEqual(self.client.get("/api/lumon/media/auth/").status_code, 403)
 
     def test_detects_known_episodes_and_marks_existing(self, http):
@@ -352,7 +338,7 @@ class UploadTests(APITestCase):
         self.root = TemporaryDirectory()
         self.addCleanup(self.root.cleanup)
         self.enterContext(override_settings(LUMON_MEDIA_ROOT=self.root.name))
-        self.client.force_authenticate(create_user("admin"))
+        self.client.force_authenticate(create_admin())
 
     def start(self, **data):
         return self.client.post(

@@ -16,9 +16,8 @@ from django.conf import settings
 
 from monolith.models import Dossier
 
-from .models import UserConsent, UserProfile
+from .models import CONSENT_FIELDS, UserConsent, UserProfile
 
-CONSENT_FIELDS = ["privacy", "terms", "disclaimer", "cookies"]
 ATTESTATION_FLOW = "govex-attestation"
 
 logger = logging.getLogger(__name__)
@@ -28,14 +27,15 @@ def b64url(data):
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
 
 
-def consent_of(user):
-    record, _ = UserConsent.objects.get_or_create(user=user)
-    return {field: getattr(record, field) for field in CONSENT_FIELDS}
-
-
 def status_of(govex_sub):
-    profile = UserProfile.objects.filter(govex_sub=govex_sub).select_related("user").first()
-    consent = consent_of(profile.user) if profile else dict.fromkeys(CONSENT_FIELDS, False)
+    profile = (
+        UserProfile.objects.filter(govex_sub=govex_sub).select_related("user").first()
+    )
+    consent = (
+        UserConsent.of(profile.user).accepted
+        if profile
+        else dict.fromkeys(CONSENT_FIELDS, False)
+    )
     return {
         "consent": consent,
         "monolith": Dossier.objects.filter(govex_sub=govex_sub).exists(),
@@ -43,7 +43,9 @@ def status_of(govex_sub):
 
 
 def sign(payload):
-    key = serialization.load_pem_private_key(settings.CONSENT_PRIVATE_KEY.encode(), None)
+    key = serialization.load_pem_private_key(
+        settings.CONSENT_PRIVATE_KEY.encode(), None
+    )
     header = b64url(json.dumps({"alg": "ES256", "typ": "JWT"}).encode())
     body = b64url(json.dumps(payload, separators=(",", ":")).encode())
     der = key.sign(f"{header}.{body}".encode(), ec.ECDSA(hashes.SHA256()))
@@ -57,7 +59,10 @@ def attested_status(attestation):
     try:
         body = attestation.split(".")[1]
         payload = json.loads(base64.urlsafe_b64decode(body + "=" * (-len(body) % 4)))
-        return {"consent": payload["consent"], "monolith": payload.get("monolith", False)}
+        return {
+            "consent": payload["consent"],
+            "monolith": payload.get("monolith", False),
+        }
     except (AttributeError, IndexError, KeyError, ValueError):
         return None
 
@@ -68,12 +73,19 @@ def push_to_govex(govex_sub):
     if not govex_sub:
         return False
     attestation = sign(
-        {"iss": "wintersehn", "sub": govex_sub, **status_of(govex_sub), "iat": time.time()}
+        {
+            "iss": "wintersehn",
+            "sub": govex_sub,
+            **status_of(govex_sub),
+            "iat": time.time(),
+        }
     )
     url = f"{settings.GOVEX_INTERNAL_URL}/api/v3/flows/executor/{ATTESTATION_FLOW}/?query="
     session = requests.Session()
     try:
-        session.get(url, headers={"Accept": "application/json"}, timeout=10).raise_for_status()
+        session.get(
+            url, headers={"Accept": "application/json"}, timeout=10
+        ).raise_for_status()
         response = session.post(
             url,
             json={"component": "ak-stage-prompt", "attestation": attestation},
@@ -86,7 +98,9 @@ def push_to_govex(govex_sub):
         response.raise_for_status()
         result = response.json()
     except (requests.RequestException, ValueError):
-        logger.warning("consent push to govex failed", exc_info=True, extra={"sub": govex_sub})
+        logger.warning(
+            "consent push to govex failed", exc_info=True, extra={"sub": govex_sub}
+        )
         return False
     if result.get("component") != "xak-flow-redirect":
         logger.warning("govex rejected consent push: %s", result.get("response_errors"))

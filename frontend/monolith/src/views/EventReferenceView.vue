@@ -36,7 +36,12 @@
             />
           </template>
 
-          <MarkdownContent v-else :text="reference.text" class="px-6 py-5" />
+          <MarkdownContent
+            v-else
+            :html="reference.html"
+            placeholder="Noch kein Text."
+            class="px-6 py-5"
+          />
         </BaseCard>
 
         <aside class="flex flex-col gap-4">
@@ -85,7 +90,7 @@ import ChatMessages from '@/components/ChatMessages.vue'
 import ChatParticipantDialog from '@/components/ChatParticipantDialog.vue'
 import ChatParticipants from '@/components/ChatParticipants.vue'
 import EventReferenceLinks from '@/components/EventReferenceLinks.vue'
-import MarkdownContent from '@/components/MarkdownContent.vue'
+import MarkdownContent from '@core/components/common/MarkdownContent.vue'
 import { referenceIcon, referenceSummary } from '@/data/eventReferences.js'
 import eventMixin from '@/mixins/eventMixin.js'
 import eventReferenceMixin from '@/mixins/eventReferenceMixin.js'

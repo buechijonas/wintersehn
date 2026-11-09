@@ -1,6 +1,5 @@
 import random
 import unicodedata
-import uuid
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.conf import settings
@@ -8,7 +7,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models.functions import Collate
 
-from . import markdown
+from commons import images, markdown
+from commons.models import AdminQuerySet, BaseModel, UUIDModel
+
 
 CHOICE_COUNT = 4
 PASSING_GRADE = Decimal("4")
@@ -55,15 +56,29 @@ class Graded:
         return grade_tone(self.rounded)
 
 
-class InstitutionQuerySet(models.QuerySet):
+class InstitutionQuerySet(AdminQuerySet):
     def with_counts(self):
         return self.annotate(subject_count=models.Count("subjects")).order_by(
             NAME_ORDER
         )
 
+    def detailed(self):
+        subjects = Subject.objects.with_counts().prefetch_related("exams__parts")
+        return self.prefetch_related(models.Prefetch("subjects", queryset=subjects))
 
-class Institution(Graded, models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    def overview(self, group_name, queryset):
+        groups = Subject.objects.filter(**{f"{group_name}__isnull": False}).distinct()
+        items = models.Prefetch(group_name, queryset=queryset)
+        return (
+            self.filter(subjects__in=groups)
+            .distinct()
+            .prefetch_related(
+                models.Prefetch("subjects", queryset=groups.prefetch_related(items))
+            )
+        )
+
+
+class Institution(Graded, UUIDModel):
     name = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -81,16 +96,29 @@ class Institution(Graded, models.Model):
         return weighted_average((grade, 1) for grade in grades)
 
 
-class SubjectQuerySet(models.QuerySet):
+class SubjectQuerySet(AdminQuerySet):
     def with_counts(self):
         return self.annotate(
             documentation_count=models.Count("documentations", distinct=True),
             learning_set_count=models.Count("learning_sets", distinct=True),
         ).order_by(NAME_ORDER)
 
+    def detailed(self):
+        return self.select_related("institution").prefetch_related(
+            "documentations",
+            "exams__parts",
+            models.Prefetch(
+                "learning_sets", queryset=LearningSet.objects.with_progress()
+            ),
+        )
 
-class Subject(Graded, models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
+class DocumentationQuerySet(AdminQuerySet):
+    def detailed(self):
+        return self.select_related("subject__institution")
+
+
+class Subject(Graded, UUIDModel):
     institution = models.ForeignKey(
         Institution, on_delete=models.CASCADE, related_name="subjects"
     )
@@ -110,8 +138,7 @@ class Subject(Graded, models.Model):
         return weighted_average((exam.result, exam.weight) for exam in self.exams.all())
 
 
-class Documentation(models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+class Documentation(UUIDModel):
     subject = models.ForeignKey(
         Subject, on_delete=models.CASCADE, related_name="documentations"
     )
@@ -119,6 +146,8 @@ class Documentation(models.Model):
     body = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DocumentationQuerySet.as_manager()
 
     class Meta:
         ordering = [TITLE_ORDER]
@@ -131,7 +160,7 @@ class Documentation(models.Model):
         return markdown.render(self.body)
 
 
-class LearningSetQuerySet(models.QuerySet):
+class LearningSetQuerySet(AdminQuerySet):
     def with_progress(self):
         return self.annotate(
             card_count=models.Count("cards", distinct=True),
@@ -140,9 +169,15 @@ class LearningSetQuerySet(models.QuerySet):
             ),
         ).order_by(TITLE_ORDER)
 
+    def detailed(self):
+        return (
+            self.with_progress()
+            .select_related("subject__institution")
+            .prefetch_related("cards__front_image", "cards__back_image")
+        )
 
-class LearningSet(models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
+class LearningSet(UUIDModel):
     subject = models.ForeignKey(
         Subject, on_delete=models.CASCADE, related_name="learning_sets"
     )
@@ -159,14 +194,15 @@ class LearningSet(models.Model):
         return self.title
 
 
-class Image(models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+class Image(UUIDModel):
     name = models.CharField(max_length=200)
     data = models.BinaryField()
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = AdminQuerySet.as_manager()
 
     def __str__(self):
         return self.name
@@ -175,8 +211,11 @@ class Image(models.Model):
     def url(self):
         return f"/api/atlas/images/{self.uuid}/"
 
+    def thumbnail(self, size):
+        return images.thumbnail(bytes(self.data), size)
 
-class FlashcardQuerySet(models.QuerySet):
+
+class FlashcardQuerySet(AdminQuerySet):
     def for_study(self):
         return self.order_by(
             models.F("last_known").asc(nulls_first=True),
@@ -184,9 +223,16 @@ class FlashcardQuerySet(models.QuerySet):
             "position",
         )
 
+    def with_images(self):
+        return self.select_related("front_image", "back_image")
 
-class Flashcard(models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+
+class ExamQuerySet(AdminQuerySet):
+    def detailed(self):
+        return self.select_related("subject__institution").prefetch_related("parts")
+
+
+class Flashcard(UUIDModel):
     learning_set = models.ForeignKey(
         LearningSet, on_delete=models.CASCADE, related_name="cards"
     )
@@ -254,8 +300,7 @@ class Flashcard(models.Model):
         )
 
 
-class Exam(models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+class Exam(UUIDModel):
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name="exams")
     name = models.CharField(max_length=200)
     weight = models.DecimalField(
@@ -269,6 +314,8 @@ class Exam(models.Model):
         validators=GRADE_VALIDATORS,
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = ExamQuerySet.as_manager()
 
     class Meta:
         ordering = ["created_at", "id"]
@@ -287,8 +334,15 @@ class Exam(models.Model):
     def tone(self):
         return grade_tone(self.result)
 
+    def replace_parts(self, parts):
+        self.parts.all().delete()
+        ExamPart.objects.bulk_create(
+            ExamPart(exam=self, position=position, **part)
+            for position, part in enumerate(parts)
+        )
 
-class ExamPart(models.Model):
+
+class ExamPart(BaseModel):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, related_name="parts")
     name = models.CharField(max_length=200)
     weight = models.DecimalField(
@@ -298,6 +352,8 @@ class ExamPart(models.Model):
         max_digits=3, decimal_places=2, validators=GRADE_VALIDATORS
     )
     position = models.PositiveIntegerField(default=0)
+
+    objects = AdminQuerySet.as_manager()
 
     class Meta:
         ordering = ["position", "id"]

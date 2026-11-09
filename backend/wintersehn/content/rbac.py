@@ -1,15 +1,17 @@
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
-from .models import SiteContent
-
-CONTENT_CRUD_KEYS = ["about", "ethos", "cv", "countries", "media"]
+from .models import CRUD_KEYS, SiteContent
 
 MANAGED_PERMISSIONS = [
     "view_admin",
     "view_monolith",
     "change_sitecontent",
-    *[f"{verb}_{key}" for key in CONTENT_CRUD_KEYS for verb in ("add", "view", "change", "delete")],
+    *[
+        f"{verb}_{key}"
+        for key in CRUD_KEYS
+        for verb in ("add", "view", "change", "delete")
+    ],
     "add_permission",
     "change_permission",
     "delete_permission",
@@ -37,9 +39,23 @@ def set_role_permissions(group, codenames):
 
 
 def user_permissions(user):
-    return [codename for codename in MANAGED_PERMISSIONS if user.has_perm(f"content.{codename}")]
+    return [
+        codename
+        for codename in MANAGED_PERMISSIONS
+        if user.has_perm(f"content.{codename}")
+    ]
 
 
 def can_grant_permissions(user, codenames):
     valid_codenames = set(codenames) & set(MANAGED_PERMISSIONS)
     return valid_codenames <= set(user_permissions(user))
+
+
+def permission_flags(user):
+    return {
+        "can_edit_content": user.has_perm("content.change_sitecontent"),
+        **{
+            f"can_{codename}": user.has_perm(f"content.{codename}")
+            for codename in MANAGED_PERMISSIONS
+        },
+    }

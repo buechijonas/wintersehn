@@ -1,13 +1,14 @@
-import uuid
 from urllib.parse import quote
 
 from django.db import models
 from django.db.models import Max, Q
 
+from commons.models import AdminQuerySet, UUIDModel
+
 from . import library
 
 
-class TitleQuerySet(models.QuerySet):
+class TitleQuerySet(AdminQuerySet):
     def saved(self):
         return {
             (media_type, catalog_id): key
@@ -17,12 +18,11 @@ class TitleQuerySet(models.QuerySet):
         }
 
 
-class Title(models.Model):
+class Title(UUIDModel):
     MOVIE = "movie"
     TV = "tv"
     MEDIA_TYPES = [(MOVIE, "Film"), (TV, "Serie")]
 
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     catalog_id = models.PositiveIntegerField()
     media_type = models.CharField(max_length=5, choices=MEDIA_TYPES)
     title = models.CharField(max_length=255)
@@ -44,7 +44,7 @@ class Title(models.Model):
         return self.title
 
 
-class MediaFileQuerySet(models.QuerySet):
+class MediaFileQuerySet(AdminQuerySet):
     def library(self, media_type):
         return (
             self.filter(media_type=media_type)
@@ -87,8 +87,7 @@ class MediaFileQuerySet(models.QuerySet):
         }
 
 
-class MediaFile(models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+class MediaFile(UUIDModel):
     media_type = models.CharField(max_length=5, choices=Title.MEDIA_TYPES)
     catalog_id = models.PositiveIntegerField()
     season = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -143,10 +142,9 @@ class UploadError(Exception):
     pass
 
 
-class Upload(models.Model):
+class Upload(UUIDModel):
     EXTENSIONS = ["mp4", "m4v", "webm", "mkv", "mov"]
 
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     media_type = models.CharField(max_length=5, choices=Title.MEDIA_TYPES)
     catalog_id = models.PositiveIntegerField()
     season = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -155,6 +153,8 @@ class Upload(models.Model):
     size = models.PositiveBigIntegerField()
     received = models.PositiveBigIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = AdminQuerySet.as_manager()
 
     def __str__(self):
         return f"{self.media_type} {self.catalog_id}"

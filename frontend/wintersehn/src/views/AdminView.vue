@@ -36,6 +36,7 @@ export default {
             { icon: 'country_flags/switzerland', label: 'Über mich', to: '/admin/about' },
             { icon: 'integrity', label: 'Ethos', to: '/admin/ethos' },
             { icon: 'calendar_and_date/hourglass', label: 'Jetzt', to: '/admin/now' },
+            { icon: 'computer-science', label: 'Engineering', to: '/admin/engineering' },
             { icon: 'cover-letter', label: 'Lebenslauf', to: '/admin/cv' },
             { icon: 'destination', label: 'Länder', to: '/admin/countries' },
             { icon: 'job_resume/application', label: 'Artikeln', to: '/admin/article' },

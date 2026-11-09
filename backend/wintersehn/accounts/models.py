@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.forms.models import model_to_dict
 
 AVATAR_CHOICES = [
     "bee",
@@ -79,6 +80,9 @@ def get_or_create_profile(user):
     return profile
 
 
+CONSENT_FIELDS = ["privacy", "terms", "disclaimer", "cookies"]
+
+
 class UserConsent(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="consent"
@@ -90,3 +94,15 @@ class UserConsent(models.Model):
 
     def __str__(self):
         return f"Consent({self.user})"
+
+    @classmethod
+    def of(cls, user):
+        return cls.objects.get_or_create(user=user)[0]
+
+    @property
+    def accepted(self):
+        return model_to_dict(self, fields=CONSENT_FIELDS)
+
+    def accept(self, field):
+        UserConsent.objects.filter(pk=self.pk).update(**{field: True})
+        self.refresh_from_db(fields=[field])

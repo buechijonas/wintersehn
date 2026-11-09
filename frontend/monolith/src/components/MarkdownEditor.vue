@@ -40,13 +40,19 @@
       @input="$emit('update:modelValue', $event.target.value)"
     ></textarea>
 
-    <MarkdownContent v-if="mode === 'preview'" :text="modelValue" class="min-h-96 px-4 py-3" />
+    <MarkdownContent
+      v-if="mode === 'preview'"
+      :html="preview"
+      placeholder="Noch kein Text."
+      class="min-h-96 px-4 py-3"
+    />
   </div>
 </template>
 
 <script>
 import BaseButton from '@core/components/common/BaseButton.vue'
-import MarkdownContent from '@/components/MarkdownContent.vue'
+import MarkdownContent from '@core/components/common/MarkdownContent.vue'
+import { useDossiersStore } from '@/stores/dossiers.js'
 
 export default {
   name: 'MarkdownEditor',
@@ -58,6 +64,7 @@ export default {
   emits: ['update:modelValue'],
   data() {
     return {
+      preview: '',
       mode: 'write',
       tabs: [
         { key: 'write', label: 'Schreiben' },
@@ -74,6 +81,12 @@ export default {
         { label: '🔗', title: 'Link', apply: () => this.wrap('[', '](https://)', 'Linktext') },
       ],
     }
+  },
+  watch: {
+    async mode(mode) {
+      if (mode === 'preview')
+        this.preview = await useDossiersStore().previewMarkdown(this.modelValue)
+    },
   },
   methods: {
     replace(start, end, text, selectFrom, selectTo) {

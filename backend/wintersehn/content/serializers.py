@@ -1,16 +1,28 @@
 from rest_framework import serializers
 
+from commons.serializers import BaseModelSerializer
+
 from .countries import COUNTRY_CODES, COUNTRY_POINTS
 from .models import Destination, SiteContent
 from .validators import validate_links
 
 
-class SiteContentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SiteContent
-        fields = ["key", "data", "updated_at"]
-        read_only_fields = ["key", "updated_at"]
-        extra_kwargs = {"data": {"validators": [validate_links]}}
+class SiteContentModelSerializer(BaseModelSerializer):
+    class read(BaseModelSerializer.read):
+        data = serializers.SerializerMethodField()
+
+        class Meta(BaseModelSerializer.read.Meta):
+            model = SiteContent
+            fields = ["key", "data", "updated_at"]
+
+        def get_data(self, content):
+            return content.visible_data(self.context["request"].user)
+
+    class write(BaseModelSerializer.write):
+        class Meta(BaseModelSerializer.write.Meta):
+            model = SiteContent
+            fields = ["data"]
+            extra_kwargs = {"data": {"validators": [validate_links]}}
 
 
 class CountrySerializer(serializers.Serializer):
@@ -31,24 +43,30 @@ class CountrySectionSerializer(serializers.Serializer):
     countries = CountrySerializer(many=True, source="items")
 
 
-class DestinationSerializer(serializers.ModelSerializer):
-    label = serializers.CharField(source="country.label", read_only=True)
-    section = serializers.IntegerField(source="country.section", read_only=True)
-    item = serializers.IntegerField(source="country.item", read_only=True)
-    days_left = serializers.IntegerField(read_only=True)
+class DestinationModelSerializer(BaseModelSerializer):
+    class read(BaseModelSerializer.read):
+        label = serializers.CharField(source="country.label", read_only=True)
+        section = serializers.IntegerField(source="country.section", read_only=True)
+        item = serializers.IntegerField(source="country.item", read_only=True)
+        days_left = serializers.IntegerField(read_only=True)
 
-    class Meta:
-        model = Destination
-        fields = ["icon", "date", "label", "section", "item", "days_left"]
+        class Meta(BaseModelSerializer.read.Meta):
+            model = Destination
+            fields = ["icon", "date", "label", "section", "item", "days_left"]
 
-    def validate_icon(self, icon):
-        if not Destination(icon=icon).country:
-            raise serializers.ValidationError("Dieses Land ist in keiner Liste.")
-        return icon
+    class write(BaseModelSerializer.write):
+        class Meta(BaseModelSerializer.write.Meta):
+            model = Destination
+            fields = ["icon", "date"]
+
+        def validate_icon(self, icon):
+            if not Destination(icon=icon).country:
+                raise serializers.ValidationError("Dieses Land ist in keiner Liste.")
+            return icon
 
 
 class CountryMapSerializer(serializers.Serializer):
-    destination = DestinationSerializer(allow_null=True)
+    destination = DestinationModelSerializer.read(allow_null=True)
     sections = CountrySectionSerializer(many=True)
 
 

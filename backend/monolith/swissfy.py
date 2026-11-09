@@ -1,31 +1,24 @@
-import requests
 from django.conf import settings
-from rest_framework.exceptions import APIException
+
+from commons.http import ServiceUnavailable, fetch
 
 
-class SwissfyUnavailable(APIException):
-    status_code = 502
+class SwissfyUnavailable(ServiceUnavailable):
     default_detail = "swissfy ist nicht erreichbar."
 
 
-def fetch(path):
-    try:
-        response = requests.get(
-            f"{settings.SWISSFY_INTERNAL_URL}/api/internal/profiles/{path}",
-            headers={"Authorization": f"Bearer {settings.SWISSFY_API_TOKEN}"},
-            timeout=10,
-        )
-    except requests.RequestException as error:
-        raise SwissfyUnavailable() from error
-    if response.status_code == 404:
-        return None
-    if not response.ok:
-        raise SwissfyUnavailable()
-    return response
+def profiles(path):
+    return fetch(
+        "get",
+        f"{settings.SWISSFY_INTERNAL_URL}/api/internal/profiles/{path}",
+        error=SwissfyUnavailable,
+        missing=True,
+        headers={"Authorization": f"Bearer {settings.SWISSFY_API_TOKEN}"},
+    )
 
 
 def get_profile(sub):
-    response = fetch(f"{sub}/")
+    response = profiles(f"{sub}/")
     if not response:
         return None
     profile = response.json()
@@ -36,4 +29,4 @@ def get_profile(sub):
 
 
 def get_picture(sub):
-    return fetch(f"{sub}/picture/")
+    return profiles(f"{sub}/picture/")

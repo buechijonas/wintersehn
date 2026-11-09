@@ -18,7 +18,7 @@
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import ActionsMenu from '@/components/ActionsMenu.vue'
 import AtlasPage from '@/components/AtlasPage.vue'
-import MarkdownContent from '@/components/MarkdownContent.vue'
+import MarkdownContent from '@core/components/common/MarkdownContent.vue'
 import { subjectBreadcrumbs } from '@/lib/breadcrumbs.js'
 import { useAtlasStore } from '@/stores/atlas.js'
 

@@ -24,5 +24,9 @@ ATTRIBUTES = {
 def render(text):
     html = markdown.markdown(text, extensions=EXTENSIONS)
     return nh3.clean(
-        html, tags=TAGS, attributes=ATTRIBUTES, link_rel="noopener noreferrer"
+        html,
+        tags=TAGS,
+        attributes=ATTRIBUTES,
+        link_rel="noopener noreferrer",
+        set_tag_attribute_values={"a": {"target": "_blank"}},
     )

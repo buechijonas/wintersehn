@@ -1,44 +1,34 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import mixins
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
+
+from commons.permissions import IsAdmin
+from commons.views import BaseViewSet, CreateModelMixin, UpdateModelMixin
 
 from . import child_protection, lookalike, observatory
 from .models import SearchSettings, Sponsor
-from .permissions import SponsorsPermission
 from .serializers import (
     HostRatingsRequestSerializer,
-    SearchSettingsSerializer,
-    SponsorSerializer,
+    SearchSettingsModelSerializer,
+    SponsorModelSerializer,
 )
 from .throttling import HostRatingsThrottle
 
 
-class SearchSettingsView(APIView):
-    def get(self, request):
-        search_settings = SearchSettings.objects.filter(user=request.user).first()
-        data = SearchSettingsSerializer(search_settings or SearchSettings()).data
-        return Response(
-            {**data, "data": child_protection.protect(request.user, data["data"])}
-        )
+class SearchSettingsViewSet(mixins.RetrieveModelMixin, UpdateModelMixin, BaseViewSet):
+    serializer_class = SearchSettingsModelSerializer
 
-    def put(self, request):
-        search_settings, _ = SearchSettings.objects.get_or_create(user=request.user)
-        serializer = SearchSettingsSerializer(search_settings, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save(
-            data=child_protection.protect(
-                request.user, serializer.validated_data["data"]
-            )
-        )
-        return Response(serializer.data)
+    def get_queryset(self):
+        return SearchSettings.objects.apply_acl(self.request.user)
+
+    def get_object(self):
+        return self.get_queryset().first() or SearchSettings(user=self.request.user)
 
 
-class ChildProtectionView(APIView):
+class ChildProtectionViewSet(BaseViewSet):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def list(self, request):
         return Response(
             {
                 "required": child_protection.is_required(request.user),
@@ -47,39 +37,27 @@ class ChildProtectionView(APIView):
         )
 
 
-class SponsorListCreateView(APIView):
-    permission_classes = [SponsorsPermission]
+class SponsorViewSet(
+    mixins.ListModelMixin,
+    CreateModelMixin,
+    UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    BaseViewSet,
+):
+    serializer_class = SponsorModelSerializer
+    permission_classes = [IsAdmin]
+    permission_action_classes = {"list": [AllowAny]}
+    lookup_field = "uuid"
 
-    def get(self, request):
-        return Response(SponsorSerializer(Sponsor.objects.all(), many=True).data)
-
-    def post(self, request):
-        serializer = SponsorSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class SponsorDetailView(APIView):
-    permission_classes = [SponsorsPermission]
-
-    def put(self, request, uuid):
-        sponsor = get_object_or_404(Sponsor, uuid=uuid)
-        serializer = SponsorSerializer(sponsor, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
-
-    def delete(self, request, uuid):
-        get_object_or_404(Sponsor, uuid=uuid).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_queryset(self):
+        return Sponsor.objects.apply_acl(self.request.user)
 
 
-class HostRatingsView(APIView):
+class HostRatingsViewSet(BaseViewSet):
     permission_classes = [AllowAny]
     throttle_classes = [HostRatingsThrottle]
 
-    def post(self, request):
+    def create(self, request):
         params = HostRatingsRequestSerializer(data=request.data)
         params.is_valid(raise_exception=True)
         hosts = sorted(set(params.validated_data["hosts"]))

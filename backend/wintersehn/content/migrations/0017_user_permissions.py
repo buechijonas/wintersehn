@@ -52,7 +52,9 @@ def migrate_group_permissions(apps, schema_editor):
     names = dict(PERMISSIONS)
     user_permissions = [
         Permission.objects.get_or_create(
-            content_type=content_type, codename=codename, defaults={"name": names[codename]}
+            content_type=content_type,
+            codename=codename,
+            defaults={"name": names[codename]},
         )[0]
         for codename in USER_PERMISSIONS
     ]
