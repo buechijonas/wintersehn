@@ -14,6 +14,7 @@ import CountriesView from '@/views/CountriesView.vue'
 import CountryDetailView from '@/views/CountryDetailView.vue'
 import AlbumView from '@/views/AlbumView.vue'
 import ProjectsView from '@/views/ProjectsView.vue'
+import EngineeringView from '@/views/EngineeringView.vue'
 import ImpressumView from '@/views/legal/ImpressumView.vue'
 import PrivacyView from '@/views/legal/PrivacyView.vue'
 import TermsView from '@/views/legal/TermsView.vue'
@@ -142,6 +143,12 @@ const router = createRouter({
       name: 'projects',
       component: ProjectsView,
       meta: { requiresAuth: true, activeNavigation: 'projects' },
+    },
+    {
+      path: '/engineering',
+      name: 'engineering',
+      component: EngineeringView,
+      meta: { activeNavigation: 'engineering' },
     },
     {
       path: '/impressum',
@@ -328,6 +335,7 @@ const router = createRouter({
 })
 
 const PAGE_TITLES = {
+  engineering: 'Engineering',
   home: 'Dashboard',
   media: 'Kanäle',
   article: 'Artikeln',

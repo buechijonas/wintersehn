@@ -299,7 +299,8 @@ class EventReferenceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EventReference
-        fields = ["uuid", "kind", "icon", "title", "text", "links"]
+        fields = ["uuid", "kind", "icon", "title", "text", "html", "links"]
+        read_only_fields = ["html"]
         extra_kwargs = {
             "title": {"trim_whitespace": True, "allow_blank": False},
             "text": {"trim_whitespace": False},

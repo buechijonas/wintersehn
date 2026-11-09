@@ -1,31 +1,63 @@
 # wintersehn
 
+Self-hosted platform behind wintersehn.ch: six Vue frontends, one Django backend and a private search, all running on a single server. The architecture, principles and a few solved problems are shown on the Engineering page of wintersehn.ch.
+
 ```
-backend/            Django API for all apps
+backend/            Django project serving the API for all apps
+  commons/          shared base: models, querysets with apply_acl, serializers, viewsets,
+                    permissions, HTTP client, images, Markdown, test fixtures
+  wintersehn/       content (pages, roles, dashboard) and accounts (govex login, consent)
+  search/           search settings, child protection, host ratings
+  atlas/            institutions, subjects, documentations, learning sets, exams
+  lumon/            movie and series catalog (TVmaze, Wikidata), own media library
+  monolith/         encrypted dossiers, events, trust and sharing
 frontend/
   core/             shared layout, components, auth and settings (@core/…)
   wintersehn/       wintersehn.ch
-  monolith/         monolith.wintersehn.ch
-  search/           search.wintersehn.ch
   home/             home.wintersehn.ch
+  search/           search.wintersehn.ch
   atlas/            atlas.wintersehn.ch
+  lumon/            lumon.wintersehn.ch
+  monolith/         monolith.wintersehn.ch
 docker/
   proxy/            Caddy edge and origin config, production image with all frontends
-  searxng/          SearXNG image and settings used by search
-  tor/              Tor image SearXNG uses in production
+  searxng/          SearXNG image, settings and the query guard plugin
+  tor/              Tor image with watchdog used by SearXNG
 bin/                release and deploy scripts
-docs/               documents
 ```
+
+## Stack
+
+Vue 3, Pinia, Vite, Tailwind CSS 4 and daisyUI in the frontends. Django 6, Django REST Framework and PostgreSQL in the backend. SearXNG over Tor for the search. Caddy, Anubis and Docker Compose in production. Sign-in for all apps goes through govex (OIDC).
+
+## Development
 
 ```sh
 docker compose up -d --build
+docker compose exec backend python manage.py test
 ```
 
-| App        | URL                          |
-| ---------- | ---------------------------- |
-| atlas      | http://localhost:5169        |
-| home       | http://localhost:5170        |
-| search     | http://localhost:5171        |
-| monolith   | http://localhost:5172        |
-| wintersehn | http://localhost:5173        |
-| backend    | http://localhost:8000        |
+| App        | URL                   |
+| ---------- | --------------------- |
+| atlas      | http://localhost:5169 |
+| home       | http://localhost:5170 |
+| search     | http://localhost:5171 |
+| monolith   | http://localhost:5172 |
+| wintersehn | http://localhost:5173 |
+| lumon      | http://localhost:5177 |
+| backend    | http://localhost:8000 |
+
+Local LUMON videos live in `lumon-media/` (ignored by git). `python manage.py scan_media` registers files copied there by hand, `python manage.py warm_catalog` preloads the catalog cache.
+
+## Conventions
+
+- Logic lives in the backend, the frontends only render.
+- Every backend app builds on `commons`: `UUIDModel`, querysets with `apply_acl(user)`, serializer groups with `read`, `list`, `retrieve` and `write`, and `BaseViewSet`.
+- No `getattr`, `setattr`, `hasattr` or `isinstance` in app code.
+
+## Release and deploy
+
+```sh
+bin/release        # builds and pushes the backend, proxy, SearXNG and Tor images
+./deploy           # on the server: zero-downtime backend swap, then the other services
+```

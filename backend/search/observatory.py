@@ -1,7 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
 
-import requests
 from django.core.cache import cache
+
+from commons.http import ServiceUnavailable, fetch
 
 ANALYZE_URL = "https://observatory-api.mdn.mozilla.net/api/v2/analyze"
 DETAILS_URL = "https://developer.mozilla.org/en-US/observatory/analyze"
@@ -44,9 +45,8 @@ def report(host, data):
 
 def fetch_report(host):
     try:
-        response = requests.post(ANALYZE_URL, params={"host": host}, timeout=8)
-        response.raise_for_status()
-    except requests.RequestException:
+        response = fetch("post", ANALYZE_URL, timeout=8, params={"host": host})
+    except ServiceUnavailable:
         return UNKNOWN
     data = response.json()
     if not data.get("scan", {}).get("grade"):

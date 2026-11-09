@@ -16,10 +16,14 @@ class Command(BaseCommand):
             serialization.PrivateFormat.PKCS8,
             serialization.NoEncryption(),
         ).decode()
-        public = key.public_key().public_bytes(
-            serialization.Encoding.PEM,
-            serialization.PublicFormat.SubjectPublicKeyInfo,
-        ).decode()
+        public = (
+            key.public_key()
+            .public_bytes(
+                serialization.Encoding.PEM,
+                serialization.PublicFormat.SubjectPublicKeyInfo,
+            )
+            .decode()
+        )
         escaped = private.strip().replace("\n", "\\n")
         self.stdout.write(f'CONSENT_PRIVATE_KEY="{escaped}"\n')
         self.stdout.write("\nPublic key for govex:\n")

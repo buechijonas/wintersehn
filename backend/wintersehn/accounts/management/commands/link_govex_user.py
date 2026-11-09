@@ -24,9 +24,13 @@ class Command(BaseCommand):
             raise CommandError(f"User '{options['username']}' not found.")
 
         govex_sub = options["govex_sub"]
-        taken = UserProfile.objects.filter(govex_sub=govex_sub).exclude(user=user).first()
+        taken = (
+            UserProfile.objects.filter(govex_sub=govex_sub).exclude(user=user).first()
+        )
         if taken:
-            raise CommandError(f"govex identity {govex_sub} is already linked to '{taken.user}'.")
+            raise CommandError(
+                f"govex identity {govex_sub} is already linked to '{taken.user}'."
+            )
 
         profile = get_or_create_profile(user)
         profile.govex_sub = govex_sub

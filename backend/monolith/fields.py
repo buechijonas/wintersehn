@@ -50,6 +50,4 @@ class HashField(models.CharField):
         return name, path, args, {**kwargs, "source": self.source}
 
     def pre_save(self, model_instance, add):
-        value = blind_index(getattr(model_instance, self.source))
-        setattr(model_instance, self.attname, value)
-        return value
+        return blind_index(model_instance.serializable_value(self.source))

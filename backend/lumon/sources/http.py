@@ -1,10 +1,10 @@
 import hashlib
 from concurrent.futures import ThreadPoolExecutor
 
-import requests
 from django.core.cache import cache
 from django.db import connections
-from rest_framework.exceptions import APIException
+
+from commons.http import ServiceUnavailable, fetch
 
 USER_AGENT = "LUMON/0.1 (https://lumon.wintersehn.ch)"
 HOUR = 60 * 60
@@ -12,8 +12,7 @@ DAY = 24 * HOUR
 WEEK = 7 * DAY
 
 
-class CatalogUnavailable(APIException):
-    status_code = 502
+class CatalogUnavailable(ServiceUnavailable):
     default_detail = "Der Katalog ist gerade nicht erreichbar."
 
 
@@ -24,20 +23,17 @@ def get(url, ttl, **params):
     cached = cache.get(key)
     if cached is not None:
         return cached
-    try:
-        response = requests.get(
-            url,
-            params=params,
-            headers={
-                "User-Agent": USER_AGENT,
-                "Accept": "application/sparql-results+json, application/json",
-            },
-            timeout=30,
-        )
-        response.raise_for_status()
-    except requests.RequestException as error:
-        raise CatalogUnavailable() from error
-    data = response.json()
+    data = fetch(
+        "get",
+        url,
+        error=CatalogUnavailable,
+        timeout=30,
+        params=params,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "application/sparql-results+json, application/json",
+        },
+    ).json()
     cache.set(key, data, ttl)
     return data
 

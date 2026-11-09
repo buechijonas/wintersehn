@@ -1,9 +1,9 @@
 from datetime import timedelta
 
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.utils import timezone
 from rest_framework.test import APITestCase
+
+from commons.testing import create_user
 
 from .models import Destination, SiteContent
 
@@ -20,16 +20,6 @@ SECTIONS = [
         "items": [{"icon": "switzerland", "label": "Schweiz", "iconSet": "countries"}],
     },
 ]
-
-
-def create_user(username, *codenames):
-    user = get_user_model().objects.create_user(username)
-    user.user_permissions.add(
-        *Permission.objects.filter(
-            codename__in=codenames, content_type__app_label="content"
-        )
-    )
-    return user
 
 
 class CountryMapTests(APITestCase):
@@ -161,7 +151,11 @@ NEWS = [
                                 "footprint": 1,
                                 "planned": True,
                                 "replaces": [
-                                    {"name": "Brave", "country": "united_states", "footprint": 2}
+                                    {
+                                        "name": "Brave",
+                                        "country": "united_states",
+                                        "footprint": 2,
+                                    }
                                 ],
                             }
                         ],
@@ -312,7 +306,7 @@ DASHBOARD_NEWS = [
                         ]
                     }
                 ],
-            }
+            },
         ]
     }
 ]
@@ -321,7 +315,9 @@ DASHBOARD_NEWS = [
 class DashboardTests(APITestCase):
     def setUp(self):
         SiteContent.objects.update_or_create(key="cv", defaults={"data": DASHBOARD_CV})
-        SiteContent.objects.update_or_create(key="news", defaults={"data": DASHBOARD_NEWS})
+        SiteContent.objects.update_or_create(
+            key="news", defaults={"data": DASHBOARD_NEWS}
+        )
         SiteContent.objects.update_or_create(
             key="now", defaults={"data": [{"label": "Arbeite an", "value": "ATLAS"}]}
         )
@@ -353,3 +349,185 @@ class DashboardTests(APITestCase):
     def test_medium_from_news_section(self):
         response = self.client.get("/api/content/dashboard/")
         self.assertEqual(response.data["medium"]["name"], "SRF")
+
+
+def png(size=(4, 4)):
+    from io import BytesIO
+
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image as PillowImage
+
+    output = BytesIO()
+    PillowImage.new("RGB", size, "red").save(output, format="PNG")
+    return SimpleUploadedFile("bild.png", output.getvalue(), content_type="image/png")
+
+
+class SiteContentTests(APITestCase):
+    def setUp(self):
+        contents = {
+            "impressum": {"text": "Hallo"},
+            "cv": [{"title": "Werdegang"}],
+            "media": [
+                {"title": "Öffentlich", "items": []},
+                {"title": "Arbeit", "requiresAuth": True, "items": []},
+            ],
+        }
+        for key, data in contents.items():
+            SiteContent.objects.update_or_create(key=key, defaults={"data": data})
+
+    def test_public_content_is_readable(self):
+        response = self.client.get("/api/content/impressum/")
+        self.assertEqual(response.data["data"], {"text": "Hallo"})
+
+    def test_restricted_content_needs_permission(self):
+        self.assertEqual(self.client.get("/api/content/cv/").status_code, 403)
+        self.client.force_authenticate(create_user("viewer", "view_cv"))
+        self.assertEqual(self.client.get("/api/content/cv/").status_code, 200)
+
+    def test_media_hides_work_groups_without_permission(self):
+        titles = [
+            group["title"]
+            for group in self.client.get("/api/content/media/").data["data"]
+        ]
+        self.assertEqual(titles, ["Öffentlich"])
+        self.client.force_authenticate(create_user("worker", "view_media"))
+        titles = [
+            group["title"]
+            for group in self.client.get("/api/content/media/").data["data"]
+        ]
+        self.assertEqual(titles, ["Öffentlich", "Arbeit"])
+
+    def test_unknown_content_is_missing(self):
+        self.assertEqual(self.client.get("/api/content/unbekannt/").status_code, 404)
+
+    def test_editing_needs_permission(self):
+        self.client.force_authenticate(create_user("viewer", "view_cv"))
+        response = self.client.put("/api/content/cv/", {"data": []}, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_editor_saves_and_creates_content(self):
+        self.client.force_authenticate(
+            create_user("editor", "change_cv", "change_sitecontent")
+        )
+        response = self.client.put(
+            "/api/content/cv/", {"data": [{"title": "Neu"}]}, format="json"
+        )
+        self.assertEqual(response.data["data"], [{"title": "Neu"}])
+        response = self.client.put("/api/content/now/", {"data": []}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(SiteContent.objects.filter(key="now").exists())
+
+
+class UploadTests(APITestCase):
+    def setUp(self):
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+
+        from django.test import override_settings
+
+        self.root = TemporaryDirectory()
+        self.addCleanup(self.root.cleanup)
+        self.enterContext(override_settings(MEDIA_ROOT=Path(self.root.name)))
+
+    def test_upload_needs_write_permission(self):
+        self.client.force_authenticate(create_user("viewer", "view_cv"))
+        response = self.client.post("/api/content/uploads/", {"file": png()})
+        self.assertEqual(response.status_code, 403)
+
+    def test_upload_rejects_non_images(self):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        self.client.force_authenticate(create_user("editor", "change_cv"))
+        upload = SimpleUploadedFile("text.png", b"kein bild", content_type="image/png")
+        response = self.client.post("/api/content/uploads/", {"file": upload})
+        self.assertEqual(response.status_code, 400)
+
+    def test_upload_stores_image_and_serves_thumbnail(self):
+        self.client.force_authenticate(create_user("editor", "change_cv"))
+        response = self.client.post("/api/content/uploads/", {"file": png((300, 200))})
+        self.assertEqual(response.status_code, 201)
+        name = response.data["url"].rsplit("/", 1)[1]
+        self.assertRegex(name, r"^[0-9a-f]{32}\.png$")
+        thumbnail = self.client.get(f"/api/content/images/{name}/?size=64")
+        self.assertEqual(thumbnail["Content-Type"], "image/webp")
+        self.assertEqual(
+            self.client.get(f"/api/content/images/{name}/?size=65").status_code, 404
+        )
+
+
+class RoleTests(APITestCase):
+    def setUp(self):
+        self.manager = create_user(
+            "manager",
+            "view_admin",
+            "view_role",
+            "add_role",
+            "change_role",
+            "delete_role",
+            "add_permission",
+            "delete_permission",
+            "view_cv",
+        )
+        self.client.force_authenticate(self.manager)
+
+    def test_permissions_are_listed_for_admins(self):
+        codenames = [
+            item["codename"]
+            for item in self.client.get("/api/content/permissions/").data
+        ]
+        self.assertIn("view_cv", codenames)
+        self.client.force_authenticate(create_user("guest"))
+        self.assertEqual(self.client.get("/api/content/permissions/").status_code, 403)
+
+    def test_role_is_created_with_own_permissions_only(self):
+        response = self.client.post(
+            "/api/content/roles/",
+            {"name": "Leser", "permissions": ["view_cv"]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["permissions"], ["view_cv"])
+        response = self.client.post(
+            "/api/content/roles/",
+            {"name": "Chef", "permissions": ["change_cv"]},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_role_needs_unique_name(self):
+        self.client.post("/api/content/roles/", {"name": "Leser"}, format="json")
+        self.assertEqual(
+            self.client.post(
+                "/api/content/roles/", {"name": "Leser"}, format="json"
+            ).status_code,
+            400,
+        )
+        self.assertEqual(
+            self.client.post(
+                "/api/content/roles/", {"name": " "}, format="json"
+            ).status_code,
+            400,
+        )
+
+    def test_role_is_renamed_updated_and_deleted(self):
+        role = self.client.post(
+            "/api/content/roles/", {"name": "Leser"}, format="json"
+        ).data
+        response = self.client.patch(
+            f"/api/content/roles/{role['id']}/",
+            {"name": "Gäste", "permissions": ["view_cv"]},
+            format="json",
+        )
+        self.assertEqual(
+            (response.data["name"], response.data["permissions"]),
+            ("Gäste", ["view_cv"]),
+        )
+        names = [item["name"] for item in self.client.get("/api/content/roles/").data]
+        self.assertEqual(names, ["Gäste"])
+        self.assertEqual(
+            self.client.delete(f"/api/content/roles/{role['id']}/").status_code, 204
+        )
+
+    def test_roles_need_view_permission(self):
+        self.client.force_authenticate(create_user("guest"))
+        self.assertEqual(self.client.get("/api/content/roles/").status_code, 403)

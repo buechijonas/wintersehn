@@ -27,7 +27,9 @@ class Command(BaseCommand):
         parser.add_argument(
             "--username", default=os.environ.get("ADMIN_USERNAME", DEFAULT_USERNAME)
         )
-        parser.add_argument("--email", default=os.environ.get("ADMIN_EMAIL", DEFAULT_EMAIL))
+        parser.add_argument(
+            "--email", default=os.environ.get("ADMIN_EMAIL", DEFAULT_EMAIL)
+        )
         parser.add_argument(
             "--password", default=os.environ.get("ADMIN_PASSWORD", DEFAULT_PASSWORD)
         )
@@ -54,7 +56,9 @@ class Command(BaseCommand):
                 user.email = email
                 user.set_password(password)
                 self.stdout.write(
-                    self.style.SUCCESS(f"Admin user '{username}' created with the given password.")
+                    self.style.SUCCESS(
+                        f"Admin user '{username}' created with the given password."
+                    )
                 )
             else:
                 self.stdout.write(

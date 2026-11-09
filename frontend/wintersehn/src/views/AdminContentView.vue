@@ -55,6 +55,7 @@ const SECTION_LABELS = {
   countries: 'Länder',
   media: 'Kanäle',
   now: 'Jetzt',
+  engineering: 'Engineering',
   impressum: 'Impressum',
   privacy: 'Datenschutzerklärung',
   cookies: 'Cookierichtlinien',

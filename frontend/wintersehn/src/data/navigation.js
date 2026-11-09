@@ -33,8 +33,9 @@ export const navigationItems = [
     permission: 'can_view_countries',
   },
   { key: 'projects', label: 'Projekte', icon: 'box-open-full', to: '/projects', disabled: true },
-  { key: 'article', label: 'Artikeln', icon: 'blog-text', to: '/article' },
   { key: 'news', label: 'Medien', icon: 'newspaper', to: '/news' },
+  { key: 'article', label: 'Artikeln', icon: 'blog-text', to: '/article' },
+  { key: 'engineering', label: 'Engineering', icon: 'code-simple', to: '/engineering' },
   { key: 'media', label: 'Kanäle', icon: 'network-analytic', to: '/media' },
   {
     key: 'donate',

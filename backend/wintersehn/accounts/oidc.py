@@ -6,7 +6,6 @@ import secrets
 import time
 from urllib.parse import urlencode
 
-import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.db import transaction
@@ -14,6 +13,8 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.utils.dateparse import parse_date
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+
+from commons.http import ServiceUnavailable, fetch
 
 from .consent import attested_status, push_to_govex, status_of
 from .models import AVATAR_CHOICES, UserProfile, get_or_create_profile
@@ -50,7 +51,9 @@ def govex_login(request):
         "code_challenge": code_challenge(code_verifier),
         "code_challenge_method": "S256",
     }
-    return HttpResponseRedirect(f"{settings.GOVEX_PUBLIC_URL}/application/o/authorize/?{urlencode(params)}")
+    return HttpResponseRedirect(
+        f"{settings.GOVEX_PUBLIC_URL}/application/o/authorize/?{urlencode(params)}"
+    )
 
 
 def govex_account(request):
@@ -58,29 +61,26 @@ def govex_account(request):
 
 
 def fetch_userinfo(code, code_verifier):
-    token_response = requests.post(
-        f"{settings.GOVEX_INTERNAL_URL}/application/o/token/",
-        data={
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": settings.GOVEX_REDIRECT_URI,
-            "client_id": settings.GOVEX_CLIENT_ID,
-            "client_secret": settings.GOVEX_CLIENT_SECRET,
-            "code_verifier": code_verifier,
-        },
-        timeout=10,
-    )
-    if not token_response.ok:
+    try:
+        token = fetch(
+            "post",
+            f"{settings.GOVEX_INTERNAL_URL}/application/o/token/",
+            data={
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": settings.GOVEX_REDIRECT_URI,
+                "client_id": settings.GOVEX_CLIENT_ID,
+                "client_secret": settings.GOVEX_CLIENT_SECRET,
+                "code_verifier": code_verifier,
+            },
+        ).json()["access_token"]
+        return fetch(
+            "get",
+            f"{settings.GOVEX_INTERNAL_URL}/application/o/userinfo/",
+            headers={"Authorization": f"Bearer {token}"},
+        ).json()
+    except ServiceUnavailable:
         return None
-
-    userinfo_response = requests.get(
-        f"{settings.GOVEX_INTERNAL_URL}/application/o/userinfo/",
-        headers={"Authorization": f"Bearer {token_response.json()['access_token']}"},
-        timeout=10,
-    )
-    if not userinfo_response.ok:
-        return None
-    return userinfo_response.json()
 
 
 def create_user(govex_sub, username, email):
@@ -98,7 +98,11 @@ def release_username(username, owner=None):
     """govex decides who a username belongs to. A different local account
     still holding it (unlinked, or stale because a rename never reached us)
     is moved to a fallback name so the govex identity can take it."""
-    holder = User.objects.filter(username=username).exclude(pk=getattr(owner, "pk", None)).first()
+    holder = (
+        User.objects.filter(username=username)
+        .exclude(pk=owner.pk if owner else None)
+        .first()
+    )
     if holder is not None:
         holder.username = f"{holder.username[:140]}-{holder.pk}"
         holder.save(update_fields=["username"])
@@ -112,7 +116,9 @@ def find_profile(govex_sub, legacy_govex_id):
     sets for accounts copied over from the old govex (an attribute users
     can't edit). Each old profile gets linked once, to exactly one identity.
     """
-    profile = UserProfile.objects.filter(govex_sub=govex_sub).select_related("user").first()
+    profile = (
+        UserProfile.objects.filter(govex_sub=govex_sub).select_related("user").first()
+    )
     if profile is not None or legacy_govex_id is None:
         return profile
 
@@ -185,7 +191,9 @@ def govex_callback(request):
     login(request, user)
     current = status_of(govex_sub)
     attested = attested_status(userinfo.get("attestations", {}).get("wintersehn"))
-    if attested != current and (any(current["consent"].values()) or current["monolith"]):
+    if attested != current and (
+        any(current["consent"].values()) or current["monolith"]
+    ):
         push_to_govex(govex_sub)
     return redirect_to_frontend("/")
 
@@ -193,7 +201,10 @@ def govex_callback(request):
 def valid_govex_signature(request):
     timestamp = request.headers.get("X-Govex-Timestamp", "")
     signature = request.headers.get("X-Govex-Signature", "")
-    if not timestamp.isdigit() or abs(time.time() - int(timestamp)) > MAX_CLOCK_SKEW_SECONDS:
+    if (
+        not timestamp.isdigit()
+        or abs(time.time() - int(timestamp)) > MAX_CLOCK_SKEW_SECONDS
+    ):
         return False
     expected = hmac.new(
         settings.GOVEX_CLIENT_SECRET.encode(),
@@ -219,7 +230,9 @@ def govex_account_deleted(request):
     except ValueError:
         return HttpResponse(status=400)
 
-    profiles = UserProfile.objects.filter(govex_sub=payload.get("sub")).select_related("user")
+    profiles = UserProfile.objects.filter(govex_sub=payload.get("sub")).select_related(
+        "user"
+    )
     users = [profile.user for profile in profiles]
     if payload.get("govex_id") is not None:
         users += [

@@ -1,20 +1,18 @@
 from rest_framework.routers import SimpleRouter
 
-from . import viewsets
+from . import views
 
 router = SimpleRouter()
+router.register("institutions", views.InstitutionViewSet, basename="atlas-institution")
+router.register("subjects", views.SubjectViewSet, basename="atlas-subject")
 router.register(
-    "institutions", viewsets.InstitutionViewSet, basename="atlas-institution"
-)
-router.register("subjects", viewsets.SubjectViewSet, basename="atlas-subject")
-router.register(
-    "documentations", viewsets.DocumentationViewSet, basename="atlas-documentation"
+    "documentations", views.DocumentationViewSet, basename="atlas-documentation"
 )
 router.register(
-    "learning-sets", viewsets.LearningSetViewSet, basename="atlas-learning-set"
+    "learning-sets", views.LearningSetViewSet, basename="atlas-learning-set"
 )
-router.register("cards", viewsets.FlashcardViewSet, basename="atlas-card")
-router.register("exams", viewsets.ExamViewSet, basename="atlas-exam")
-router.register("images", viewsets.ImageViewSet, basename="atlas-image")
+router.register("cards", views.FlashcardViewSet, basename="atlas-card")
+router.register("exams", views.ExamViewSet, basename="atlas-exam")
+router.register("images", views.ImageViewSet, basename="atlas-image")
 
 urlpatterns = router.urls

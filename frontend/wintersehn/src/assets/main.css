@@ -1,7 +1,9 @@
-@import "tailwindcss";
+@import "tailwindcss" source("..");
 @import "../../../core/src/assets/base.css";
 @plugin "daisyui";
 @source "../../../core/src";
+@source not "../../../core/src/assets/images";
+@source not "../../../core/src/assets/icons";
 
 @plugin "daisyui/theme" {
   name: "wntrs";

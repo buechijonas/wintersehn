@@ -1,13 +1,11 @@
 from decimal import Decimal
 from io import BytesIO
 
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image as PillowImage
 from rest_framework.test import APITestCase
 
-from wintersehn.accounts.models import UserProfile
+from commons.testing import create_admin, create_user
 
 from .models import (
     Exam,
@@ -20,18 +18,6 @@ from .models import (
 )
 
 
-def create_user(username, admin=True):
-    user = get_user_model().objects.create_user(username)
-    UserProfile.objects.create(user=user, verified=True)
-    if admin:
-        user.user_permissions.add(
-            Permission.objects.get(
-                codename="view_admin", content_type__app_label="content"
-            )
-        )
-    return user
-
-
 def png():
     output = BytesIO()
     PillowImage.new("RGB", (4, 4), "red").save(output, format="PNG")
@@ -40,14 +26,14 @@ def png():
 
 class AtlasTests(APITestCase):
     def setUp(self):
-        self.client.force_authenticate(create_user("admin"))
+        self.client.force_authenticate(create_admin())
         self.institution = Institution.objects.create(name="gibb BMS")
         self.subject = Subject.objects.create(
             institution=self.institution, name="Mathematik"
         )
 
     def test_requires_admin(self):
-        self.client.force_authenticate(create_user("user", admin=False))
+        self.client.force_authenticate(create_user("user"))
         self.assertEqual(self.client.get("/api/atlas/institutions/").status_code, 403)
         self.client.force_authenticate(None)
         self.assertEqual(self.client.get("/api/atlas/institutions/").status_code, 403)
@@ -168,7 +154,7 @@ class AtlasTests(APITestCase):
 
 class GradeTests(APITestCase):
     def setUp(self):
-        self.client.force_authenticate(create_user("admin"))
+        self.client.force_authenticate(create_admin())
         self.institution = Institution.objects.create(name="gibb BMS")
         self.math = Subject.objects.create(
             institution=self.institution, name="Mathematik"

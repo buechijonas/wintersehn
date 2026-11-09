@@ -1,19 +1,25 @@
 from django.urls import path
+from rest_framework.routers import SimpleRouter
 
 from . import views
 
-urlpatterns = [
-    path("settings/", views.SearchSettingsView.as_view(), name="search-settings"),
-    path("host-ratings/", views.HostRatingsView.as_view(), name="search-host-ratings"),
+router = SimpleRouter()
+router.register("sponsors", views.SponsorViewSet, basename="search-sponsor")
+
+urlpatterns = router.urls + [
+    path(
+        "settings/",
+        views.SearchSettingsViewSet.as_view({"get": "retrieve", "put": "update"}),
+        name="search-settings",
+    ),
+    path(
+        "host-ratings/",
+        views.HostRatingsViewSet.as_view({"post": "create"}),
+        name="search-host-ratings",
+    ),
     path(
         "child-protection/",
-        views.ChildProtectionView.as_view(),
+        views.ChildProtectionViewSet.as_view({"get": "list"}),
         name="search-child-protection",
-    ),
-    path("sponsors/", views.SponsorListCreateView.as_view(), name="search-sponsors"),
-    path(
-        "sponsors/<uuid:uuid>/",
-        views.SponsorDetailView.as_view(),
-        name="search-sponsor",
     ),
 ]

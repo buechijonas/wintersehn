@@ -41,14 +41,22 @@ class Command(BaseCommand):
             meta = attributes.setdefault("settings", {}).setdefault("meta", {})
             if meta.get("avatar"):
                 kept += 1
-                self.stdout.write(f"= {profile.user} already has '{meta['avatar']}' in govex")
+                self.stdout.write(
+                    f"= {profile.user} already has '{meta['avatar']}' in govex"
+                )
                 continue
 
             meta["avatar"] = profile.avatar
             if not options["dry_run"]:
-                self.request("PATCH", f"/core/users/{govex_user['pk']}/", {"attributes": attributes})
+                self.request(
+                    "PATCH",
+                    f"/core/users/{govex_user['pk']}/",
+                    {"attributes": attributes},
+                )
             copied += 1
-            self.stdout.write(self.style.SUCCESS(f"+ {profile.user}: '{profile.avatar}'"))
+            self.stdout.write(
+                self.style.SUCCESS(f"+ {profile.user}: '{profile.avatar}'")
+            )
 
         summary = f"{copied} copied, {kept} kept, {missing} without govex identity"
         self.stdout.write(f"{summary} (dry run)" if options["dry_run"] else summary)
@@ -65,8 +73,15 @@ class Command(BaseCommand):
 
     def request(self, method, path, body=None, params=None):
         response = requests.request(
-            method, f"{self.api}{path}", headers=self.headers, json=body, params=params, timeout=30
+            method,
+            f"{self.api}{path}",
+            headers=self.headers,
+            json=body,
+            params=params,
+            timeout=30,
         )
         if not response.ok:
-            raise CommandError(f"{method} {path} failed with {response.status_code}: {response.text}")
+            raise CommandError(
+                f"{method} {path} failed with {response.status_code}: {response.text}"
+            )
         return response.json()

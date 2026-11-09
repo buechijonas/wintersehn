@@ -30,7 +30,12 @@ def unfold_intro(apps, schema_editor):
     if not sections:
         return
     first = sections[0]
-    if first.get("title") or first.get("subtitle") or first.get("items") or not first.get("text"):
+    if (
+        first.get("title")
+        or first.get("subtitle")
+        or first.get("items")
+        or not first.get("text")
+    ):
         return
     data["intro"] = first["text"]
     data["sections"] = sections[1:]

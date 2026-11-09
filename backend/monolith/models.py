@@ -17,6 +17,8 @@ from django.core.validators import (
 from django.db import models
 from django.db.models.functions import Coalesce, Collate, Greatest, Least
 
+from commons import markdown
+from commons.models import BaseQuerySet
 from wintersehn.accounts.models import UserProfile
 
 from .catalog import (
@@ -81,6 +83,11 @@ class Status(models.TextChoices):
 INVERSE_STATUS = {Status.PARENT: "child"}
 
 
+class DossierQuerySet(BaseQuerySet):
+    def apply_acl(self, user):
+        return self if user.has_perm("content.view_monolith") else self.none()
+
+
 class Dossier(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     title = models.CharField(max_length=200)
@@ -99,6 +106,8 @@ class Dossier(models.Model):
         settings.AUTH_USER_MODEL, null=True, on_delete=models.SET_NULL, related_name="+"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = DossierQuerySet.as_manager()
 
     class Meta:
         ordering = [Collate("title", "de-CH-x-icu")]
@@ -331,6 +340,10 @@ class EventReference(models.Model):
     class Meta:
         ordering = ["created_at", "id"]
         verbose_name_plural = "Event references"
+
+    @property
+    def html(self):
+        return markdown.render(self.text)
 
     def __str__(self):
         return self.title

@@ -1,24 +1,44 @@
 from django.urls import path
+from rest_framework.routers import SimpleRouter
 
 from . import views
 
-urlpatterns = [
-    path("roles/", views.RoleListCreateView.as_view(), name="role-list"),
-    path("roles/<int:pk>/", views.RoleDetailView.as_view(), name="role-detail"),
-    path("permissions/", views.PermissionListView.as_view(), name="permission-list"),
+router = SimpleRouter()
+router.register("roles", views.RoleViewSet, basename="role")
+router.register("permissions", views.PermissionViewSet, basename="permission")
+
+urlpatterns = router.urls + [
     path(
-        "uploads/", views.ContentImageUploadView.as_view(), name="content-image-upload"
+        "uploads/",
+        views.UploadViewSet.as_view({"post": "create"}),
+        name="content-upload",
     ),
     path(
-        "images/<str:name>/", views.ImageThumbnailView.as_view(), name="content-image-thumbnail"
+        "images/<str:name>/",
+        views.ImageViewSet.as_view({"get": "retrieve"}),
+        name="content-image",
     ),
-    path("countries/map/", views.CountryMapView.as_view(), name="country-map"),
+    path(
+        "countries/map/",
+        views.CountryMapViewSet.as_view({"get": "list"}),
+        name="country-map",
+    ),
     path(
         "countries/destination/",
-        views.DestinationView.as_view(),
+        views.DestinationViewSet.as_view({"put": "update", "delete": "destroy"}),
         name="country-destination",
     ),
-    path("dashboard/", views.DashboardView.as_view(), name="dashboard"),
-    path("news/footprint/", views.FootprintView.as_view(), name="news-footprint"),
-    path("<slug:key>/", views.SiteContentView.as_view(), name="site-content"),
+    path(
+        "dashboard/", views.DashboardViewSet.as_view({"get": "list"}), name="dashboard"
+    ),
+    path(
+        "news/footprint/",
+        views.FootprintViewSet.as_view({"get": "list"}),
+        name="news-footprint",
+    ),
+    path(
+        "<slug:key>/",
+        views.SiteContentViewSet.as_view({"get": "retrieve", "put": "update"}),
+        name="site-content",
+    ),
 ]

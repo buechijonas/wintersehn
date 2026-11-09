@@ -1,118 +1,89 @@
 from django.contrib.auth import get_user_model, logout
-from django.contrib.auth.models import Group
+from django.http import Http404
 from django.middleware.csrf import get_token
-from django.shortcuts import get_object_or_404
-from rest_framework import status
+from rest_framework import mixins, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from wintersehn.content.rbac import can_grant_permissions
+from commons.permissions import ActionPermission
+from commons.views import BaseViewSet
 
-from .consent import CONSENT_FIELDS, push_to_govex
-from .models import UserConsent, get_or_create_profile
+from .consent import push_to_govex
+from .models import CONSENT_FIELDS, UserConsent, get_or_create_profile
 from .serializers import (
-    ConsentSerializer,
-    UserRoleSerializer,
-    UserSerializer,
+    ConsentModelSerializer,
+    RoleAssignmentSerializer,
+    UserModelSerializer,
+    VerificationSerializer,
 )
 
 User = get_user_model()
 
 
-class LogoutView(APIView):
+class MeViewSet(BaseViewSet):
+    permission_classes = [AllowAny]
+
+    def list(self, request):
+        get_token(request)
+        if not request.user.is_authenticated:
+            return Response({"user": None})
+        return Response({"user": UserModelSerializer.read(request.user).data})
+
+
+class LogoutViewSet(BaseViewSet):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def create(self, request):
         logout(request)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ConsentAcceptView(APIView):
+class ConsentViewSet(BaseViewSet):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, field):
+    def create(self, request, field):
         if field not in CONSENT_FIELDS:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-        consent, _ = UserConsent.objects.get_or_create(user=request.user)
-        setattr(consent, field, True)
-        consent.save(update_fields=[field])
+            raise Http404
+        consent = UserConsent.of(request.user)
+        consent.accept(field)
         push_to_govex(get_or_create_profile(request.user).govex_sub)
-        return Response(ConsentSerializer(consent).data)
+        return Response(ConsentModelSerializer.read(consent).data)
 
 
-class UserListView(APIView):
-    permission_classes = [IsAuthenticated]
+class UserViewSet(mixins.ListModelMixin, BaseViewSet):
+    serializer_class = UserModelSerializer
+    permission_classes = [IsAuthenticated, ActionPermission]
+    action_permissions = {
+        "list": "content.view_role",
+        "role": "content.assign_user",
+        "verify": "content.change_user",
+    }
+    pagination_class = None
 
-    def get(self, request):
-        if not request.user.has_perm("content.view_role"):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        users = User.objects.all().order_by("username")
-        return Response(UserRoleSerializer(users, many=True).data)
+    def get_queryset(self):
+        return User.objects.order_by("username")
 
+    def change(self, serializer_class, own_message):
+        if int(self.kwargs["pk"]) == self.request.user.pk:
+            raise ValidationError({"detail": own_message})
+        member = self.get_object()
+        serializer = serializer_class(
+            data=self.request.data, context={"request": self.request, "member": member}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(UserModelSerializer.list(member).data)
 
-class UserRoleView(APIView):
-    permission_classes = [IsAuthenticated]
+    @action(detail=True, methods=["patch"])
+    def role(self, request, pk):
+        return self.change(
+            RoleAssignmentSerializer, "Du kannst deine eigene Rolle nicht ändern."
+        )
 
-    def patch(self, request, pk):
-        if not request.user.has_perm("content.assign_user"):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        if int(pk) == request.user.pk:
-            return Response(
-                {"detail": "Du kannst deine eigene Rolle nicht ändern."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        user = get_object_or_404(User, pk=pk)
-        current_permissions = user.groups.values_list("permissions__codename", flat=True)
-        if not can_grant_permissions(request.user, current_permissions):
-            return Response(
-                {"detail": "Du kannst die Rolle dieses Nutzers nicht ändern, da sie Rechte enthält, die du nicht besitzt."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        role_id = request.data.get("role")
-        if role_id:
-            group = get_object_or_404(Group, pk=role_id)
-            role_permissions = group.permissions.values_list("codename", flat=True)
-            if not can_grant_permissions(request.user, role_permissions):
-                return Response(
-                    {"detail": "Du kannst nur Rollen zuweisen, deren Rechte du selbst besitzt."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-            user.groups.set([group])
-        else:
-            user.groups.clear()
-        return Response(UserRoleSerializer(user).data)
-
-
-class UserVerifyView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def patch(self, request, pk):
-        if not request.user.has_perm("content.change_user"):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        if int(pk) == request.user.pk:
-            return Response(
-                {"detail": "Du kannst deine eigene Verifizierung nicht ändern."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        user = get_object_or_404(User, pk=pk)
-        profile = get_or_create_profile(user)
-        profile.verified = bool(request.data.get("verified"))
-        profile.save(update_fields=["verified"])
-        return Response(UserRoleSerializer(user).data)
-
-
-class MeView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        get_token(request)
-        if request.user.is_authenticated:
-            return Response({"user": UserSerializer(request.user).data})
-        return Response({"user": None})
-
+    @action(detail=True, methods=["patch"])
+    def verify(self, request, pk):
+        return self.change(
+            VerificationSerializer, "Du kannst deine eigene Verifizierung nicht ändern."
+        )

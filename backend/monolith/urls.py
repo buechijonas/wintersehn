@@ -2,169 +2,232 @@ from django.urls import path
 
 from . import views
 
+
+def route(url, viewset, actions, name):
+    return path(url, viewset.as_view(actions), name=name)
+
+
 urlpatterns = [
-    path("dossiers/", views.DossierListCreateView.as_view(), name="dossier-list"),
-    path(
+    route(
+        "dossiers/",
+        views.DossierViewSet,
+        {"get": "list", "post": "create"},
+        "dossier-list",
+    ),
+    route(
         "dossiers/<uuid:uuid>/",
-        views.DossierDetailView.as_view(),
-        name="dossier-detail",
+        views.DossierViewSet,
+        {"get": "retrieve", "patch": "partial_update"},
+        "dossier-detail",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/relationships/",
-        views.RelationshipListCreateView.as_view(),
-        name="dossier-relationships",
+        views.RelationshipViewSet,
+        {"get": "list", "post": "create"},
+        "dossier-relationships",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/relationships/<uuid:person>/",
-        views.RelationshipDetailView.as_view(),
-        name="dossier-relationship",
+        views.RelationshipViewSet,
+        {"patch": "partial_update", "delete": "destroy"},
+        "dossier-relationship",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/",
-        views.EventListCreateView.as_view(),
-        name="dossier-events",
+        views.EventViewSet,
+        {"get": "list", "post": "create"},
+        "dossier-events",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/<uuid:event>/",
-        views.EventDetailView.as_view(),
-        name="dossier-event",
+        views.EventViewSet,
+        {"get": "retrieve", "patch": "partial_update", "delete": "destroy"},
+        "dossier-event",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/<uuid:event>/links/",
-        views.EventLinksView.as_view(),
-        name="dossier-event-links",
+        views.EventViewSet,
+        {"put": "links"},
+        "dossier-event-links",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/<uuid:event>/references/",
-        views.EventReferenceListCreateView.as_view(),
-        name="event-references",
+        views.EventReferenceViewSet,
+        {"get": "list", "post": "create"},
+        "event-references",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/",
-        views.EventReferenceDetailView.as_view(),
-        name="event-reference",
+        views.EventReferenceViewSet,
+        {"get": "retrieve", "patch": "partial_update", "delete": "destroy"},
+        "event-reference",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/participants/",
-        views.ChatParticipantListView.as_view(),
-        name="event-reference-participants",
+        views.ChatParticipantViewSet,
+        {"post": "create"},
+        "event-reference-participants",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/participants/<uuid:item>/",
-        views.ChatParticipantDetailView.as_view(),
-        name="event-reference-participant",
+        views.ChatParticipantViewSet,
+        {"patch": "partial_update", "delete": "destroy"},
+        "event-reference-participant",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/messages/",
-        views.ChatMessageListView.as_view(),
-        name="event-reference-messages",
+        views.ChatMessageViewSet,
+        {"post": "create"},
+        "event-reference-messages",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/events/<uuid:event>/references/<uuid:reference>/messages/<uuid:item>/",
-        views.ChatMessageDetailView.as_view(),
-        name="event-reference-message",
+        views.ChatMessageViewSet,
+        {"patch": "partial_update", "delete": "destroy"},
+        "event-reference-message",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/addictions/",
-        views.AddictionListCreateView.as_view(),
-        name="dossier-addictions",
+        views.AddictionViewSet,
+        {"get": "list", "post": "create"},
+        "dossier-addictions",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/addictions/<str:kind>/",
-        views.AddictionDetailView.as_view(),
-        name="dossier-addiction",
+        views.AddictionViewSet,
+        {"patch": "partial_update", "delete": "destroy"},
+        "dossier-addiction",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/references/",
-        views.ReferenceListCreateView.as_view(),
-        name="dossier-references",
+        views.ReferenceViewSet,
+        {"get": "list", "post": "create"},
+        "dossier-references",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/references/<uuid:reference>/",
-        views.ReferenceDetailView.as_view(),
-        name="dossier-reference",
+        views.ReferenceViewSet,
+        {"delete": "destroy"},
+        "dossier-reference",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/stances/",
-        views.StanceListView.as_view(),
-        name="dossier-stances",
+        views.StanceViewSet,
+        {"get": "list"},
+        "dossier-stances",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/stances/summary/",
-        views.StanceSummaryView.as_view(),
-        name="dossier-stance-summary",
+        views.StanceViewSet,
+        {"get": "summary"},
+        "dossier-stance-summary",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/stances/<str:topic>/",
-        views.StanceDetailView.as_view(),
-        name="dossier-stance",
+        views.StanceViewSet,
+        {"put": "update"},
+        "dossier-stance",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/character/",
-        views.CharacterView.as_view(),
-        name="dossier-character",
+        views.CharacterViewSet,
+        {"get": "retrieve", "put": "update"},
+        "dossier-character",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/trust/",
-        views.TrustEntryListCreateView.as_view(),
-        name="dossier-trust",
+        views.TrustViewSet,
+        {"get": "entries", "post": "add_entry"},
+        "dossier-trust",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/trust/<uuid:entry>/",
-        views.TrustEntryDetailView.as_view(),
-        name="dossier-trust-entry",
+        views.TrustViewSet,
+        {"delete": "remove_entry"},
+        "dossier-trust-entry",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/govex/",
-        views.DossierGovexView.as_view(),
-        name="dossier-govex",
+        views.GovexViewSet,
+        {"get": "retrieve", "put": "update", "delete": "destroy"},
+        "dossier-govex",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/swissfy/",
-        views.DossierSwissfyView.as_view(),
-        name="dossier-swissfy",
+        views.SwissfyViewSet,
+        {"get": "retrieve"},
+        "dossier-swissfy",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/swissfy/picture/",
-        views.DossierSwissfyPictureView.as_view(),
-        name="dossier-swissfy-picture",
+        views.SwissfyViewSet,
+        {"get": "picture"},
+        "dossier-swissfy-picture",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/shares/",
-        views.ShareListCreateView.as_view(),
-        name="dossier-shares",
+        views.ShareViewSet,
+        {"get": "list", "post": "create"},
+        "dossier-shares",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/shares/<uuid:share>/",
-        views.ShareDetailView.as_view(),
-        name="dossier-share",
+        views.ShareViewSet,
+        {
+            "get": "retrieve",
+            "patch": "partial_update",
+            "put": "update",
+            "delete": "destroy",
+        },
+        "dossier-share",
     ),
-    path(
+    route(
         "dossiers/<uuid:uuid>/shares/<uuid:share>/preview/",
-        views.SharePreviewView.as_view(),
-        name="dossier-share-preview",
+        views.ShareViewSet,
+        {"get": "preview"},
+        "dossier-share-preview",
     ),
-    path("shared/", views.SharedListView.as_view(), name="shared"),
-    path(
+    route("shared/", views.SharedViewSet, {"get": "list"}, "shared"),
+    route(
         "shared/<uuid:share>/",
-        views.SharedDetailView.as_view(),
-        name="shared-detail",
+        views.SharedViewSet,
+        {"get": "retrieve"},
+        "shared-detail",
     ),
-    path("share/<str:token>/", views.SharedLinkView.as_view(), name="shared-link"),
-    path("images/", views.ChatImageListCreateView.as_view(), name="images"),
-    path(
-        "images/unused/",
-        views.UnusedChatImagesView.as_view(),
-        name="images-unused",
+    route(
+        "share/<str:token>/", views.SharedLinkViewSet, {"post": "create"}, "shared-link"
     ),
-    path("images/<uuid:image>/", views.ChatImageDetailView.as_view(), name="image"),
-    path("network/", views.NetworkView.as_view(), name="network"),
-    path(
+    route(
+        "images/", views.ChatImageViewSet, {"get": "list", "post": "create"}, "images"
+    ),
+    route(
+        "images/unused/", views.ChatImageViewSet, {"delete": "unused"}, "images-unused"
+    ),
+    route(
+        "images/<uuid:image>/",
+        views.ChatImageViewSet,
+        {"get": "retrieve", "patch": "partial_update", "delete": "destroy"},
+        "image",
+    ),
+    route("network/", views.NetworkViewSet, {"get": "list"}, "network"),
+    route(
         "network/settings/",
-        views.NetworkSettingsView.as_view(),
-        name="network-settings",
+        views.NetworkViewSet,
+        {"get": "retrieve", "put": "update"},
+        "network-settings",
     ),
-    path("trust/", views.TrustView.as_view(), name="trust"),
-    path("trust/<uuid:uuid>/", views.TrustDetailView.as_view(), name="trust-detail"),
-    path("govex/", views.GovexSearchView.as_view(), name="govex-search"),
+    route("trust/", views.TrustViewSet, {"get": "list"}, "trust"),
+    route(
+        "trust/<uuid:uuid>/",
+        views.TrustViewSet,
+        {"put": "update", "delete": "destroy"},
+        "trust-detail",
+    ),
+    route(
+        "markdown/preview/",
+        views.MarkdownViewSet,
+        {"post": "preview"},
+        "markdown-preview",
+    ),
+    route("govex/", views.GovexViewSet, {"get": "list"}, "govex-search"),
 ]
