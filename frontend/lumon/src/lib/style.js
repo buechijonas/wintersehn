@@ -2,7 +2,7 @@ import { sharedSetting } from '@core/lib/sharedSetting.js'
 
 export const STYLES = ['standard', 'netflix']
 
-export const lumonStyle = sharedSetting('lumon-style', {
+export const lumonStyle = sharedSetting('wntrs-lumon-style', {
   parse: (value) => (STYLES.includes(value) ? value : 'standard'),
   serialize: (style) => style,
   apply(style) {

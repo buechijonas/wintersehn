@@ -21,35 +21,55 @@ def videos(directory):
     )
 
 
+def movie_files(nfo):
+    catalog_id, title = identity(nfo)
+    return [
+        {
+            "path": path,
+            "media_type": Title.MOVIE,
+            "catalog_id": catalog_id,
+            "season": None,
+            "episode": None,
+            "title": title,
+        }
+        for path in videos(nfo.parent)[:1]
+    ]
+
+
+def episode_files(nfo):
+    catalog_id, title = identity(nfo)
+    episodes = [
+        (path, *catalog.parse_episode(path.name, None)) for path in videos(nfo.parent)
+    ]
+    return [
+        {
+            "path": path,
+            "media_type": Title.TV,
+            "catalog_id": catalog_id,
+            "season": season,
+            "episode": episode,
+            "title": title,
+        }
+        for path, season, episode in episodes
+        if season and episode
+    ]
+
+
+def media_files():
+    root = library.root()
+    movies = (root / "movies").glob("*/movie.nfo")
+    shows = (root / "shows").glob("*/tvshow.nfo")
+    return [
+        *(file for nfo in movies for file in movie_files(nfo)),
+        *(file for nfo in shows for file in episode_files(nfo)),
+    ]
+
+
 class Command(BaseCommand):
     help = "Registers videos in the LUMON media folder by their NFO files."
 
     def handle(self, **options):
-        count = 0
-        for nfo in (library.root() / "movies").glob("*/movie.nfo"):
-            catalog_id, title = identity(nfo)
-            for path in videos(nfo.parent)[:1]:
-                MediaFile.objects.register(
-                    path,
-                    media_type=Title.MOVIE,
-                    catalog_id=catalog_id,
-                    season=None,
-                    episode=None,
-                    title=title,
-                )
-                count += 1
-        for nfo in (library.root() / "shows").glob("*/tvshow.nfo"):
-            catalog_id, title = identity(nfo)
-            for path in videos(nfo.parent):
-                season, episode = catalog.parse_episode(path.name, None)
-                if season and episode:
-                    MediaFile.objects.register(
-                        path,
-                        media_type=Title.TV,
-                        catalog_id=catalog_id,
-                        season=season,
-                        episode=episode,
-                        title=title,
-                    )
-                    count += 1
-        self.stdout.write(f"{count} Videos registriert.")
+        files = media_files()
+        for file in files:
+            MediaFile.objects.register(**file)
+        self.stdout.write(f"{len(files)} Videos registriert.")

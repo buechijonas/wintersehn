@@ -167,13 +167,16 @@ class Upload(UUIDModel):
         if offset != self.received:
             raise UploadError("Unerwartete Position im Upload.")
         self.partial.parent.mkdir(parents=True, exist_ok=True)
-        with self.partial.open("ab") as target:
+        with self.partial.open("ab") as file:
             while chunk := stream.read(1024 * 1024):
-                self.received += len(chunk)
-                if self.received > self.size:
-                    raise UploadError("Die Datei ist grösser als angekündigt.")
-                target.write(chunk)
+                self.write_chunk(file, chunk)
         self.save(update_fields=["received"])
+
+    def write_chunk(self, file, chunk):
+        self.received += len(chunk)
+        if self.received > self.size:
+            raise UploadError("Die Datei ist grösser als angekündigt.")
+        file.write(chunk)
 
     def target(self, fields):
         if self.media_type == Title.MOVIE:

@@ -6,8 +6,8 @@ import { useAuthStore } from '@core/stores/auth.js'
 import { categories, defaultSearchSettings } from '@/data/settings.js'
 import { matchesDomain } from '@/lib/domains.js'
 
-const STORAGE_KEY = 'search-settings'
-const SCOPE_KEY = 'search-settings-scope'
+const STORAGE_KEY = 'wntrs-search-settings'
+const SCOPE_KEY = 'wntrs-search-settings-scope'
 const SAVE_DELAY = 500
 const HOST_PATTERN = /^([a-z0-9-]{1,63}\.)+[a-z]{2,63}$/
 const MAX_HOSTS = 30

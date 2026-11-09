@@ -3,6 +3,7 @@ from .models import (
     Relationship,
     Stance,
     Trait,
+    Topic,
     TrustEntry,
     Visibility,
 )
@@ -16,6 +17,10 @@ SHOWN = {
 }
 
 
+def target(kind, key):
+    return f"{kind}:{key}"
+
+
 def item(target, label, value=None, links=()):
     return {"target": target, "label": label, "value": value, "links": list(links)}
 
@@ -27,26 +32,36 @@ def title_item(share):
 def meta_items(share):
     fields = DossierDetailSerializer(share.dossier).data
     return [
-        item(f"field:{field}", field, fields[field])
+        item(target("field", field), field, fields[field])
         for field in fields
         if field not in ("uuid", "title")
     ]
 
 
+def character_links(traits):
+    return [target("character", "traits")] if traits else []
+
+
 def event_links(event, dossier):
-    stances = owned(event.stances.all(), dossier)
+    topics = {stance.topic for stance in owned(event.stances.all(), dossier)}
     relationships = [
         relationship
         for relationship in event.relationships.all()
         if dossier.pk in (relationship.dossier_id, relationship.person_id)
     ]
     return [
-        *dict.fromkeys(f"stance:{stance.topic}" for stance in stances),
-        *dict.fromkeys("character:traits" for _ in owned(event.traits.all(), dossier)),
-        *(f"addiction:{item.pk}" for item in owned(event.addictions.all(), dossier)),
-        *(f"reference:{item.uuid}" for item in owned(event.references.all(), dossier)),
+        *(target("stance", topic) for topic in Topic.values if topic in topics),
+        *character_links(owned(event.traits.all(), dossier)),
         *(
-            f"relationship:{relationship.other(dossier).uuid}"
+            target("addiction", item.pk)
+            for item in owned(event.addictions.all(), dossier)
+        ),
+        *(
+            target("reference", item.uuid)
+            for item in owned(event.references.all(), dossier)
+        ),
+        *(
+            target("relationship", relationship.other(dossier).uuid)
             for relationship in relationships
         ),
     ]
@@ -54,14 +69,14 @@ def event_links(event, dossier):
 
 def character_items(share):
     tags = Trait.objects.character(share.dossier).tags
-    return [item("character:traits", "traits", tags)] if tags else []
+    return [item(target("character", "traits"), "traits", tags)] if tags else []
 
 
 def event_items(share):
     events = Event.objects.with_links().filter(dossiers=share.dossier)
     return [
         item(
-            f"event:{event.uuid}",
+            target("event", event.uuid),
             {"date": event.date.isoformat(), "title": event.title},
             event.text,
             event_links(event, share.dossier),
@@ -74,7 +89,7 @@ def relationship_items(share):
     dossier = share.dossier
     return [
         item(
-            f"relationship:{relationship.other(dossier).uuid}",
+            target("relationship", relationship.other(dossier).uuid),
             relationship.other(dossier).title,
             relationship.status_for(dossier),
         )
@@ -86,13 +101,13 @@ def trust_items(share):
     ledger = TrustEntry.objects.ledger(share.created_by, share.dossier)
     summary = {key: ledger[key] for key in ("points", "level", "suggested_level")}
     return [
-        item("trust:summary", {"kind": "summary"}, summary),
+        item(target("trust", "summary"), {"kind": "summary"}, summary),
         *(
             item(
-                f"trust_entry:{entry.uuid}",
+                target("trust_entry", entry.uuid),
                 {"kind": "entry", "conduct": entry.conduct, "points": entry.points},
                 {"date": entry.date.isoformat(), "text": entry.text},
-                dict.fromkeys("character:traits" for trait in entry.traits.all()),
+                character_links(entry.traits.all()),
             )
             for entry in ledger["entries"]
         ),
@@ -101,7 +116,7 @@ def trust_items(share):
 
 def stance_items(share):
     return [
-        item(f"stance:{stance.topic}", stance.topic, stance.tags)
+        item(target("stance", stance.topic), stance.topic, stance.tags)
         for stance in Stance.objects.by_topic(share.dossier)
         if stance.tags
     ]
@@ -109,7 +124,7 @@ def stance_items(share):
 
 def addiction_items(share):
     return [
-        item(f"addiction:{addiction.pk}", addiction.kind, addiction.frequency)
+        item(target("addiction", addiction.pk), addiction.kind, addiction.frequency)
         for addiction in share.dossier.addictions.all()
     ]
 
@@ -117,7 +132,7 @@ def addiction_items(share):
 def reference_items(share):
     return [
         item(
-            f"reference:{reference.uuid}",
+            target("reference", reference.uuid),
             {"icon": reference.icon, "name": reference.name},
             reference.url,
         )
@@ -142,10 +157,12 @@ BREADCRUMBS = ("root", "tab")
 
 def document(share):
     return {
-        "breadcrumbs": [item(f"breadcrumb:{level}", level) for level in BREADCRUMBS],
+        "breadcrumbs": [
+            item(target("breadcrumb", level), level) for level in BREADCRUMBS
+        ],
         "title": title_item(share),
         "sections": [
-            {"key": key, "target": f"section:{key}", "items": build(share)}
+            {"key": key, "target": target("section", key), "items": build(share)}
             for key, build in SECTIONS.items()
         ],
     }

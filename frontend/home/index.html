@@ -6,6 +6,8 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="author" content="Jonas Büchi">
+    <meta name="generator" content="wintersehn">
     <meta name="theme-color" content="#798291">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,8 +16,8 @@
     <title>Home</title>
     <script>
       try {
-        const cookie = document.cookie.match(/(?:^|; )theme=([^;]*)/)
-        const mode = cookie ? cookie[1] : localStorage.getItem('theme')
+        const cookie = document.cookie.match(/(?:^|; )wntrs-theme=([^;]*)/)
+        const mode = cookie ? cookie[1] : localStorage.getItem('wntrs-theme')
         if (mode === 'light') document.documentElement.setAttribute('data-theme', 'wntrs')
         if (mode === 'dark') document.documentElement.setAttribute('data-theme', 'dark')
       } catch {}
