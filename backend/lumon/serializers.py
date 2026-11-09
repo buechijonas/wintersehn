@@ -5,23 +5,30 @@ from .models import MediaFile, Title, Upload
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    poster = serializers.CharField(read_only=True)
     saved = serializers.UUIDField(source="uuid", read_only=True)
 
     class Meta:
         model = Title
-        fields = ["uuid", "tmdb_id", "media_type", "title", "year", "poster", "saved"]
-        read_only_fields = ["uuid", "title", "year"]
+        fields = [
+            "uuid",
+            "catalog_id",
+            "media_type",
+            "title",
+            "year",
+            "poster",
+            "saved",
+        ]
+        read_only_fields = ["uuid", "title", "year", "poster"]
 
     def create(self, validated_data):
         fields = catalog.title_fields(
-            validated_data["media_type"], validated_data["tmdb_id"]
+            validated_data["media_type"], validated_data["catalog_id"]
         )
         return super().create({**validated_data, **fields})
 
 
 class ItemSerializer(serializers.Serializer):
-    tmdb_id = serializers.IntegerField()
+    catalog_id = serializers.IntegerField()
     media_type = serializers.CharField()
     title = serializers.CharField()
     year = serializers.IntegerField(allow_null=True)
@@ -35,18 +42,9 @@ class RowSerializer(serializers.Serializer):
     items = ItemSerializer(many=True)
 
 
-class ProviderSerializer(serializers.Serializer):
+class ChannelSerializer(serializers.Serializer):
     name = serializers.CharField()
-    logo = serializers.CharField(allow_null=True)
-
-
-class ProvidersSerializer(serializers.Serializer):
     link = serializers.CharField(allow_null=True)
-    flatrate = ProviderSerializer(many=True)
-    free = ProviderSerializer(many=True)
-    ads = ProviderSerializer(many=True)
-    rent = ProviderSerializer(many=True)
-    buy = ProviderSerializer(many=True)
 
 
 class MediaSerializer(serializers.ModelSerializer):
@@ -108,7 +106,7 @@ class DetailSerializer(ItemSerializer):
     rating = serializers.FloatField(allow_null=True)
     runtime = serializers.IntegerField(allow_null=True)
     seasons = SeasonSerializer(many=True)
-    providers = ProvidersSerializer()
+    channel = ChannelSerializer(allow_null=True)
     media = MediaSerializer(allow_null=True)
 
 
@@ -125,7 +123,7 @@ class UploadSerializer(serializers.ModelSerializer):
         fields = [
             "uuid",
             "media_type",
-            "tmdb_id",
+            "catalog_id",
             "season",
             "episode",
             "filename",

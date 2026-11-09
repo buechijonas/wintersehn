@@ -6,7 +6,7 @@
     <PosterCard
       v-for="item in items"
       v-else
-      :key="`${item.media_type}-${item.tmdb_id}`"
+      :key="`${item.media_type}-${item.catalog_id}`"
       :item="item"
     />
   </div>

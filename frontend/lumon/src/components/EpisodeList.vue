@@ -47,7 +47,7 @@
           class="mt-1 max-w-100"
           compact
           :label="`${code(episode.number)} hochladen`"
-          :target="{ media_type: 'tv', tmdb_id: tmdbId, season, episode: episode.number }"
+          :target="{ media_type: 'tv', catalog_id: catalogId, season, episode: episode.number }"
           @uploaded="load"
         />
       </div>
@@ -68,7 +68,7 @@ export default {
   components: { BaseCard, PlayButton, UploadDrop },
   mixins: [asyncActionMixin],
   props: {
-    tmdbId: { type: Number, required: true },
+    catalogId: { type: Number, required: true },
     season: { type: Number, required: true },
   },
   data() {
@@ -86,7 +86,7 @@ export default {
     resumable,
     fetchEpisodes() {
       return this.store.load(
-        `/catalog/tv/${this.tmdbId}/seasons/${this.season}/`,
+        `/catalog/tv/${this.catalogId}/seasons/${this.season}/`,
         'Folgen konnten nicht geladen werden.',
       )
     },

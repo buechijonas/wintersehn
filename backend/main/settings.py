@@ -50,7 +50,6 @@ GOVEX_API_TOKEN = os.getenv("GOVEX_API_TOKEN")
 SWISSFY_INTERNAL_URL = os.getenv("SWISSFY_INTERNAL_URL")
 SWISSFY_API_TOKEN = os.getenv("SWISSFY_API_TOKEN")
 SWISSFY_PUBLIC_URL = os.getenv("SWISSFY_PUBLIC_URL")
-TMDB_API_KEY = os.getenv("TMDB_API_KEY", "")
 LUMON_MEDIA_ROOT = os.getenv("LUMON_MEDIA_ROOT", "/lumon-media")
 if not DEBUG and not all(
     [

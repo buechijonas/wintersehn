@@ -51,7 +51,7 @@
           <UploadDrop
             v-if="mediaType === 'movie' && !title.media"
             class="max-w-120"
-            :target="{ media_type: 'movie', tmdb_id: title.tmdb_id }"
+            :target="{ media_type: 'movie', catalog_id: title.catalog_id }"
             @uploaded="reloadTitle"
           />
         </div>
@@ -60,47 +60,32 @@
       <section v-if="title.seasons.length" class="flex flex-col gap-3">
         <h2 class="text-xs tracking-wide opacity-60">Staffeln</h2>
         <SeasonUpload
-          :tmdb-id="title.tmdb_id"
+          :catalog-id="title.catalog_id"
           :seasons="title.seasons"
           :default-season="activeSeason"
           @uploaded="reloadEpisodes"
         />
         <BaseTabs :tabs="seasonTabs" :active="String(activeSeason)" />
-        <EpisodeList :key="episodesKey" :tmdb-id="title.tmdb_id" :season="activeSeason" />
+        <EpisodeList :key="episodesKey" :catalog-id="title.catalog_id" :season="activeSeason" />
       </section>
 
-      <section class="flex flex-col gap-3">
-        <h2 class="text-xs tracking-wide opacity-60">Wo läuft das?</h2>
-        <BaseCard class="flex flex-col gap-5 p-4">
-          <p v-if="!offers.length" class="text-sm text-wntrs-muted">
-            In der Schweiz derzeit bei keinem Anbieter verfügbar.
-          </p>
-          <div v-for="offer in offers" :key="offer.label" class="flex flex-col gap-2">
-            <span class="text-xs text-wntrs-muted">{{ offer.label }}</span>
-            <div class="flex flex-wrap gap-2">
-              <span
-                v-for="provider in offer.providers"
-                :key="provider.name"
-                class="flex items-center gap-2 rounded-box border border-wntrs-border py-1 pr-3 pl-1 text-sm"
-              >
-                <img v-if="provider.logo" :src="provider.logo" alt="" class="size-7 rounded-md" />
-                {{ provider.name }}
-              </span>
-            </div>
-          </div>
+      <section v-if="title.channel" class="flex flex-col gap-3">
+        <h2 class="text-xs tracking-wide opacity-60">Läuft bei</h2>
+        <BaseCard class="flex flex-wrap items-center justify-between gap-3 p-4">
+          <span class="font-medium">{{ title.channel.name }}</span>
           <a
-            v-if="title.providers.link"
-            :href="title.providers.link"
+            v-if="title.channel.link"
+            :href="title.channel.link"
             target="_blank"
             rel="noopener noreferrer"
             class="flex items-center gap-2 text-sm text-wntrs-muted hover:text-base-content"
           >
             <AppIcon name="share-square" />
-            Alle Angebote ansehen
+            Zur Website
           </a>
         </BaseCard>
-        <TmdbNotice providers />
       </section>
+      <SourceNotice />
     </template>
   </div>
 </template>
@@ -115,16 +100,9 @@ import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 import EpisodeList from '@/components/EpisodeList.vue'
 import PlayButton from '@/components/PlayButton.vue'
 import SeasonUpload from '@/components/SeasonUpload.vue'
-import TmdbNotice from '@/components/TmdbNotice.vue'
+import SourceNotice from '@/components/SourceNotice.vue'
 import UploadDrop from '@/components/UploadDrop.vue'
 import { useLumonStore } from '@/stores/lumon.js'
-
-const OFFERS = [
-  { label: 'Im Abo', kinds: ['flatrate'] },
-  { label: 'Kostenlos', kinds: ['free', 'ads'] },
-  { label: 'Leihen', kinds: ['rent'] },
-  { label: 'Kaufen', kinds: ['buy'] },
-]
 
 export default {
   name: 'TitleView',
@@ -137,7 +115,7 @@ export default {
     EpisodeList,
     PlayButton,
     SeasonUpload,
-    TmdbNotice,
+    SourceNotice,
     UploadDrop,
   },
   mixins: [asyncActionMixin],
@@ -176,12 +154,6 @@ export default {
       const numbers = this.title.seasons.map((season) => season.number)
       const tab = Number(this.$route.query.tab)
       return numbers.includes(tab) ? tab : numbers[0]
-    },
-    offers() {
-      return OFFERS.map(({ label, kinds }) => ({
-        label,
-        providers: kinds.flatMap((kind) => this.title.providers[kind]),
-      })).filter(({ providers }) => providers.length)
     },
   },
   created() {

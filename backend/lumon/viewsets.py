@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework import mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
@@ -39,8 +40,7 @@ class CatalogViewSet(LumonViewSet):
     @action(detail=False)
     def categories(self, request):
         categories = [
-            {"key": key, "label": category["label"]}
-            for key, category in catalog.CATEGORIES.items()
+            {"key": key, "label": label} for key, label in catalog.CATEGORIES.items()
         ]
         return Response(serializers.CategorySerializer(categories, many=True).data)
 
@@ -67,25 +67,37 @@ class CatalogViewSet(LumonViewSet):
         )
         return Response(serializers.BrowseSerializer(overview).data)
 
-    @action(detail=False, url_path=r"tv/(?P<tmdb_id>\d+)/seasons/(?P<number>\d+)")
-    def season(self, request, tmdb_id, number):
-        episodes = catalog.season_episodes(int(tmdb_id), int(number))
+    @action(detail=False, url_path=r"tv/(?P<catalog_id>\d+)/seasons/(?P<number>\d+)")
+    def season(self, request, catalog_id, number):
+        episodes = catalog.season_episodes(int(catalog_id), int(number))
         return Response(serializers.EpisodeSerializer(episodes, many=True).data)
 
     @action(
         detail=False,
         methods=["post"],
-        url_path=r"tv/(?P<tmdb_id>\d+)/detect",
+        url_path=r"tv/(?P<catalog_id>\d+)/detect",
     )
-    def detect(self, request, tmdb_id):
+    def detect(self, request, catalog_id):
         serializer = serializers.DetectRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        detections = catalog.detect(int(tmdb_id), **serializer.validated_data)
+        detections = catalog.detect(int(catalog_id), **serializer.validated_data)
         return Response(serializers.DetectionSerializer(detections, many=True).data)
 
-    @action(detail=False, url_path=r"(?P<media_type>movie|tv)/(?P<tmdb_id>\d+)")
-    def show(self, request, media_type, tmdb_id):
-        result = catalog.detail(media_type, int(tmdb_id), Title.objects.saved())
+    @action(
+        detail=False,
+        url_path=r"(?P<media_type>movie|tv)/(?P<catalog_id>\d+)/(?P<kind>poster|backdrop)",
+    )
+    def artwork(self, request, media_type, catalog_id, kind):
+        response = HttpResponse(
+            catalog.artwork(media_type, int(catalog_id), kind),
+            content_type="image/svg+xml",
+        )
+        response["Cache-Control"] = "private, max-age=86400"
+        return response
+
+    @action(detail=False, url_path=r"(?P<media_type>movie|tv)/(?P<catalog_id>\d+)")
+    def show(self, request, media_type, catalog_id):
+        result = catalog.detail(media_type, int(catalog_id), Title.objects.saved())
         return Response(serializers.DetailSerializer(result).data)
 
 
@@ -131,7 +143,7 @@ class UploadViewSet(mixins.CreateModelMixin, mixins.DestroyModelMixin, LumonView
     @action(detail=True, methods=["post"])
     def complete(self, request, uuid):
         upload = self.get_object()
-        fields = catalog.title_fields(upload.media_type, upload.tmdb_id)
+        fields = catalog.title_fields(upload.media_type, upload.catalog_id)
         try:
             media = upload.complete(fields)
         except UploadError as error:

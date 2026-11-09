@@ -22,7 +22,7 @@
       <p class="line-clamp-3 text-base text-base-content/90">{{ title.overview }}</p>
       <div class="flex flex-wrap gap-3">
         <PlayButton v-if="title.media" :media="title.media" />
-        <BaseButton :to="`/${title.media_type}/${title.tmdb_id}`">
+        <BaseButton :to="`/${title.media_type}/${title.catalog_id}`">
           <AppIcon name="info" />
           Mehr Infos
         </BaseButton>
