@@ -1,63 +1,56 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <div class="flex flex-col pb-8 px-6 flex-1">
-    <div class="mx-auto w-full max-w-150">
-      <template v-if="post">
-        <h2 class="text-xl my-4">{{ post.title }}</h2>
-
-        <BaseCard class="p-8">
-          <p
-            v-if="post.description"
-            class="text-wntrs-slate"
-            v-html="linkifyHtml(post.description)"
-          ></p>
-
-          <img
-            v-if="post.thumbnail"
-            :src="post.thumbnail"
-            alt=""
-            class="w-full max-h-80 object-cover mt-4"
-          />
-
-          <div class="divider"></div>
-
-          <div class="flex items-center gap-3">
-            <img class="size-10" :src="authorAvatarSrc" alt="" />
-            <div>
-              <p>{{ post.author }}</p>
-              <p v-if="post.publishedAt" class="text-wntrs-muted text-xs">
-                {{ publishedAtLabel }}
-              </p>
-            </div>
+  <article class="mx-auto flex w-full max-w-200 flex-1 flex-col gap-12 px-6 pt-4 pb-16">
+    <template v-if="post">
+      <header class="flex flex-col gap-4">
+        <h1 class="font-display text-5xl font-bold tracking-tighter text-wntrs-title">
+          {{ post.title }}
+        </h1>
+        <p
+          v-if="post.description"
+          class="max-w-150 text-lg text-wntrs-slate"
+          v-html="linkifyHtml(post.description)"
+        ></p>
+        <div class="flex items-center gap-3">
+          <img class="size-10" :src="authorAvatarSrc" alt="" />
+          <div>
+            <p>{{ post.author }}</p>
+            <p v-if="post.publishedAt" class="text-xs text-wntrs-muted">
+              {{ publishedAtLabel }}
+            </p>
           </div>
+        </div>
+      </header>
 
-          <div class="divider"></div>
+      <img
+        v-if="post.thumbnail"
+        :src="post.thumbnail"
+        alt=""
+        class="max-h-96 w-full rounded-box object-cover"
+      />
 
-          <LegalSection
-            v-for="(section, index) in post.sections"
-            :key="section.title ?? index"
-            :title="section.title"
-            :subtitle="section.subtitle"
-          >
-            <p v-if="section.text" class="font-light" v-html="linkifyHtml(section.text)"></p>
-          </LegalSection>
-        </BaseCard>
-      </template>
+      <section
+        v-for="(section, index) in post.sections"
+        :key="section.title ?? index"
+        class="flex max-w-150 flex-col gap-4"
+      >
+        <h2 v-if="section.title" class="text-xl">{{ section.title }}</h2>
+        <p v-if="section.subtitle" class="text-wntrs-slate">{{ section.subtitle }}</p>
+        <p v-if="section.text" class="text-wntrs-muted" v-html="linkifyHtml(section.text)"></p>
+      </section>
+    </template>
 
-      <div v-else class="flex flex-col gap-3">
-        <div class="skeleton h-7 w-48"></div>
-        <div class="skeleton h-4 w-full"></div>
-        <div class="skeleton h-4 w-full"></div>
-        <div class="skeleton h-4 w-3/4"></div>
-      </div>
+    <div v-else class="flex flex-col gap-4">
+      <div class="skeleton h-12 w-3/4"></div>
+      <div class="skeleton h-4 w-full"></div>
+      <div class="skeleton h-4 w-full"></div>
+      <div class="skeleton h-64 w-full"></div>
     </div>
-  </div>
+  </article>
 </template>
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
-import BaseCard from '@core/components/common/BaseCard.vue'
-import LegalSection from '@/components/legal/LegalSection.vue'
 import { profiles } from '@core/assets/images.js'
 import { icons } from '@core/assets/icons.js'
 import { useContentStore } from '@core/stores/content.js'
@@ -65,7 +58,7 @@ import { linkifyHtml } from '@core/lib/linkify.js'
 
 export default {
   name: 'ArticlePostView',
-  components: { BaseBreadcrumbs, BaseCard, LegalSection },
+  components: { BaseBreadcrumbs },
   computed: {
     contentStore() {
       return useContentStore()
@@ -77,10 +70,7 @@ export default {
       return this.posts.find((post) => post.slug === this.$route.params.slug) ?? null
     },
     breadcrumbs() {
-      return [
-        { label: 'Artikel', to: '/article' },
-        { label: this.post?.title ?? '…' },
-      ]
+      return [{ label: 'Artikel', to: '/article' }, { label: this.post?.title ?? '…' }]
     },
     authorAvatarSrc() {
       return profiles[this.post?.authorAvatar] ?? icons.user
