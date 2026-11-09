@@ -15,7 +15,7 @@ def decode_label(label):
 
 def scripts(label):
     return {
-        unicodedata.name(char, "UNKNOWN").split(" ")[0]
+        unicodedata.name(char, "UNNAMED").split(" ")[0]
         for char in label
         if char.isalpha()
     }

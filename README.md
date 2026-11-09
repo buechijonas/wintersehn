@@ -51,9 +51,18 @@ Local LUMON videos live in `lumon-media/` (ignored by git). `python manage.py sc
 
 ## Conventions
 
+`commons/tests.py` checks every rule marked with ✓ on each test run.
+
 - Logic lives in the backend, the frontends only render.
-- Every backend app builds on `commons`: `UUIDModel`, querysets with `apply_acl(user)`, serializer groups with `read`, `list`, `retrieve` and `write`, and `BaseViewSet`.
-- No `getattr`, `setattr`, `hasattr` or `isinstance` in app code.
+- ✓ Every view builds on `BaseViewSet` from `commons`, next to `UUIDModel`, querysets with `apply_acl(user)` and serializer groups with `read`, `list`, `retrieve` and `write`.
+- ✓ No `getattr`, `setattr`, `hasattr` or `isinstance`.
+- ✓ No comments, unless something is really unclear without one.
+- ✓ Choice values in English, as are code and identifiers; only the UI text is German.
+- ✓ Small pure functions and comprehensions, at most two nested blocks.
+- ✓ A `models.py` over 500 lines becomes a `models/` package split by domain.
+- ✓ Data lives in `.txt` or `.json` files next to the code, not in Python literals.
+- ✓ Everything stored on the client or in the cache is namespaced with `wntrs`: cookies (`wntrs_session`), browser storage (`wntrs-theme`), cache keys (`KEY_PREFIX = "wntrs"`) and design tokens (`wntrs-muted`).
+- ✓ Outgoing requests go through `commons.http` and identify as `wintersehn`.
 
 ## Release and deploy
 

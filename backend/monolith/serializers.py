@@ -115,7 +115,8 @@ class TagsField(serializers.ListField):
     max_length = 30
 
     def to_internal_value(self, data):
-        return list(dict.fromkeys(super().to_internal_value(data)))
+        tags = super().to_internal_value(data)
+        return [tag for index, tag in enumerate(tags) if tag not in tags[:index]]
 
 
 class TopicStanceSerializer(serializers.Serializer):

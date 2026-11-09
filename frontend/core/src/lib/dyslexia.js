@@ -1,6 +1,6 @@
 import { sharedSetting } from '@core/lib/sharedSetting.js'
 
-export const dyslexiaFont = sharedSetting('dyslexia-font', {
+export const dyslexiaFont = sharedSetting('wntrs-dyslexia-font', {
   parse: (value) => value === 'on',
   serialize: (enabled) => (enabled ? 'on' : 'off'),
   apply(enabled) {

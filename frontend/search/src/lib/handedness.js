@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue'
 
-const STORAGE_KEY = 'handedness'
+const STORAGE_KEY = 'wntrs-handedness'
 const VALID_MODES = ['right', 'left']
 
 function readStoredMode() {

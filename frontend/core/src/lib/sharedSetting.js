@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue'
 
-const MAX_AGE = 60 * 60 * 24 * 365
+const MAX_AGE = 60 * 60 * 24 * 400
 const settings = []
 
 function cookieDomain() {

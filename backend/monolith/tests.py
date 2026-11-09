@@ -1,13 +1,26 @@
 import json
+from datetime import date
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.core.cache import cache
+from django.test import SimpleTestCase, TestCase
 from rest_framework.test import APITestCase
 
 from wintersehn.accounts.models import UserConsent, UserProfile
 
-from .models import Addiction, Dossier, Event, Share, TrustEntry
+from .models import (
+    Addiction,
+    ChatMessage,
+    ChatParticipant,
+    Dossier,
+    Event,
+    EventReference,
+    EventReferenceKind,
+    Share,
+    TrustEntry,
+)
+from .serializers import TagsField
 
 
 def create_user(username, govex_sub=None, monolith=False, consent=True):
@@ -273,3 +286,32 @@ class DossierListTests(APITestCase):
     def test_points_default_to_zero(self):
         response = self.client.get("/api/monolith/dossiers/")
         self.assertEqual({dossier["points"] for dossier in response.json()}, {0})
+
+
+class FightTests(TestCase):
+    def test_tracks_health_dealt_and_remaining_points(self):
+        event = Event.objects.create(title="Streit", date=date(2026, 8, 20))
+        reference = EventReference.objects.create(
+            event=event, kind=EventReferenceKind.CHAT, title="Chat"
+        )
+        left = ChatParticipant.objects.create(reference=reference, name="A", health=10)
+        right = ChatParticipant.objects.create(reference=reference, name="B", health=10)
+        first = ChatMessage.objects.create(
+            reference=reference, sender=left, attack=4, target=right
+        )
+        second = ChatMessage.objects.create(
+            reference=reference, sender=left, attack=8, target=right
+        )
+        ChatMessage.objects.create(reference=reference, sender=right, text="Hallo")
+
+        fight = reference.fight()
+
+        self.assertEqual(fight["health"], {left.pk: 10, right.pk: 0})
+        self.assertEqual(fight["dealt"], {left.pk: 12, right.pk: 0})
+        self.assertEqual(fight["remaining"], {first.pk: 6, second.pk: 0})
+
+
+class TagsFieldTests(SimpleTestCase):
+    def test_drops_duplicates_in_order(self):
+        tags = TagsField().to_internal_value(["Loyal", "Ehrlich", "Loyal"])
+        self.assertEqual(tags, ["Loyal", "Ehrlich"])

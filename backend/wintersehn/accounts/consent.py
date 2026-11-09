@@ -8,12 +8,12 @@ import json
 import logging
 import time
 
-import requests
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 from django.conf import settings
 
+from commons.http import ServiceUnavailable, fetch, session
 from monolith.models import Dossier
 
 from .models import CONSENT_FIELDS, UserConsent, UserProfile
@@ -81,23 +81,27 @@ def push_to_govex(govex_sub):
         }
     )
     url = f"{settings.GOVEX_INTERNAL_URL}/api/v3/flows/executor/{ATTESTATION_FLOW}/?query="
-    session = requests.Session()
+    client = session()
     try:
-        session.get(
-            url, headers={"Accept": "application/json"}, timeout=10
-        ).raise_for_status()
-        response = session.post(
+        fetch(
+            "get",
             url,
+            client=client,
+            timeout=10,
+            headers={"Accept": "application/json"},
+        )
+        result = fetch(
+            "post",
+            url,
+            client=client,
+            timeout=10,
             json={"component": "ak-stage-prompt", "attestation": attestation},
             headers={
                 "Accept": "application/json",
-                "X-authentik-CSRF": session.cookies.get("authentik_csrf", ""),
+                "X-authentik-CSRF": client.cookies.get("authentik_csrf", ""),
             },
-            timeout=10,
-        )
-        response.raise_for_status()
-        result = response.json()
-    except (requests.RequestException, ValueError):
+        ).json()
+    except (ServiceUnavailable, ValueError):
         logger.warning(
             "consent push to govex failed", exc_info=True, extra={"sub": govex_sub}
         )

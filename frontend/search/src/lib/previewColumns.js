@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue'
 
-const STORAGE_KEY = 'image-preview-columns'
+const STORAGE_KEY = 'wntrs-image-preview-columns'
 export const GRID_COLUMNS = 5
 export const DEFAULT_PREVIEW_COLUMNS = 2
 const MIN_COLUMNS = 1

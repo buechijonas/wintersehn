@@ -6,7 +6,6 @@ from django.db import connections
 
 from commons.http import ServiceUnavailable, fetch
 
-USER_AGENT = "LUMON/0.1 (https://lumon.wintersehn.ch)"
 HOUR = 60 * 60
 DAY = 24 * HOUR
 WEEK = 7 * DAY
@@ -29,10 +28,7 @@ def get(url, ttl, **params):
         error=CatalogUnavailable,
         timeout=30,
         params=params,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": "application/sparql-results+json, application/json",
-        },
+        headers={"Accept": "application/sparql-results+json, application/json"},
     ).json()
     cache.set(key, data, ttl)
     return data

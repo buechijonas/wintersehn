@@ -1,6 +1,6 @@
 import { sharedSetting } from '@core/lib/sharedSetting.js'
 
-export const contrastMode = sharedSetting('contrast-mode', {
+export const contrastMode = sharedSetting('wntrs-contrast-mode', {
   parse: (value) => value === 'on',
   serialize: (enabled) => (enabled ? 'on' : 'off'),
   apply(enabled) {

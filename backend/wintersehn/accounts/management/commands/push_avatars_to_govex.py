@@ -1,9 +1,9 @@
 import json
 
-import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
+from commons.http import session
 from wintersehn.accounts.models import UserProfile
 
 
@@ -72,7 +72,7 @@ class Command(BaseCommand):
         return results[0] if results else None
 
     def request(self, method, path, body=None, params=None):
-        response = requests.request(
+        response = session().request(
             method,
             f"{self.api}{path}",
             headers=self.headers,
