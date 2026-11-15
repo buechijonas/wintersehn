@@ -15,7 +15,7 @@
           <img class="size-10" :src="authorAvatarSrc" alt="" />
           <div>
             <p>{{ post.author }}</p>
-            <p v-if="post.publishedAt" class="text-xs text-wntrs-muted">
+            <p v-if="post.publishedAt" class="text-sm text-wntrs-slate">
               {{ publishedAtLabel }}
             </p>
           </div>
@@ -32,11 +32,15 @@
       <section
         v-for="(section, index) in post.sections"
         :key="section.title ?? index"
-        class="flex max-w-150 flex-col gap-4"
+        class="flex max-w-170 flex-col gap-4"
       >
-        <h2 v-if="section.title" class="text-xl">{{ section.title }}</h2>
-        <p v-if="section.subtitle" class="text-wntrs-slate">{{ section.subtitle }}</p>
-        <p v-if="section.text" class="text-wntrs-muted" v-html="linkifyHtml(section.text)"></p>
+        <h2 v-if="section.title" class="text-2xl font-semibold">{{ section.title }}</h2>
+        <p v-if="section.subtitle" class="text-lg text-wntrs-slate">{{ section.subtitle }}</p>
+        <p
+          v-if="section.text"
+          class="text-lg leading-relaxed"
+          v-html="linkifyHtml(section.text)"
+        ></p>
       </section>
     </template>
 

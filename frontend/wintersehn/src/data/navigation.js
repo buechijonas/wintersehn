@@ -32,7 +32,7 @@ export const navigationItems = [
     disabled: true,
     permission: 'can_view_countries',
   },
-  { key: 'projects', label: 'Projekte', icon: 'box-open-full', to: '/projects', disabled: true },
+  { key: 'projects', label: 'Projekte', icon: 'box-open-full', to: '/projects' },
   { key: 'news', label: 'Medien', icon: 'newspaper', to: '/news' },
   { key: 'article', label: 'Artikeln', icon: 'blog-text', to: '/article' },
   { key: 'engineering', label: 'Engineering', icon: 'code-simple', to: '/engineering' },
