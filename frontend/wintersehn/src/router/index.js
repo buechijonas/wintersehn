@@ -142,7 +142,7 @@ const router = createRouter({
       path: '/projects',
       name: 'projects',
       component: ProjectsView,
-      meta: { requiresAuth: true, activeNavigation: 'projects' },
+      meta: { activeNavigation: 'projects' },
     },
     {
       path: '/engineering',
