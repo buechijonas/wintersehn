@@ -9,6 +9,7 @@
         :label="item.label"
         :to="item.to"
         :icon-set="item.iconSet ?? 'flats'"
+        :repository="item.repository"
       />
     </div>
   </div>
