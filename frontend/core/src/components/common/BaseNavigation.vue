@@ -37,7 +37,7 @@
             class="nav-item flex items-center gap-3 p-4"
             :class="{
               'active bg-wntrs-highlight text-primary': activeNavigation === item.key,
-              'disabled cursor-not-allowed': isLocked(item),
+              'locked cursor-not-allowed': isLocked(item),
             }"
             @click="isNavDrawerOpen = false"
           >
@@ -102,6 +102,7 @@ import { icons } from '@core/assets/icons.js'
 import { isNavDrawerOpen } from '@core/lib/navDrawer.js'
 import { useAuthStore } from '@core/stores/auth.js'
 import { appSwitchTargets } from '@core/lib/appSwitch.js'
+import { lockedTarget } from '@core/router/index.js'
 
 export default {
   name: 'BaseNavigation',
@@ -151,13 +152,11 @@ export default {
       return false
     },
     linkComponent(item) {
-      if (item.href) return 'a'
-      if (this.isLocked(item)) return 'span'
-      return RouterLink
+      return item.href ? 'a' : RouterLink
     },
     linkAttributes(item) {
       if (item.href) return { href: item.href, target: '_blank', rel: 'noopener' }
-      if (this.isLocked(item)) return { 'aria-disabled': 'true' }
+      if (this.isLocked(item)) return { to: lockedTarget(this.authStore.isAuthenticated) }
       return { to: item.to }
     },
   },
@@ -176,8 +175,12 @@ export default {
   }
 }
 
-.nav-item.disabled .nav-icon,
-.nav-item.disabled .lock-icon {
+.nav-item.locked {
+  color: var(--color-wntrs-muted);
+}
+
+.nav-item.locked .nav-icon,
+.nav-item.locked .lock-icon {
   filter: brightness(0) saturate(100%) invert(76%) sepia(15%) saturate(228%) hue-rotate(171deg)
     brightness(91%) contrast(90%);
 }

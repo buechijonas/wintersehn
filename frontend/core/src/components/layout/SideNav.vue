@@ -45,6 +45,7 @@ import { RouterLink } from 'vue-router'
 import AppIcon from '@core/components/common/AppIcon.vue'
 import CipherText from '@core/components/common/CipherText.vue'
 import { useAuthStore } from '@core/stores/auth.js'
+import { lockedTarget } from '@core/router/index.js'
 
 const ADMIN_ITEM = { key: 'admin', label: 'Admin', icon: 'crown', to: '/admin' }
 
@@ -75,12 +76,11 @@ export default {
       return Boolean(item.permission && !this.authStore.user?.[item.permission])
     },
     linkComponent(item) {
-      if (item.href) return 'a'
-      return this.isLocked(item) ? 'span' : RouterLink
+      return item.href ? 'a' : RouterLink
     },
     linkAttributes(item) {
       if (item.href) return { href: item.href, target: '_blank', rel: 'noopener' }
-      if (this.isLocked(item)) return { 'aria-disabled': 'true' }
+      if (this.isLocked(item)) return { to: lockedTarget(this.authStore.isAuthenticated) }
       return { to: item.to }
     },
     itemClass(item) {
