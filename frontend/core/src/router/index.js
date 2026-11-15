@@ -1,6 +1,7 @@
 import { useAuthStore } from '@core/stores/auth.js'
 import LoginView from '@core/views/auth/LoginView.vue'
 import LogoutView from '@core/views/auth/LogoutView.vue'
+import LockedView from '@core/views/auth/LockedView.vue'
 import VerifyPendingView from '@core/views/auth/VerifyPendingView.vue'
 import SettingsView from '@core/views/SettingsView.vue'
 
@@ -14,6 +15,11 @@ export const coreRoutes = [
     path: '/logout',
     name: 'logout',
     component: LogoutView,
+  },
+  {
+    path: '/locked',
+    name: 'locked',
+    component: LockedView,
   },
   {
     path: '/verify-pending',
@@ -31,6 +37,7 @@ export const coreRoutes = [
 const CORE_PAGE_TITLES = {
   login: 'Anmelden',
   logout: 'Abmelden',
+  locked: 'Kein Zugriff',
   'verify-pending': 'Verifizierung ausstehend',
   settings: 'Einstellungen',
 }
@@ -42,6 +49,12 @@ export const CONSENT_GATES = [
   { field: 'cookies', path: '/cookies' },
 ]
 
+export const LOCKED_LOGIN = { path: '/login', query: { reason: 'locked' } }
+
+export function lockedTarget(isAuthenticated) {
+  return isAuthenticated ? '/locked' : LOCKED_LOGIN
+}
+
 function guard(to, consentGates) {
   const authStore = useAuthStore()
   if (!authStore.ready) {
@@ -49,7 +62,7 @@ function guard(to, consentGates) {
   }
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    return '/login'
+    return LOCKED_LOGIN
   }
 
   if (!authStore.isAuthenticated || to.name === 'logout') {
@@ -72,7 +85,7 @@ function guard(to, consentGates) {
   }
 
   if (to.meta.permission && !authStore.user[to.meta.permission]) {
-    return '/'
+    return '/locked'
   }
 
   return true
