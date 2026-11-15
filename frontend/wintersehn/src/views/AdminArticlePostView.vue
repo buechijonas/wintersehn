@@ -2,14 +2,7 @@
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-200">
-      <div class="flex items-center justify-between gap-4 my-4">
-        <h2 class="text-xl">{{ post?.title ?? '…' }}</h2>
-        <AddButton
-          v-if="canEdit && post"
-          label="Abschnitt hinzufügen"
-          @click="$refs.sectionDialog.open()"
-        />
-      </div>
+      <h2 class="text-xl my-4">{{ post?.title ?? '…' }}</h2>
 
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
@@ -47,86 +40,24 @@
           />
         </BaseCard>
 
-        <SortableList
-          :items="sections"
-          :disabled="!canEdit"
-          class="flex flex-col gap-4"
-          @reorder="reorderSections"
-        >
-          <template #default="{ item: section, index: sectionIndex }">
-            <BaseCard class="p-6">
-              <div v-if="canEdit" class="flex items-center justify-between gap-2 mb-4">
-                <div class="flex items-center gap-2">
-                  <BaseButton
-                    type="button"
-                    shape="square"
-                    size="sm"
-                    title="Verlinken"
-                    @click="addLink(sectionIndex)"
-                  >
-                    <AppIcon name="link-alt" alt="Verlinken" />
-                  </BaseButton>
-                  <BaseButton
-                    type="button"
-                    shape="square"
-                    size="sm"
-                    title="Entlinken"
-                    @click="removeLink(sectionIndex)"
-                  >
-                    <AppIcon name="link-slash-alt" alt="Entlinken" />
-                  </BaseButton>
-                </div>
-                <DeleteButton
-                  :disabled="saving"
-                  @click="askRemoveSection(sectionIndex)"
-                />
-              </div>
-
-              <div class="flex flex-col gap-2 w-full max-w-120 mb-4">
-                <input
-                  type="text"
-                  placeholder="Titel (optional)"
-                  class="input input-sm w-full"
-                  :value="section.title"
-                  :disabled="!canEdit"
-                  @change="updateSection(sectionIndex, 'title', $event.target.value)"
-                />
-                <input
-                  type="text"
-                  placeholder="Untertitel (optional)"
-                  class="input input-sm w-full"
-                  :value="section.subtitle"
-                  :disabled="!canEdit"
-                  @change="updateSection(sectionIndex, 'subtitle', $event.target.value)"
-                />
-              </div>
-              <textarea
-                :ref="(el) => setSectionTextarea(sectionIndex, el)"
-                rows="4"
-                placeholder="Text (optional)"
-                class="textarea textarea-sm w-full"
-                :value="section.text"
-                :disabled="!canEdit"
-                @change="updateSection(sectionIndex, 'text', $event.target.value)"
-              ></textarea>
-            </BaseCard>
-          </template>
-        </SortableList>
+        <form v-if="canEdit" class="flex flex-col gap-4" @submit.prevent="saveBody">
+          <MarkdownEditor v-model="body" preview-url="/api/content/markdown/preview/" />
+          <BaseButton
+            type="submit"
+            variant="primary"
+            class="self-end"
+            :disabled="saving || body === post.body"
+          >
+            <AppIcon name="disk" />
+            Speichern
+          </BaseButton>
+        </form>
+        <BaseCard v-else class="p-6">
+          <MarkdownContent :html="html" placeholder="Noch kein Text." />
+        </BaseCard>
       </template>
     </div>
   </div>
-
-  <ConfirmDialog
-    ref="confirmDialog"
-    :title="dialogTitle"
-    :message="dialogMessage"
-    @confirm="onConfirmDelete"
-  />
-
-  <LinkDialog ref="linkDialog" @confirm="onLinkConfirm" />
-
-  <SectionDialog ref="sectionDialog" @confirm="addSection" />
-
 </template>
 
 <script>
@@ -134,16 +65,11 @@ import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import AppIcon from '@core/components/common/AppIcon.vue'
-import DeleteButton from '@core/components/common/DeleteButton.vue'
-import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
-import LinkDialog from '@core/components/common/LinkDialog.vue'
-import AddButton from '@core/components/common/AddButton.vue'
-import SectionDialog from '@core/components/common/SectionDialog.vue'
-import SortableList from '@core/components/common/SortableList.vue'
 import ImageUploadField from '@core/components/common/ImageUploadField.vue'
+import MarkdownContent from '@core/components/common/MarkdownContent.vue'
+import MarkdownEditor from '@core/components/common/MarkdownEditor.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 import { useContentStore } from '@core/stores/content.js'
-import confirmDeleteMixin from '@core/mixins/confirmDeleteMixin.js'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 
 export default {
@@ -153,20 +79,14 @@ export default {
     BaseCard,
     BaseButton,
     AppIcon,
-    DeleteButton,
-    ConfirmDialog,
-    LinkDialog,
-    SortableList,
     ImageUploadField,
-    AddButton,
-    SectionDialog,
+    MarkdownContent,
+    MarkdownEditor,
   },
-  mixins: [confirmDeleteMixin, asyncActionMixin],
+  mixins: [asyncActionMixin],
   data() {
     return {
-      sectionTextareas: {},
-      linkDialogSectionIndex: null,
-      linkDialogSelection: null,
+      body: '',
     }
   },
   computed: {
@@ -185,8 +105,8 @@ export default {
     post() {
       return this.postIndex === -1 ? null : this.posts[this.postIndex]
     },
-    sections() {
-      return this.post?.sections ?? []
+    html() {
+      return this.contentStore.items.article?.html?.[this.post.slug] ?? ''
     },
     canEdit() {
       return !!this.authStore.user?.can_edit_content
@@ -199,17 +119,23 @@ export default {
       ]
     },
   },
+  watch: {
+    'post.body': {
+      immediate: true,
+      handler(body) {
+        this.body = body ?? ''
+      },
+    },
+  },
   mounted() {
     this.contentStore.fetchContent('article')
   },
   methods: {
-    persist(posts) {
-      return this.runAction(() => this.contentStore.saveContent('article', posts))
-    },
     persistPost(patch) {
-      return this.persist(
-        this.posts.map((post, i) => (i === this.postIndex ? { ...post, ...patch } : post)),
+      const posts = this.posts.map((post, i) =>
+        i === this.postIndex ? { ...post, ...patch } : post,
       )
+      return this.runAction(() => this.contentStore.saveContent('article', posts))
     },
     updatePost(field, value) {
       const trimmed = value.trim()
@@ -219,78 +145,8 @@ export default {
     onThumbnailUploaded(urls) {
       this.persistPost({ thumbnail: urls[0] })
     },
-    persistSections(sections) {
-      return this.persistPost({ sections })
-    },
-    addSection(title) {
-      this.persistSections([...this.sections, { title, subtitle: '', text: '' }])
-    },
-    updateSection(sectionIndex, field, value) {
-      const trimmed = value.trim()
-      if (trimmed === (this.sections[sectionIndex][field] ?? '')) return
-      this.persistSections(
-        this.sections.map((section, i) =>
-          i === sectionIndex ? { ...section, [field]: trimmed } : section,
-        ),
-      )
-    },
-    reorderSections(sections) {
-      this.persistSections(sections)
-    },
-    setSectionTextarea(sectionIndex, el) {
-      this.sectionTextareas[sectionIndex] = el
-    },
-    addLink(sectionIndex) {
-      const textarea = this.sectionTextareas[sectionIndex]
-      if (!textarea) return
-
-      const { selectionStart, selectionEnd, value } = textarea
-      const selected = value.slice(selectionStart, selectionEnd)
-      if (!selected) {
-        this.error = 'Bitte zuerst den zu verlinkenden Text markieren.'
-        return
-      }
-
-      this.error = ''
-      this.linkDialogSectionIndex = sectionIndex
-      this.linkDialogSelection = { start: selectionStart, end: selectionEnd, selected }
-      this.$refs.linkDialog?.open()
-    },
-    onLinkConfirm(input) {
-      const sectionIndex = this.linkDialogSectionIndex
-      const { start, end, selected } = this.linkDialogSelection ?? {}
-      if (sectionIndex === null || !this.sectionTextareas[sectionIndex]) return
-
-      const url = /^https?:\/\//.test(input) ? input : `https://${input}`
-      const value = this.sectionTextareas[sectionIndex].value
-      const newValue = value.slice(0, start) + `[${selected}](${url})` + value.slice(end)
-      this.updateSection(sectionIndex, 'text', newValue)
-    },
-    removeLink(sectionIndex) {
-      const textarea = this.sectionTextareas[sectionIndex]
-      if (!textarea) return
-
-      const { selectionStart, selectionEnd, value } = textarea
-      const pattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g
-      let match
-      while ((match = pattern.exec(value))) {
-        const start = match.index
-        const end = start + match[0].length
-        if (selectionStart >= start && selectionEnd <= end) {
-          this.error = ''
-          this.updateSection(sectionIndex, 'text', value.slice(0, start) + match[1] + value.slice(end))
-          return
-        }
-      }
-      this.error = 'Bitte einen bestehenden Link markieren oder den Cursor hineinsetzen.'
-    },
-    askRemoveSection(sectionIndex) {
-      const { title } = this.sections[sectionIndex]
-      this.confirmRemoval(
-        'Abschnitt löschen',
-        `Möchtest du "${title || 'diesen Abschnitt'}" wirklich löschen?`,
-        () => this.persistSections(this.sections.filter((_, i) => i !== sectionIndex)),
-      )
+    saveBody() {
+      this.persistPost({ body: this.body })
     },
   },
 }

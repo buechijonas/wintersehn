@@ -365,7 +365,9 @@ def png(size=(4, 4)):
 class SiteContentTests(APITestCase):
     def setUp(self):
         contents = {
-            "impressum": {"text": "Hallo"},
+            "impressum": {"title": "Impressum", "body": "## Kontakt\n\n[[address]]"},
+            "address": {"lines": ["Wintersehn", "Bern"]},
+            "article": [{"slug": "start", "body": "**Hallo** <script>x</script>"}],
             "cv": [{"title": "Werdegang"}],
             "media": [
                 {"title": "Öffentlich", "items": []},
@@ -375,9 +377,16 @@ class SiteContentTests(APITestCase):
         for key, data in contents.items():
             SiteContent.objects.update_or_create(key=key, defaults={"data": data})
 
-    def test_public_content_is_readable(self):
+    def test_legal_markdown_includes_address(self):
         response = self.client.get("/api/content/impressum/")
-        self.assertEqual(response.data["data"], {"text": "Hallo"})
+        self.assertEqual(response.data["data"]["title"], "Impressum")
+        self.assertEqual(
+            response.data["html"], "<h2>Kontakt</h2>\n<p>Wintersehn<br>\nBern</p>"
+        )
+
+    def test_article_markdown_is_rendered_safely(self):
+        response = self.client.get("/api/content/article/")
+        self.assertEqual(response.data["html"], {"start": "<p><strong>Hallo</strong> </p>"})
 
     def test_restricted_content_needs_permission(self):
         self.assertEqual(self.client.get("/api/content/cv/").status_code, 403)
@@ -416,6 +425,22 @@ class SiteContentTests(APITestCase):
         response = self.client.put("/api/content/now/", {"data": []}, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertTrue(SiteContent.objects.filter(key="now").exists())
+
+
+class MarkdownPreviewTests(APITestCase):
+    def test_preview_needs_edit_permission(self):
+        self.client.force_authenticate(create_user("viewer", "view_cv"))
+        response = self.client.post(
+            "/api/content/markdown/preview/", {"body": "# Titel"}, format="json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_editor_previews_markdown(self):
+        self.client.force_authenticate(create_user("editor", "change_sitecontent"))
+        response = self.client.post(
+            "/api/content/markdown/preview/", {"body": "# Titel"}, format="json"
+        )
+        self.assertEqual(response.data["html"], "<h1>Titel</h1>")
 
 
 class UploadTests(APITestCase):

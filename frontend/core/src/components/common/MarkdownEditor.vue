@@ -52,7 +52,7 @@
 <script>
 import BaseButton from '@core/components/common/BaseButton.vue'
 import MarkdownContent from '@core/components/common/MarkdownContent.vue'
-import { useDossiersStore } from '@/stores/dossiers.js'
+import { json, request } from '@core/lib/api.js'
 
 export default {
   name: 'MarkdownEditor',
@@ -60,6 +60,7 @@ export default {
   props: {
     modelValue: { type: String, default: '' },
     id: { type: String, default: undefined },
+    previewUrl: { type: String, required: true },
   },
   emits: ['update:modelValue'],
   data() {
@@ -84,18 +85,22 @@ export default {
   },
   watch: {
     async mode(mode) {
-      if (mode === 'preview')
-        this.preview = await useDossiersStore().previewMarkdown(this.modelValue)
+      if (mode !== 'preview') return
+      const { html } = await request(
+        this.previewUrl,
+        'Vorschau konnte nicht geladen werden.',
+        json('POST', { body: this.modelValue }),
+      )
+      this.preview = html
     },
   },
   methods: {
     replace(start, end, text, selectFrom, selectTo) {
-      const value = this.modelValue
-      this.$emit('update:modelValue', value.slice(0, start) + text + value.slice(end))
-      this.$nextTick(() => {
-        this.$refs.textarea.focus()
-        this.$refs.textarea.setSelectionRange(start + selectFrom, start + selectTo)
-      })
+      const { textarea } = this.$refs
+      textarea.setRangeText(text, start, end)
+      textarea.focus()
+      textarea.setSelectionRange(start + selectFrom, start + selectTo)
+      this.$emit('update:modelValue', textarea.value)
     },
     wrap(before, after, fallback) {
       const { selectionStart: start, selectionEnd: end } = this.$refs.textarea

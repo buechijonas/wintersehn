@@ -1,6 +1,6 @@
 <template>
   <BaseBreadcrumbs :items="breadcrumbs" />
-  <LegalContent v-if="page" :page="page" />
+  <LegalContent v-if="page" :page="page" :html="html" />
   <div v-else class="mx-auto flex w-full max-w-200 flex-1 flex-col gap-12 px-6 pt-4 pb-16">
     <div class="skeleton h-12 w-64"></div>
     <div class="flex max-w-150 flex-col gap-3">
@@ -33,6 +33,9 @@ export default {
     },
     page() {
       return this.contentStore.items[this.contentKey]?.data
+    },
+    html() {
+      return this.contentStore.items[this.contentKey]?.html ?? ''
     },
   },
   mounted() {

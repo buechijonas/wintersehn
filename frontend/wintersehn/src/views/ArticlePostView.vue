@@ -29,19 +29,7 @@
         class="max-h-96 w-full rounded-box object-cover"
       />
 
-      <section
-        v-for="(section, index) in post.sections"
-        :key="section.title ?? index"
-        class="flex max-w-170 flex-col gap-4"
-      >
-        <h2 v-if="section.title" class="text-2xl font-semibold">{{ section.title }}</h2>
-        <p v-if="section.subtitle" class="text-lg text-wntrs-slate">{{ section.subtitle }}</p>
-        <p
-          v-if="section.text"
-          class="text-lg leading-relaxed"
-          v-html="linkifyHtml(section.text)"
-        ></p>
-      </section>
+      <MarkdownContent :html="html" class="max-w-170 text-lg" />
     </template>
 
     <div v-else class="flex flex-col gap-4">
@@ -55,6 +43,7 @@
 
 <script>
 import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
+import MarkdownContent from '@core/components/common/MarkdownContent.vue'
 import { profiles } from '@core/assets/images.js'
 import { icons } from '@core/assets/icons.js'
 import { useContentStore } from '@core/stores/content.js'
@@ -62,7 +51,7 @@ import { linkifyHtml } from '@core/lib/linkify.js'
 
 export default {
   name: 'ArticlePostView',
-  components: { BaseBreadcrumbs },
+  components: { BaseBreadcrumbs, MarkdownContent },
   computed: {
     contentStore() {
       return useContentStore()
@@ -72,6 +61,9 @@ export default {
     },
     post() {
       return this.posts.find((post) => post.slug === this.$route.params.slug) ?? null
+    },
+    html() {
+      return this.contentStore.items.article?.html?.[this.post.slug] ?? ''
     },
     breadcrumbs() {
       return [{ label: 'Artikel', to: '/article' }, { label: this.post?.title ?? '…' }]

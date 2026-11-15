@@ -28,7 +28,11 @@
           />
           <template v-if="reference.kind === 'text'">
             <label class="label mt-4" for="reference-text">Text</label>
-            <MarkdownEditor id="reference-text" v-model="draft.text" />
+            <MarkdownEditor
+              id="reference-text"
+              v-model="draft.text"
+              preview-url="/api/monolith/markdown/preview/"
+            />
           </template>
 
           <p v-if="error" class="text-error text-sm mt-3">{{ error }}</p>
@@ -67,7 +71,7 @@ import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
 import DeleteButton from '@core/components/common/DeleteButton.vue'
 import IconPickerField from '@core/components/common/IconPickerField.vue'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
-import MarkdownEditor from '@/components/MarkdownEditor.vue'
+import MarkdownEditor from '@core/components/common/MarkdownEditor.vue'
 import eventMixin from '@/mixins/eventMixin.js'
 import eventReferenceMixin from '@/mixins/eventReferenceMixin.js'
 

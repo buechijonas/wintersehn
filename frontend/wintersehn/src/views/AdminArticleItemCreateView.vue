@@ -106,7 +106,7 @@ export default {
         author: this.authStore.user?.username ?? '',
         authorAvatar: this.authStore.user?.avatar ?? '',
         publishedAt: new Date().toISOString(),
-        sections: [],
+        body: '',
       }
       await this.runAction(() => this.contentStore.saveContent('article', [...this.posts, post]))
       if (!this.error) this.$router.push(`/admin/article/${slug}`)

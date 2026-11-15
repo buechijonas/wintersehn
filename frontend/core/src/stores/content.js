@@ -6,7 +6,7 @@ export const useContentStore = defineStore('content', () => {
   const items = reactive({})
 
   function remember(key, body) {
-    items[key] = { data: body.data, updatedAt: body.updated_at }
+    items[key] = { data: body.data, html: body.html, updatedAt: body.updated_at }
     return body.data
   }
 

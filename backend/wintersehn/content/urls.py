@@ -14,6 +14,11 @@ urlpatterns = router.urls + [
         name="content-upload",
     ),
     path(
+        "markdown/preview/",
+        views.MarkdownViewSet.as_view({"post": "preview"}),
+        name="content-markdown-preview",
+    ),
+    path(
         "images/<str:name>/",
         views.ImageViewSet.as_view({"get": "retrieve"}),
         name="content-image",
