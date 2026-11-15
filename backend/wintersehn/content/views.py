@@ -6,7 +6,9 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from commons import markdown
 from commons.permissions import ActionPermission, IsAdmin
+from commons.serializers import MarkdownPreviewSerializer
 from commons.views import BaseViewSet, CreateModelMixin, UpdateModelMixin
 
 from . import images
@@ -98,6 +100,15 @@ class UploadViewSet(BaseViewSet):
         if not upload:
             raise ValidationError({"detail": "Keine Datei erhalten."})
         return Response({"url": images.store(upload)}, status=201)
+
+
+class MarkdownViewSet(BaseViewSet):
+    permission_classes = [IsAuthenticated, UploadPermission]
+
+    def preview(self, request):
+        serializer = MarkdownPreviewSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({"html": markdown.render(serializer.validated_data["body"])})
 
 
 class ImageViewSet(BaseViewSet):

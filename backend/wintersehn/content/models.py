@@ -3,6 +3,7 @@ from functools import cached_property
 from django.db import models
 from django.utils import timezone
 
+from commons import markdown
 from commons.models import BaseModel, BaseQuerySet
 
 VIEW_PERMISSIONS = {
@@ -13,6 +14,8 @@ VIEW_PERMISSIONS = {
 }
 CRUD_KEYS = ["about", "ethos", "cv", "countries", "media"]
 EDIT_VERBS = ["add", "change", "delete"]
+LEGAL_KEYS = ["impressum", "privacy", "cookies", "terms", "disclaimer"]
+ADDRESS_PLACEHOLDER = "[[address]]"
 
 
 class SiteContentQuerySet(BaseQuerySet):
@@ -95,6 +98,18 @@ class SiteContent(BaseModel):
         if self.key == "media" and not user.has_perm("content.view_media"):
             return [group for group in self.data if not group.get("requiresAuth")]
         return self.data
+
+    def html(self):
+        if self.key == "article":
+            return {post["slug"]: markdown.render(post["body"]) for post in self.data}
+        if self.key in LEGAL_KEYS:
+            return self.legal_html()
+        return None
+
+    def legal_html(self):
+        address = SiteContent.objects.data("address", {"lines": []})
+        body = self.data["body"].replace(ADDRESS_PLACEHOLDER, "\n".join(address["lines"]))
+        return markdown.render(body)
 
 
 class DestinationQuerySet(BaseQuerySet):

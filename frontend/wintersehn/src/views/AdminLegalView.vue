@@ -2,140 +2,30 @@
   <BaseBreadcrumbs :items="breadcrumbs" />
   <div class="flex flex-col pb-8 px-6 flex-1">
     <div class="mx-auto w-full max-w-200">
-      <div class="flex items-center justify-between gap-4 my-4">
-        <h2 class="text-xl">{{ label }}</h2>
-        <AddButton
-          v-if="canEdit"
-          label="Abschnitt hinzufügen"
-          @click="$refs.sectionDialog.open()"
-        />
-      </div>
+      <h2 class="text-xl my-4">{{ label }}</h2>
 
       <p v-if="error" class="text-error text-sm mb-4">{{ error }}</p>
 
-      <SortableList
-        :items="sections"
-        :disabled="!canEdit"
-        class="flex flex-col gap-4"
-        @reorder="reorderSections"
-      >
-        <template #default="{ item: section, index: sectionIndex }">
-          <BaseCard class="p-6">
-            <div
-              v-if="canEdit || section.address"
-              class="flex items-center justify-between gap-4 mb-2"
-            >
-              <button
-                v-if="canEdit"
-                type="button"
-                class="badge badge-sm"
-                :class="section.address ? 'badge-primary' : 'badge-outline'"
-                :disabled="saving"
-                :title="
-                  section.address
-                    ? 'Enthält den Adressblock – klicken zum Entfernen'
-                    : 'Adressblock zu diesem Abschnitt hinzufügen'
-                "
-                @click="toggleAddress(sectionIndex)"
-              >
-                Adressblock
-              </button>
-              <span v-else-if="section.address" class="badge badge-primary badge-sm">
-                Adressblock
-              </span>
-              <DeleteButton
-                v-if="canEdit"
-                class="shrink-0"
-                :disabled="saving"
-                @click="askRemoveSection(sectionIndex)"
-              />
-            </div>
-            <div class="flex flex-col gap-2 w-full max-w-120 mb-4">
-              <input
-                type="text"
-                placeholder="Titel (optional)"
-                class="input input-sm w-full"
-                :value="section.title"
-                :disabled="!canEdit"
-                @change="updateSection(sectionIndex, 'title', $event.target.value)"
-              />
-              <input
-                type="text"
-                placeholder="Untertitel (optional)"
-                class="input input-sm w-full"
-                :value="section.subtitle"
-                :disabled="!canEdit"
-                @change="updateSection(sectionIndex, 'subtitle', $event.target.value)"
-              />
-            </div>
-
-            <textarea
-              rows="4"
-              placeholder="Text (optional)"
-              class="textarea textarea-sm w-full"
-              :value="section.text"
-              :disabled="!canEdit"
-              @change="updateSection(sectionIndex, 'text', $event.target.value)"
-            ></textarea>
-
-            <div class="mt-4 flex flex-col gap-2">
-              <SortableList
-                :items="section.items ?? []"
-                :disabled="!canEdit"
-                class="flex flex-col gap-2"
-                @reorder="(items) => reorderItems(sectionIndex, items)"
-              >
-                <template #default="{ item, index: itemIndex }">
-                  <div class="flex items-center gap-2 bg-base-200 rounded-box p-3">
-                    <div class="flex-1 min-w-0">
-                      <p class="font-medium text-sm truncate">{{ item.listtitle }}</p>
-                      <p v-if="item.texttitle" class="text-sm text-wntrs-slate truncate">
-                        {{ item.texttitle }}
-                      </p>
-                    </div>
-                    <DeleteButton
-                      v-if="canEdit"
-                      :disabled="saving"
-                      @click="askRemoveItem(sectionIndex, itemIndex)"
-                    />
-                  </div>
-                </template>
-              </SortableList>
-
-              <div v-if="canEdit" class="flex flex-col gap-2 sm:flex-row">
-                <input
-                  v-model="itemDrafts[sectionIndex].listtitle"
-                  type="text"
-                  placeholder="Listentitel"
-                  class="input input-sm w-full sm:flex-1"
-                />
-                <input
-                  v-model="itemDrafts[sectionIndex].texttitle"
-                  type="text"
-                  placeholder="Text"
-                  class="input input-sm w-full sm:flex-1"
-                />
-                <BaseButton size="sm" @click="addItem(sectionIndex)">
-                  <AppIcon name="plus" size="sm" />
-                  Eintrag hinzufügen
-                </BaseButton>
-              </div>
-            </div>
-          </BaseCard>
-        </template>
-      </SortableList>
+      <form v-if="contentData && canEdit" class="flex flex-col gap-4" @submit.prevent="save">
+        <p class="text-sm text-wntrs-slate">
+          Mit <code>[[address]]</code> auf einer eigenen Zeile fügst du den Adressblock ein.
+        </p>
+        <MarkdownEditor v-model="body" preview-url="/api/content/markdown/preview/" />
+        <BaseButton
+          type="submit"
+          variant="primary"
+          class="self-end"
+          :disabled="saving || body === contentData.body"
+        >
+          <AppIcon name="disk" />
+          Speichern
+        </BaseButton>
+      </form>
+      <BaseCard v-else-if="contentData" class="p-6">
+        <MarkdownContent :html="html" placeholder="Noch kein Text." />
+      </BaseCard>
     </div>
   </div>
-
-  <ConfirmDialog
-    ref="confirmDialog"
-    :title="dialogTitle"
-    :message="dialogMessage"
-    @confirm="onConfirmDelete"
-  />
-
-  <SectionDialog ref="sectionDialog" @confirm="addSection" />
-
 </template>
 
 <script>
@@ -143,14 +33,10 @@ import BaseBreadcrumbs from '@core/components/common/BaseBreadcrumbs.vue'
 import BaseCard from '@core/components/common/BaseCard.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import AppIcon from '@core/components/common/AppIcon.vue'
-import DeleteButton from '@core/components/common/DeleteButton.vue'
-import ConfirmDialog from '@core/components/common/ConfirmDialog.vue'
-import AddButton from '@core/components/common/AddButton.vue'
-import SectionDialog from '@core/components/common/SectionDialog.vue'
-import SortableList from '@core/components/common/SortableList.vue'
+import MarkdownContent from '@core/components/common/MarkdownContent.vue'
+import MarkdownEditor from '@core/components/common/MarkdownEditor.vue'
 import { useAuthStore } from '@core/stores/auth.js'
 import { useContentStore } from '@core/stores/content.js'
-import confirmDeleteMixin from '@core/mixins/confirmDeleteMixin.js'
 import asyncActionMixin from '@core/mixins/asyncActionMixin.js'
 
 export default {
@@ -160,20 +46,17 @@ export default {
     BaseCard,
     BaseButton,
     AppIcon,
-    DeleteButton,
-    ConfirmDialog,
-    SortableList,
-    AddButton,
-    SectionDialog,
+    MarkdownContent,
+    MarkdownEditor,
   },
-  mixins: [confirmDeleteMixin, asyncActionMixin],
+  mixins: [asyncActionMixin],
   props: {
     contentKey: { type: String, required: true },
     label: { type: String, required: true },
   },
   data() {
     return {
-      itemDrafts: {},
+      body: '',
     }
   },
   computed: {
@@ -186,8 +69,8 @@ export default {
     contentData() {
       return this.contentStore.items[this.contentKey]?.data ?? null
     },
-    sections() {
-      return this.contentData?.sections ?? []
+    html() {
+      return this.contentStore.items[this.contentKey]?.html ?? ''
     },
     canEdit() {
       return !!this.authStore.user?.can_edit_content
@@ -203,85 +86,17 @@ export default {
         this.contentStore.fetchContent(this.contentKey)
       },
     },
-    sections: {
+    'contentData.body': {
       immediate: true,
-      handler(newSections) {
-        newSections.forEach((_, index) => {
-          if (!this.itemDrafts[index]) {
-            this.itemDrafts[index] = { listtitle: '', texttitle: '' }
-          }
-        })
+      handler(body) {
+        this.body = body ?? ''
       },
     },
   },
   methods: {
-    persistData(patch) {
+    save() {
       return this.runAction(() =>
-        this.contentStore.saveContent(this.contentKey, { ...this.contentData, ...patch }),
-      )
-    },
-    persist(sections) {
-      return this.persistData({ sections })
-    },
-    addSection(title) {
-      this.persist([...this.sections, { title, subtitle: '', text: '', items: [] }])
-    },
-    updateSection(sectionIndex, field, value) {
-      const trimmed = value.trim()
-      if (trimmed === (this.sections[sectionIndex][field] ?? '')) return
-      this.persist(
-        this.sections.map((section, i) =>
-          i === sectionIndex ? { ...section, [field]: trimmed } : section,
-        ),
-      )
-    },
-    toggleAddress(sectionIndex) {
-      this.persist(
-        this.sections.map((section, i) =>
-          i === sectionIndex ? { ...section, address: !section.address } : section,
-        ),
-      )
-    },
-    reorderSections(sections) {
-      this.persist(sections)
-    },
-    reorderItems(sectionIndex, items) {
-      this.persist(
-        this.sections.map((section, i) => (i === sectionIndex ? { ...section, items } : section)),
-      )
-    },
-    addItem(sectionIndex) {
-      const draft = this.itemDrafts[sectionIndex]
-      const listtitle = draft.listtitle.trim()
-      const texttitle = draft.texttitle.trim()
-      if (!listtitle) return
-      const items = [...(this.sections[sectionIndex].items ?? []), { listtitle, texttitle }]
-      this.itemDrafts[sectionIndex] = { listtitle: '', texttitle: '' }
-      this.persist(
-        this.sections.map((section, i) => (i === sectionIndex ? { ...section, items } : section)),
-      )
-    },
-    askRemoveSection(sectionIndex) {
-      const { title } = this.sections[sectionIndex]
-      this.confirmRemoval(
-        'Abschnitt löschen',
-        `Möchtest du "${title || 'diesen Abschnitt'}" wirklich löschen?`,
-        () => this.persist(this.sections.filter((_, i) => i !== sectionIndex)),
-      )
-    },
-    askRemoveItem(sectionIndex, itemIndex) {
-      const { listtitle } = this.sections[sectionIndex].items[itemIndex]
-      this.confirmRemoval(
-        'Eintrag löschen',
-        `Möchtest du "${listtitle}" wirklich löschen?`,
-        () =>
-          this.persist(
-            this.sections.map((section, i) =>
-              i === sectionIndex
-                ? { ...section, items: section.items.filter((_, j) => j !== itemIndex) }
-                : section,
-            ),
-          ),
+        this.contentStore.saveContent(this.contentKey, { ...this.contentData, body: this.body }),
       )
     },
   },

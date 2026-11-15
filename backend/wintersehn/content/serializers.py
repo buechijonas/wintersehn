@@ -10,10 +10,11 @@ from .validators import validate_links
 class SiteContentModelSerializer(BaseModelSerializer):
     class read(BaseModelSerializer.read):
         data = serializers.SerializerMethodField()
+        html = serializers.JSONField(read_only=True)
 
         class Meta(BaseModelSerializer.read.Meta):
             model = SiteContent
-            fields = ["key", "data", "updated_at"]
+            fields = ["key", "data", "html", "updated_at"]
 
         def get_data(self, content):
             return content.visible_data(self.context["request"].user)

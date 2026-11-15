@@ -483,17 +483,7 @@ export const useDossiersStore = defineStore('dossiers', () => {
     return `/api/monolith/dossiers/${uuid}/swissfy/picture/`
   }
 
-  async function previewMarkdown(body) {
-    const response = await request(
-      '/api/monolith/markdown/preview/',
-      'Vorschau konnte nicht geladen werden.',
-      json('POST', { body }),
-    )
-    return response.html
-  }
-
   return {
-    previewMarkdown,
     items,
     current,
     networkSettings,

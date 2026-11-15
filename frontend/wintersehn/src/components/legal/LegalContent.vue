@@ -1,17 +1,6 @@
 <template>
   <LegalPage :title="page.title">
-    <LegalSection
-      v-for="(section, index) in page.sections"
-      :key="section.title ?? index"
-      :title="section.title"
-      :subtitle="section.subtitle"
-      :text="section.text"
-      :items="section.items"
-    >
-      <template v-if="section.address">
-        <LegalAddress />
-      </template>
-    </LegalSection>
+    <MarkdownContent :html="html" />
     <LegalIllustration
       v-if="page.illustration"
       :src="undraws[page.illustration]"
@@ -33,11 +22,10 @@
 
 <script>
 import LegalPage from '@/components/layout/LegalPage.vue'
-import LegalSection from '@/components/legal/LegalSection.vue'
-import LegalAddress from '@/components/legal/LegalAddress.vue'
 import LegalIllustration from '@/components/legal/LegalIllustration.vue'
 import BaseButton from '@core/components/common/BaseButton.vue'
 import CancelButton from '@core/components/common/CancelButton.vue'
+import MarkdownContent from '@core/components/common/MarkdownContent.vue'
 import { undraws } from '@core/assets/images.js'
 import { useAuthStore } from '@core/stores/auth.js'
 
@@ -45,17 +33,17 @@ export default {
   name: 'LegalContent',
   components: {
     LegalPage,
-    LegalSection,
-    LegalAddress,
     LegalIllustration,
     BaseButton,
     CancelButton,
+    MarkdownContent,
   },
   props: {
     page: {
       type: Object,
       required: true,
     },
+    html: { type: String, default: '' },
   },
   data() {
     return { undraws, accepting: false }
