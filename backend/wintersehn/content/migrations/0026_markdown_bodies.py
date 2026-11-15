@@ -28,22 +28,19 @@ def without(data, key):
     return {field: value for field, value in data.items() if field != key}
 
 
+def with_body(data):
+    if "sections" not in data:
+        return data
+    return {**without(data, "sections"), "body": sections_markdown(data["sections"])}
+
+
 def to_markdown(apps, schema_editor):
     SiteContent = apps.get_model("content", "SiteContent")
     for content in SiteContent.objects.filter(key__in=LEGAL_KEYS):
-        content.data = {
-            **without(content.data, "sections"),
-            "body": sections_markdown(content.data.get("sections", [])),
-        }
+        content.data = with_body(content.data)
         content.save(update_fields=["data"])
     for content in SiteContent.objects.filter(key="article"):
-        content.data = [
-            {
-                **without(post, "sections"),
-                "body": sections_markdown(post.get("sections", [])),
-            }
-            for post in content.data
-        ]
+        content.data = [with_body(post) for post in content.data]
         content.save(update_fields=["data"])
 
 
