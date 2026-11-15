@@ -165,7 +165,13 @@
           </p>
         </div>
 
-        <p v-else class="text-wntrs-muted mt-8">Keine Treffer.</p>
+        <div v-else class="mt-8 flex flex-col gap-2 text-sm">
+          <p class="text-wntrs-title">Keine Treffer.</p>
+          <p class="text-wntrs-muted">
+            Gefragt: {{ providerNames }}. Unter Einstellungen → Datenschutz kannst du weitere
+            Anbieter aktivieren.
+          </p>
+        </div>
 
         <p
           v-if="result.pending && result.results.length"
@@ -317,6 +323,11 @@ export default {
     },
     selectedImage() {
       return this.imageTrail.at(-1) ?? null
+    },
+    providerNames() {
+      return this.result.providers
+        .map((provider) => engineLabels[provider]?.label ?? provider)
+        .join(', ')
     },
     isInfinite() {
       return this.searchStore.settings.pagination === 'infinite'

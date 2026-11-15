@@ -315,7 +315,8 @@ export const useSearchStore = defineStore('search', () => {
     const fallback = fallbackNetwork(network)
     if (part.results.length || !part.failures.length) return part
     if (!fallback || !engineName(category, provider, fallback)) return part
-    return fetchNetworkPart(q, page, category, provider, fallback)
+    const retry = await fetchNetworkPart(q, page, category, provider, fallback)
+    return retry.results.length ? retry : part
   }
 
   async function rateHosts(items) {
@@ -361,7 +362,8 @@ export const useSearchStore = defineStore('search', () => {
   async function fetchAll(q, page, category) {
     const parts = await Promise.all(fetchParts(q, page, category))
     if (parts.every(({ error }) => error)) throw parts[0].error
-    return { query: q, page, category, ...combineParts(parts), pending: 0 }
+    const providers = categoryProviders(category)
+    return { query: q, page, category, providers, ...combineParts(parts), pending: 0 }
   }
 
   async function search(q, page = 1, category = 'general') {
@@ -379,6 +381,7 @@ export const useSearchStore = defineStore('search', () => {
           query: q,
           page,
           category,
+          providers: categoryProviders(category),
           ...body,
           pending,
           done: !pending && !body.results.length,
