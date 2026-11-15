@@ -54,7 +54,6 @@ export default {
   computed: {
     networkLine() {
       const network = useSearchStore().activeNetwork()
-      if (network === 'direct') return 'Anfragen gehen direkt vom Server, nie von deinem Gerät.'
       if (network === 'tor' && !import.meta.env.PROD) {
         return 'Tor ist in dieser Entwicklungsumgebung nicht aktiv.'
       }

@@ -160,15 +160,26 @@
             </li>
           </ul>
           <p class="text-wntrs-muted">
-            Versuche es in ein paar Minuten nochmals oder wähle unter Einstellungen → Datenschutz
-            ein anderes Netzwerk.
+            Versuche es in einer halben Minute nochmals, aktiviere unter Einstellungen → Datenschutz
+            weitere Anbieter oder wähle dort ein anderes Netzwerk.
           </p>
         </div>
 
         <p v-else class="text-wntrs-muted mt-8">Keine Treffer.</p>
 
+        <p
+          v-if="result.pending && result.results.length"
+          class="mt-6 flex items-center gap-2 text-sm text-wntrs-slate"
+        >
+          <span class="loading loading-dots loading-sm text-primary"></span>
+          Weitere Anbieter antworten noch.
+        </p>
+
         <template v-if="isInfinite">
-          <InfiniteSentinel v-if="!result.done && !loadingMore" @visible="loadMore" />
+          <InfiniteSentinel
+            v-if="!result.done && !result.pending && !loadingMore"
+            @visible="loadMore"
+          />
           <div v-if="loadingMore" class="flex justify-center mt-8">
             <span class="loading loading-dots text-primary"></span>
           </div>

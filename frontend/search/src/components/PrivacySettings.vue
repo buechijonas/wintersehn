@@ -19,13 +19,12 @@
       <div class="flex flex-col gap-3 text-sm text-wntrs-slate leading-relaxed">
         <p>
           Diese Suche ist ein eigener Vermittler zwischen dir und den Suchmaschinen. Sie fragt
-          Anbieter wie Brave, Mojeek oder Qwant in deinem Auftrag an. Die Anbieter erfahren dabei
-          nie, wer du bist: Sie sehen weder deine IP-Adresse noch Cookies, Browserdaten oder einen
-          Verlauf. Standardmässig gehen alle Anfragen zusätzlich über das Tor-Netzwerk, jeder
-          Anbieter über einen eigenen, regelmässig wechselnden Weg. So sieht ein Anbieter nicht
-          einmal den Server dieser Suche und kann deine Anfragen auch nicht mit denen bei anderen
-          Anbietern verknüpfen. Unter «Netzwerk» kannst du stattdessen einen VPN-Anbieter, einen
-          eigenen Proxy oder den direkten Weg wählen.
+          Anbieter wie DuckDuckGo, Bing oder Wikipedia in deinem Auftrag an. Die Anbieter erfahren
+          dabei nie, wer du bist: Sie sehen weder deine IP-Adresse noch Cookies, Browserdaten oder
+          einen Verlauf. Alle Anfragen gehen zusätzlich über das Tor-Netzwerk, jeder Anbieter über
+          einen eigenen, regelmässig wechselnden Weg. So sieht ein Anbieter nicht einmal den Server
+          dieser Suche und kann deine Anfragen auch nicht mit denen bei anderen Anbietern
+          verknüpfen. Einen direkten Weg ohne Tor gibt es nicht.
         </p>
         <p>
           Auch der Inhaber dieser Suche erhält deine Daten nicht. Suchbegriffe werden nicht
@@ -99,8 +98,9 @@
       </BaseCard>
       <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p class="text-sm text-wntrs-muted">
-          Brave, Mojeek und Wikipedia haben einen eigenen Index. Die anderen beziehen ihre Treffer
-          von Google oder Bing.
+          Brave, Mwmbl und Wikipedia haben einen eigenen Index, ebenso die Bild- und
+          Videoplattformen. DuckDuckGo, Yahoo und Startpage beziehen ihre Treffer von Bing oder
+          Google.
         </p>
         <BaseButton size="sm" class="shrink-0" @click="save({ engines: independentEngines })">
           <AppIcon name="search" />

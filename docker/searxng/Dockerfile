@@ -6,5 +6,7 @@ COPY query_guard /usr/local/searxng/config/query_guard
 
 ENV SEARXNG_BASE_SETTINGS=/usr/local/searxng/config/settings.yml
 ENV SEARXNG_SETTINGS_PATH=/tmp/settings.yml
+ENV GRANIAN_WORKERS=2
+ENV GRANIAN_BLOCKING_THREADS=32
 
 ENTRYPOINT ["/bin/sh", "-c", "/usr/local/searxng/.venv/bin/python /usr/local/searxng/config/configure.py && exec /usr/local/searxng/entrypoint.sh"]
