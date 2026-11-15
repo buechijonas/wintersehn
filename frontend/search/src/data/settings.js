@@ -1,18 +1,33 @@
 export const searchChoices = {
-  engines: ['brave', 'duckduckgo', 'mojeek', 'qwant', 'startpage', 'wikipedia'],
+  engines: [
+    'bing',
+    'brave',
+    'dailymotion',
+    'duckduckgo',
+    'flickr',
+    'mwmbl',
+    'peertube',
+    'qwant',
+    'startpage',
+    'wikipedia',
+    'yahoo',
+    'youtube',
+  ],
   language: ['all', 'de', 'en', 'fr', 'it'],
   method: ['post', 'get'],
   pagination: ['pages', 'infinite'],
   pageLength: [1, 2, 3],
   timeout: [3, 5, 10],
-  network: ['tor', 'strict', 'vpn', 'proxy', 'direct'],
+  network: ['tor', 'strict'],
   riskyLinks: ['allow', 'warn', 'block'],
   imageLoading: ['auto', 'click'],
   httpLinks: ['keep', 'upgrade', 'hide'],
 }
 
+export const optionalEngines = ['mwmbl']
+
 export const defaultSearchSettings = {
-  engines: searchChoices.engines,
+  engines: searchChoices.engines.filter((engine) => !optionalEngines.includes(engine)),
   language: 'de',
   method: 'post',
   pagination: 'pages',
@@ -45,7 +60,7 @@ export const donateUrl = 'https://buymeacoffee.com/wintersehn'
 
 export const panicUrl = 'https://www.wikipedia.org'
 
-export const independentEngines = ['brave', 'mojeek', 'wikipedia']
+export const independentEngines = ['brave', 'mwmbl', 'wikipedia']
 
 export const bigTechDomains = [
   'google.*',
@@ -153,19 +168,31 @@ export const bigTechDomains = [
 ]
 
 export const engineLabels = {
+  bing: { label: 'Bing', description: 'Index von Microsoft, direkt abgefragt.' },
   brave: {
     label: 'Brave',
     description:
       'Eigener Index, kein Nutzerprofil. Läuft über die offizielle API, wenn eingerichtet.',
   },
+  dailymotion: { label: 'Dailymotion', description: 'Videoplattform aus Frankreich, nur Videos.' },
   duckduckgo: { label: 'DuckDuckGo', description: 'Kein Tracking, Ergebnisse u. a. von Bing.' },
-  mojeek: { label: 'Mojeek', description: 'Eigener Index aus Grossbritannien, kein Tracking.' },
+  flickr: { label: 'Flickr', description: 'Fotos von Fotografinnen und Fotografen, nur Bilder.' },
+  mwmbl: {
+    label: 'Mwmbl',
+    description: 'Offener, gemeinnütziger Index, kein Tracking. Klein und vor allem englisch.',
+  },
+  peertube: {
+    label: 'PeerTube',
+    description: 'Dezentrale, freie Videoplattformen, nur Videos.',
+  },
   qwant: { label: 'Qwant', description: 'Europäische Suchmaschine, kein Tracking.' },
   startpage: { label: 'Startpage', description: 'Google-Ergebnisse ohne Google-Tracking.' },
   wikipedia: {
     label: 'Wikipedia',
     description: 'Enzyklopädie und Wikimedia Commons, kein Tracking.',
   },
+  yahoo: { label: 'Yahoo', description: 'Treffer von Bing über einen zweiten Zugang.' },
+  youtube: { label: 'YouTube', description: 'Videos von Google, ohne Anmeldung abgefragt.' },
 }
 
 export const failureLabels = {
@@ -210,20 +237,12 @@ export const riskyLinkLabels = {
 export const networkLabels = {
   tor: 'Tor',
   strict: 'Tor streng',
-  vpn: 'VPN',
-  proxy: 'Eigener Proxy',
-  direct: 'Direkt',
 }
 
 export const networkDescriptions = {
+  tor: 'Anfragen laufen über Tor. Suchanbieter sehen weder dich noch den Server.',
   strict:
-    'Wie Tor, aber aufeinanderfolgende Suchen nehmen jeweils einen anderen Weg. So lassen sich deine Suchen auch bei einem Anbieter kaum verknüpfen. Etwas langsamer.',
-  tor: 'Anfragen laufen über Tor. Suchanbieter sehen weder dich noch den Server, dafür ist es langsamer und Captchas sind häufiger.',
-  vpn: 'Anfragen laufen über einen VPN-Anbieter. Suchanbieter sehen dessen IP. Der VPN-Anbieter sieht, welche Suchanbieter angefragt werden, dank HTTPS aber nicht die Suchbegriffe.',
-  direct:
-    'Anfragen gehen ohne Umweg vom Server an die Suchanbieter. Am schnellsten und mit wenig Captchas. Die Anbieter sehen die IP des Servers, nie deine, können aber alle Anfragen dieses Servers einander zuordnen.',
-  proxy:
-    'Anfragen laufen über einen eigenen Proxy des Betreibers. Suchanbieter sehen die IP dieses Proxys. Der Proxy sieht, welche Suchanbieter angefragt werden, dank HTTPS aber nicht die Suchbegriffe.',
+    'Wie Tor, aber jede Anfrage nimmt einen eigenen Weg. So lassen sich deine Suchen auch bei einem Anbieter kaum verknüpfen. Etwas langsamer.',
 }
 
 export const imageLoadingLabels = {
@@ -264,45 +283,53 @@ export const categories = [
     key: 'general',
     label: 'Alle',
     engines: {
+      bing: 'bing',
       brave: 'brave',
       duckduckgo: 'duckduckgo',
-      mojeek: 'mojeek',
+      mwmbl: 'mwmbl',
       qwant: 'qwant',
       startpage: 'startpage',
       wikipedia: 'wikipedia',
+      yahoo: 'yahoo',
     },
   },
   {
     key: 'images',
     label: 'Bilder',
     engines: {
+      bing: 'bing images',
       brave: 'brave.images',
       duckduckgo: 'duckduckgo images',
-      mojeek: 'mojeek images',
       qwant: 'qwant images',
       startpage: 'startpage images',
       wikipedia: 'wikicommons.images',
+      flickr: 'flickr',
     },
   },
   {
     key: 'videos',
     label: 'Videos',
     engines: {
+      bing: 'bing videos',
       brave: 'brave.videos',
       duckduckgo: 'duckduckgo videos',
       qwant: 'qwant videos',
       wikipedia: 'wikicommons.videos',
+      youtube: 'youtube',
+      dailymotion: 'dailymotion',
+      peertube: 'sepiasearch',
     },
   },
   {
     key: 'news',
     label: 'News',
     engines: {
+      bing: 'bing news',
       brave: 'brave.news',
       duckduckgo: 'duckduckgo news',
-      mojeek: 'mojeek news',
       qwant: 'qwant news',
       startpage: 'startpage news',
+      yahoo: 'yahoo news',
     },
   },
 ]

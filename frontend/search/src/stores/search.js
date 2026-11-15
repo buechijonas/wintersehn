@@ -13,6 +13,7 @@ const HOST_PATTERN = /^([a-z0-9-]{1,63}\.)+[a-z]{2,63}$/
 const MAX_HOSTS = 30
 const CACHE_TTL = 5 * 60 * 1000
 const SIMILAR_WORDS = 8
+const FALLBACK_NETWORKS = { tor: 'strict', strict: 'tor' }
 
 function storageFor(scope) {
   return scope === 'session' ? sessionStorage : localStorage
@@ -93,6 +94,7 @@ function toFailure([engine, reason]) {
     provider: engine
       .split(/[ .]/)[0]
       .replace('wikicommons', 'wikipedia')
+      .replace('sepiasearch', 'peertube')
       .replace('braveapi', 'brave'),
     reason: reason.replace(/^(Suspended|Ausgesetzt): /, ''),
   }
@@ -108,6 +110,25 @@ function toResult(item) {
     image: proxiedImage(item.thumbnail_src || item.thumbnail || item.img_src),
     full: proxiedImage(item.img_src),
     resolution: item.resolution || null,
+  }
+}
+
+function uniqueBy(items, key) {
+  return [...new Map(items.map((item) => [item[key], item])).values()]
+}
+
+function combineParts(parts) {
+  return {
+    results: uniqueBy(
+      parts.flatMap((part) => part.results),
+      'key',
+    ),
+    failures: uniqueBy(
+      parts.flatMap((part) => part.failures),
+      'provider',
+    ),
+    suggestions: [...new Set(parts.flatMap((part) => part.suggestions))],
+    blocked: parts.map((part) => part.blocked).find(Boolean) ?? null,
   }
 }
 
@@ -206,10 +227,7 @@ export const useSearchStore = defineStore('search', () => {
     const onionLocation = response.headers.get('onion-location')
     onion.value = onionLocation ? new URL(onionLocation).origin : null
     const names = (await response.json()).engines.map(({ name }) => name)
-    const extra = ['strict', 'vpn', 'proxy', 'direct'].filter((network) =>
-      names.some((name) => name.endsWith(` ${network}`)),
-    )
-    networks.value = ['tor', ...extra]
+    networks.value = names.some((name) => name.endsWith(' strict')) ? ['tor', 'strict'] : ['tor']
     braveApi.value = names.includes('braveapi')
     engineNames.value = names
   }
@@ -228,25 +246,35 @@ export const useSearchStore = defineStore('search', () => {
     return networks.value.includes(settings.value.network) ? settings.value.network : 'tor'
   }
 
-  function categoryEngines(category) {
-    const { engines } = categories.find(({ key }) => key === category)
-    const network = activeNetwork()
-    const suffix = network === 'tor' ? '' : ` ${network}`
-    const useBraveApi = braveApi.value && category === 'general'
-    return settings.value.engines
-      .map((engine) => (useBraveApi && engine === 'brave' ? 'braveapi' : engines[engine]))
-      .filter((engine) => engine && hasEngine(engine))
-      .map((engine) => `${engine}${suffix}`)
+  function fallbackNetwork(network) {
+    const fallback = FALLBACK_NETWORKS[network]
+    return networks.value.includes(fallback) ? fallback : null
   }
 
-  async function fetchPage(q, pageno, category) {
-    const engines = categoryEngines(category)
-    if (!engines.length) throw new Error('Für diese Kategorie ist kein Suchanbieter aktiv.')
+  function engineName(category, provider, network) {
+    const { engines } = categories.find(({ key }) => key === category)
+    const useBraveApi = braveApi.value && category === 'general' && provider === 'brave'
+    const name = useBraveApi ? 'braveapi' : engines[provider]
+    if (!name) return null
+    const engine = network === 'tor' ? name : `${name} ${network}`
+    return !engineNames.value || engineNames.value.includes(engine) ? engine : null
+  }
+
+  function categoryProviders(category) {
+    const { engines } = categories.find(({ key }) => key === category)
+    return Object.keys(engines).filter(
+      (provider) =>
+        settings.value.engines.includes(provider) &&
+        engineName(category, provider, activeNetwork()),
+    )
+  }
+
+  async function fetchPage(q, pageno, engine) {
     const params = new URLSearchParams({
       q,
       pageno,
       format: 'json',
-      engines: engines.join(','),
+      engines: engine,
       language: settings.value.language,
       timeout_limit: settings.value.timeout,
     })
@@ -264,25 +292,30 @@ export const useSearchStore = defineStore('search', () => {
     return response.json()
   }
 
-  async function fetchResults(q, page, category) {
+  async function fetchNetworkPart(q, page, category, provider, network) {
+    const engine = engineName(category, provider, network)
     const length = settings.value.pageLength
     const pagenos = Array.from({ length }, (_, index) => (page - 1) * length + index + 1)
-    const pages = await Promise.all(pagenos.map((pageno) => fetchPage(q, pageno, category)))
-    const results = pages
-      .flatMap((data) => data.results)
-      .map(toResult)
-      .map((item) => withHttpLinks(item, settings.value.httpLinks))
-      .filter((item) => isVisible(item, settings.value))
-    const failures = pages.flatMap((data) => data.unresponsive_engines).map(toFailure)
+    const pages = await Promise.all(pagenos.map((pageno) => fetchPage(q, pageno, engine)))
     return {
-      query: q,
-      page,
-      category,
-      results: [...new Map(results.map((item) => [item.key, item])).values()],
-      failures: [...new Map(failures.map((item) => [item.provider, item])).values()],
+      results: pages
+        .flatMap((data) => data.results)
+        .map(toResult)
+        .map((item) => withHttpLinks(item, settings.value.httpLinks))
+        .filter((item) => isVisible(item, settings.value)),
+      failures: pages.flatMap((data) => data.unresponsive_engines).map(toFailure),
       suggestions: pages[0].suggestions,
       blocked: toBlocked(pages[0].answers.find(({ category }) => category)),
     }
+  }
+
+  async function fetchPart(q, page, category, provider) {
+    const network = activeNetwork()
+    const part = await fetchNetworkPart(q, page, category, provider, network)
+    const fallback = fallbackNetwork(network)
+    if (part.results.length || !part.failures.length) return part
+    if (!fallback || !engineName(category, provider, fallback)) return part
+    return fetchNetworkPart(q, page, category, provider, fallback)
   }
 
   async function rateHosts(items) {
@@ -301,29 +334,67 @@ export const useSearchStore = defineStore('search', () => {
     pendingHosts.value = pendingHosts.value.filter((host) => !hosts.includes(host))
   }
 
-  function cachedResults(q, page, category) {
-    const key = JSON.stringify([q, page, category, settings.value])
+  function cachedPart(q, page, category, provider) {
+    const key = JSON.stringify([q, page, category, provider, settings.value])
     const hit = resultCache.get(key)
     if (hit && Date.now() - hit.time < CACHE_TTL) return hit.promise
-    const promise = fetchResults(q, page, category)
+    const promise = fetchPart(q, page, category, provider)
     resultCache.set(key, { promise, time: Date.now() })
     promise
-      .then((body) => body.results.length || resultCache.delete(key))
+      .then((part) => part.results.length || resultCache.delete(key))
       .catch(() => resultCache.delete(key))
-    return promise
+    return promise.catch((error) => ({
+      error,
+      results: [],
+      failures: [{ provider, reason: error.message }],
+      suggestions: [],
+      blocked: null,
+    }))
+  }
+
+  function fetchParts(q, page, category) {
+    const providers = categoryProviders(category)
+    if (!providers.length) throw new Error('Für diese Kategorie ist kein Suchanbieter aktiv.')
+    return providers.map((provider) => cachedPart(q, page, category, provider))
+  }
+
+  async function fetchAll(q, page, category) {
+    const parts = await Promise.all(fetchParts(q, page, category))
+    if (parts.every(({ error }) => error)) throw parts[0].error
+    return { query: q, page, category, ...combineParts(parts), pending: 0 }
   }
 
   async function search(q, page = 1, category = 'general') {
     const current = ++latestSearch
     query.value = q
-    const body = await cachedResults(q, page, category)
-    if (current !== latestSearch) return
-    result.value = { ...body, done: !body.results.length }
-    rateHosts(body.results)
+    const parts = fetchParts(q, page, category)
+    const arrived = []
+    const shown = parts.map((promise) =>
+      promise.then((part) => {
+        arrived.push(part)
+        if (current !== latestSearch) return
+        const pending = parts.length - arrived.length
+        const body = combineParts(arrived)
+        result.value = {
+          query: q,
+          page,
+          category,
+          ...body,
+          pending,
+          done: !pending && !body.results.length,
+        }
+        rateHosts(part.results)
+      }),
+    )
+    const firstResults = parts.map((promise) =>
+      promise.then((part) => part.results.length || Promise.reject(part.error)),
+    )
+    await Promise.any(firstResults).catch(() => Promise.all(shown))
+    if (arrived.every(({ error }) => error)) throw arrived[0].error
   }
 
   async function similarImages(item, page) {
-    const body = await cachedResults(similarQuery(item), page, 'images')
+    const body = await fetchAll(similarQuery(item), page, 'images')
     rateHosts(body.results)
     return body.results.filter(({ key }) => key !== item.key)
   }
@@ -331,7 +402,7 @@ export const useSearchStore = defineStore('search', () => {
   async function loadMore() {
     const current = latestSearch
     const { query: q, page, category } = result.value
-    const body = await cachedResults(q, page + 1, category)
+    const body = await fetchAll(q, page + 1, category)
     if (current !== latestSearch) return
     const keys = new Set(result.value.results.map(({ key }) => key))
     const results = body.results.filter(({ key }) => !keys.has(key))

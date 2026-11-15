@@ -5,32 +5,68 @@ use_default_settings:
       - duckduckgo images
       - duckduckgo videos
       - duckduckgo news
-      - mojeek
-      - mojeek images
-      - mojeek news
       - startpage
       - startpage images
       - startpage news
       - wikipedia
       - wikicommons.images
       - wikicommons.videos
+      - bing
+      - bing images
+      - bing news
+      - bing videos
+      - yahoo
+      - yahoo news
+      - mwmbl
+      - youtube
+      - dailymotion
+      - sepiasearch
+      - flickr
 
 engines:
-  - name: mojeek
-    inactive: false
-  - name: mojeek images
-    inactive: false
-  - name: mojeek news
-    inactive: false
   - name: startpage
     inactive: false
   - name: startpage images
     inactive: false
   - name: startpage news
     inactive: false
+  - name: bing
+    disabled: false
+    inactive: false
+  - name: bing images
+    disabled: false
+    inactive: false
+  - name: bing news
+    disabled: false
+    inactive: false
+  - name: bing videos
+    disabled: false
+    inactive: false
+  - name: yahoo
+    disabled: false
+    inactive: false
+  - name: yahoo news
+    disabled: false
+    inactive: false
+  - name: mwmbl
+    disabled: false
+    inactive: false
+  - name: youtube
+    disabled: false
+    inactive: false
+  - name: dailymotion
+    disabled: false
+    inactive: false
+  - name: sepiasearch
+    disabled: false
+    inactive: false
+  - name: flickr
+    disabled: false
+    inactive: false
 
 general:
   instance_name: wintersehn
+  contact_url: https://search.wintersehn.ch
   debug: false
   enable_metrics: false
 
@@ -42,12 +78,12 @@ search:
   formats:
     - json
   suspended_times:
-    SearxEngineAccessDenied: 120
-    SearxEngineCaptcha: 300
-    SearxEngineTooManyRequests: 120
-    cf_SearxEngineCaptcha: 1800
-    cf_SearxEngineAccessDenied: 1800
-    recaptcha_SearxEngineCaptcha: 1800
+    SearxEngineAccessDenied: 20
+    SearxEngineCaptcha: 20
+    SearxEngineTooManyRequests: 20
+    cf_SearxEngineCaptcha: 60
+    cf_SearxEngineAccessDenied: 60
+    recaptcha_SearxEngineCaptcha: 60
 
 server:
   secret_key: dev-only-overridden-by-SEARXNG_SECRET
